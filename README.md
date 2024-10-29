@@ -1,4 +1,4 @@
-# web12-boostproject
+# MafiaCamp
 
 ## 🌱 팀원 소개
 
