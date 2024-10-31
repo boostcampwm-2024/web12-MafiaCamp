@@ -1,7 +1,7 @@
 ---
 name: Bug Report
 about: 어떤 버그인지 설명해 주세요.
-title: "[Bug] 버그 설명"
+title: "bug: 버그 설명"
 labels: bug
 assignees: ""
 ---

@@ -1,7 +1,7 @@
-- 제목: [Feat] 기능명
-  Ex. [Feat] pull request template 작성
+- 제목: feat: 기능명
+  Ex. feat: pull request template 작성
 
-<!-- 절취선 위 부분의 내용은 모두 삭제하고 PR을 작성해 주세요. -->
+-- 절취선 위 부분의 내용은 모두 삭제하고 PR을 작성해 주세요. --
 
 ---- 절취선 ----
 
