@@ -1,3 +1,9 @@
+import Introduction from '@/components/home/Introduction';
+
 export default function Home() {
-  return <div></div>;
+  return (
+    <div>
+      <Introduction />
+    </div>
+  );
 }

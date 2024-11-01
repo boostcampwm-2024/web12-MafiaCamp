@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 const Footer = () => {
   return (
-    <footer className='flex h-60 w-full justify-center bg-slate-600/50'>
+    <footer className='mt-40 flex h-60 w-full justify-center bg-slate-600/50'>
       <div className='flex h-full w-[67.5rem] flex-col gap-5 pb-12 pt-7'>
         <Image
           src='/common/mafiacamp-logo-small.png'

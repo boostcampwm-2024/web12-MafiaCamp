@@ -36,7 +36,7 @@ export default function RootLayout({
       <body className={`${notoSansKr.className} flex flex-col items-center`}>
         <Background />
         <Header />
-        {children}
+        <div className='w-[67.5rem]'>{children}</div>
         <Footer />
         <FloatingButton />
       </body>
