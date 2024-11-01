@@ -13,7 +13,7 @@ const Header = () => {
         />
       </Link>
       <nav>
-        <ul className='flex flex-row items-center gap-10 font-medium text-slate-200'>
+        <ul className='flex flex-row items-center gap-10 text-slate-200'>
           <li>
             <Link className='font-semibold text-white' href='/'>
               홈

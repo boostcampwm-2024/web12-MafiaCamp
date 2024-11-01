@@ -3,8 +3,10 @@ import '@/styles/globals.css';
 import { Noto_Sans_KR } from 'next/font/google';
 import Background from '@/components/common/Background';
 import Header from '@/components/common/Header';
+import FloatingButton from '@/components/common/FloatingButton';
+import Footer from '@/components/common/Footer';
 
-const notoSansKr = Noto_Sans_KR({ weight: ['400'], subsets: ['latin'] });
+const notoSansKr = Noto_Sans_KR({ weight: ['500'], subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: {
@@ -35,6 +37,8 @@ export default function RootLayout({
         <Background />
         <Header />
         {children}
+        <Footer />
+        <FloatingButton />
       </body>
     </html>
   );
