@@ -1,8 +1,8 @@
-interface ChevronUpProps {
+interface ChevronUpIconProps {
   className?: string;
 }
 
-const ChevronUp = ({ className }: ChevronUpProps) => {
+const ChevronUpIcon = ({ className }: ChevronUpIconProps) => {
   return (
     <svg
       className={className}
@@ -22,4 +22,4 @@ const ChevronUp = ({ className }: ChevronUpProps) => {
   );
 };
 
-export default ChevronUp;
+export default ChevronUpIcon;

@@ -1,8 +1,8 @@
-interface CheckCircleProps {
+interface CheckCircleIconProps {
   className?: string;
 }
 
-const CheckCircle = ({ className }: CheckCircleProps) => {
+const CheckCircleIcon = ({ className }: CheckCircleIconProps) => {
   return (
     <svg
       className={className}
@@ -23,4 +23,4 @@ const CheckCircle = ({ className }: CheckCircleProps) => {
   );
 };
 
-export default CheckCircle;
+export default CheckCircleIcon;
