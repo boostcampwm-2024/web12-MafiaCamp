@@ -3,8 +3,11 @@
 import LottieFile from '@/../public/lottie/404.json';
 import Lottie from 'lottie-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function NotFound() {
+  const router = useRouter();
+
   return (
     <div className='flex w-full flex-row items-center pt-20'>
       <Lottie
@@ -26,12 +29,12 @@ export default function NotFound() {
           >
             홈으로
           </Link>
-          <Link
+          <button
             className='flex h-10 w-40 items-center justify-center rounded-3xl bg-slate-600/50 text-white'
-            href=''
+            onClick={() => router.back()}
           >
             이전 페이지로
-          </Link>
+          </button>
         </div>
       </div>
     </div>
