@@ -1,7 +1,16 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 const Footer = () => {
+  const pathname = usePathname();
+
+  if (pathname.includes('/lobby/')) {
+    return null;
+  }
+
   return (
     <footer className='mt-20 flex h-60 w-full justify-center bg-slate-600/50'>
       <div className='flex h-full w-[67.5rem] flex-col gap-5 pb-12 pt-7'>

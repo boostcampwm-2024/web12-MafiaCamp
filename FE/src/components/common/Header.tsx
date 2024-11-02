@@ -28,6 +28,10 @@ const Header = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  if (pathname.includes('/lobby/')) {
+    return null;
+  }
+
   return (
     <header
       className={`${pathname === '/' && !isScrolled ? 'bg-slate-600/50' : 'bg-transparent'} ${pathname === '/' ? 'h-[37.5rem]' : 'h-20'} flex w-[80rem] flex-col rounded-b-[11.25rem] px-24 transition-all duration-500`}

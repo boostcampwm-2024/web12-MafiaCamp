@@ -7,8 +7,9 @@ const LobbyItem = () => {
         모집중
       </div>
       <div className='flex flex-col gap-3'>
-        <h2 className='text-lg text-white'>
-          마피아 게임을 좋아하는 누구나 환영합니다.
+        <h2 className='line-clamp-2 text-lg text-white'>
+          마피아 게임을 좋아하는 사람이면 누구나 환영합니다. 다같이 마피아
+          게임을 즐겨봅시다.
         </h2>
         <p className='text-sm text-slate-200'>HyunJinNo</p>
         <div className='flex flex-row items-center justify-between'>
