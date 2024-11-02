@@ -1,6 +1,6 @@
 'use client';
 
-import ChevronUp from './icons/ChevronUp';
+import ChevronUpIcon from './icons/ChevronUpIcon';
 
 const FloatingButton = () => {
   return (
@@ -8,7 +8,7 @@ const FloatingButton = () => {
       className='fixed bottom-12 right-12 flex h-12 w-12 items-center justify-center rounded-full border border-slate-400 bg-slate-600 hover:scale-105'
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
     >
-      <ChevronUp />
+      <ChevronUpIcon />
     </button>
   );
 };

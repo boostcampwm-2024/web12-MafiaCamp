@@ -1,4 +1,4 @@
-import CheckCircle from '../common/icons/CheckCircle';
+import CheckCircleIcon from '../common/icons/CheckCircleIcon';
 import * as motion from 'framer-motion/client';
 
 const RuleInfo = () => {
@@ -30,7 +30,7 @@ const RuleInfo = () => {
             viewport={{ once: true, amount: 0.9 }}
           >
             <div className='flex flex-row items-center gap-2'>
-              <CheckCircle />
+              <CheckCircleIcon />
               <h3 className='text-xl'>방을 생성하세요</h3>
             </div>
             <motion.p
@@ -51,7 +51,7 @@ const RuleInfo = () => {
             viewport={{ once: true, amount: 0.9 }}
           >
             <div className='flex flex-row items-center gap-2'>
-              <CheckCircle />
+              <CheckCircleIcon />
               <h3 className='text-xl'>방을 찾아보세요</h3>
             </div>
             <motion.p
@@ -73,7 +73,7 @@ const RuleInfo = () => {
             viewport={{ once: true, amount: 0.9 }}
           >
             <div className='flex flex-row items-center gap-2'>
-              <CheckCircle />
+              <CheckCircleIcon />
               <h3 className='text-xl'>사람들과 심리전을 즐겨보세요</h3>
             </div>
             <motion.p
