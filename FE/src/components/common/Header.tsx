@@ -50,17 +50,26 @@ const Header = () => {
         <nav>
           <ul className='flex flex-row items-center gap-10 text-slate-200'>
             <li>
-              <Link className='font-semibold text-white' href='/'>
+              <Link
+                className={`${pathname === '/' ? 'font-semibold text-white' : 'hover:text-white'}`}
+                href='/'
+              >
                 홈
               </Link>
             </li>
             <li>
-              <Link className='hover:text-white' href='/lobby'>
+              <Link
+                className={`${pathname === '/lobby' ? 'font-semibold text-white' : 'hover:text-white'}`}
+                href='/lobby'
+              >
                 로비
               </Link>
             </li>
             <li>
-              <Link className='hover:text-white' href='auth/signin'>
+              <Link
+                className={`${pathname === '/signin' ? 'font-semibold text-white' : 'hover:text-white'}`}
+                href='/signin'
+              >
                 로그인
               </Link>
             </li>

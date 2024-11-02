@@ -1,26 +1,23 @@
 'use client';
 
-import LottieFile from '@/../public/lottie/404.json';
+import LottieFile from '@/../public/lottie/500.json';
 import Lottie from 'lottie-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-export default function NotFound() {
+export default function Error() {
   const router = useRouter();
 
   return (
-    <div className='flex w-full flex-row items-center pt-20'>
-      <Lottie
-        animationData={LottieFile}
-        className='h-[31.25rem] w-[31.25rem]'
-      />
-      <div className='-ml-20 flex flex-col items-center'>
+    <div className='flex w-full flex-col items-center pt-20'>
+      <Lottie animationData={LottieFile} />
+      <div className='flex flex-col items-center'>
         <h2 className='text-3xl font-bold text-white'>
-          죄송합니다. 요청하신 페이지를 찾을 수 없습니다.
+          앗... 오류가 발생하였습니다.
         </h2>
         <div className='flex flex-col items-center pt-4 text-slate-100'>
-          <p>존재하지 않는 주소를 입력하셨거나,</p>
-          <p>요청하신 페이지의 주소가 변경, 삭제되어 찾을 수 없습니다.</p>
+          <p>시스템에 오류가 발생하였습니다.</p>
+          <p>잠시 후에 다시 시도해 주세요. </p>
         </div>
         <div className='mt-12 flex flex-row items-center gap-4'>
           <Link
