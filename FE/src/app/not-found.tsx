@@ -9,7 +9,7 @@ export default function NotFound() {
   const router = useRouter();
 
   return (
-    <div className='flex w-full flex-row items-center pt-20'>
+    <div className='flex w-full flex-row items-center pt-12'>
       <Lottie
         animationData={LottieFile}
         className='h-[31.25rem] w-[31.25rem]'

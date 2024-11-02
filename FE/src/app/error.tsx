@@ -9,7 +9,7 @@ export default function Error() {
   const router = useRouter();
 
   return (
-    <div className='flex w-full flex-col items-center pt-20'>
+    <div className='flex w-full flex-col items-center pt-9'>
       <Lottie animationData={LottieFile} />
       <div className='flex flex-col items-center'>
         <h2 className='text-3xl font-bold text-white'>
