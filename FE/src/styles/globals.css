@@ -19,3 +19,34 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* width */
+::-webkit-scrollbar {
+  width: 0.8rem;
+  height: 0.4rem;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* vertical */
+::-webkit-scrollbar-thumb:vertical {
+  border-radius: 1rem;
+  background: linear-gradient(to bottom, #e7fce0, #c3e9ff);
+}
+
+::-webkit-scrollbar-thumb:hover:vertical {
+  background: linear-gradient(to bottom, #d6ebd9, #b2d8ee);
+}
+
+/* horizontal */
+::-webkit-scrollbar-thumb:horizontal {
+  border-radius: 1rem;
+  background: linear-gradient(to right, #e7fce0, #c3e9ff);
+}
+
+::-webkit-scrollbar-thumb:hover:horizontal {
+  background: linear-gradient(to right, #d6ebd9, #b2d8ee);
+}
