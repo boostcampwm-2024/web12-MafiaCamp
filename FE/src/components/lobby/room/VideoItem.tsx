@@ -10,7 +10,7 @@ const VideoItem = () => {
   const [isAudioOn, setIsAudioOn] = useState(false);
 
   return (
-    <div className='flex aspect-square h-full w-full flex-col items-center rounded-3xl border border-slate-200 bg-slate-900'>
+    <div className='flex w-full flex-col items-center rounded-3xl border border-slate-200 bg-slate-900'>
       <div className='h-full w-full rounded-t-3xl bg-slate-900'></div>
       <div className='flex w-full flex-row items-center justify-between gap-3 rounded-b-3xl bg-slate-600/50 px-4 py-3'>
         <p className='text-sm text-white'>HyunJinNo</p>
