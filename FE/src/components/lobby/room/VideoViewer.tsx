@@ -8,7 +8,7 @@ const VideoViewer = () => {
 
   return (
     <div
-      className={`${isOpen ? 'right-[21.5rem]' : 'right-24'} absolute bottom-6 left-6 top-6 grid max-h-screen grid-cols-4 gap-6 transition-all duration-500`}
+      className={`${isOpen ? 'right-[21.5rem]' : 'right-6'} absolute bottom-[6.5rem] left-6 top-6 grid max-h-screen grid-cols-4 gap-6 transition-all duration-500 ease-out`}
     >
       <VideoItem />
       <VideoItem />

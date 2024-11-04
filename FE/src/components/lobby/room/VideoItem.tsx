@@ -15,28 +15,26 @@ const VideoItem = () => {
       <div className='flex w-full flex-row items-center justify-between gap-3 rounded-b-3xl bg-slate-600/50 px-4 py-3'>
         <p className='text-sm text-white'>HyunJinNo</p>
         <div className='flex flex-row items-center gap-3'>
-          {isCameraOn ? (
-            <VideoCameraIcon
-              className='cursor-pointer fill-slate-200 hover:fill-white'
-              onClick={() => setIsCameraOn(false)}
-            />
-          ) : (
-            <VideoCameraSlashIcon
-              className='cursor-pointer fill-slate-200 hover:fill-white'
-              onClick={() => setIsCameraOn(true)}
-            />
-          )}
           {isAudioOn ? (
             <FaMicrophone
               className='cursor-pointer text-slate-200 hover:text-white'
-              size='1.25rem'
               onClick={() => setIsAudioOn(false)}
             />
           ) : (
             <FaMicrophoneSlash
               className='scale-125 cursor-pointer text-slate-200 hover:text-white'
-              size='1.25rem'
               onClick={() => setIsAudioOn(true)}
+            />
+          )}
+          {isCameraOn ? (
+            <VideoCameraIcon
+              className='scale-90 cursor-pointer fill-slate-200 hover:fill-white'
+              onClick={() => setIsCameraOn(false)}
+            />
+          ) : (
+            <VideoCameraSlashIcon
+              className='scale-90 cursor-pointer fill-slate-200 hover:fill-white'
+              onClick={() => setIsCameraOn(true)}
             />
           )}
         </div>

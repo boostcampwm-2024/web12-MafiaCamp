@@ -6,8 +6,7 @@ import CloseIcon from '@/components/common/icons/CloseIcon';
 import UsersIcon from '@/components/common/icons/UsersIcon';
 import { useSidebarStore } from '@/stores/sidebarStore';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect } from 'react';
-import ChatBubbleIcon from '@/components/common/icons/ChatBubbleIcon';
+import { useEffect, useState } from 'react';
 
 // TODO
 const chatList = [
@@ -34,7 +33,10 @@ const chatList = [
 ];
 
 const ChattingList = () => {
-  const { isOpen, initialize, open, close } = useSidebarStore();
+  const { isOpen, initialize, close } = useSidebarStore();
+
+  // TODO: 추후 수정 필요
+  const [isMafiaOnly, setIsMafiaOnly] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -44,9 +46,8 @@ const ChattingList = () => {
 
   return (
     <AnimatePresence>
-      {isOpen ? (
+      {isOpen && (
         <motion.div
-          key='sidebar'
           className='absolute right-0 top-0 flex h-screen w-80 flex-col justify-between bg-slate-600/50'
           initial={{ translateX: '100%' }}
           animate={{ translateX: '0%' }}
@@ -94,10 +95,16 @@ const ChattingList = () => {
             <div className='flex w-full flex-row items-center justify-between'>
               <div className='flex flex-row items-center gap-2'>
                 <p className='text-slate-800'>수신자</p>
-                <button className='h-9 w-[3.75rem] rounded-2xl bg-slate-600 text-sm text-white hover:scale-105'>
+                <button
+                  className={`${isMafiaOnly && 'bg-transparent/10'} h-9 w-[3.75rem] rounded-2xl bg-slate-600 text-sm text-white hover:scale-105`}
+                  onClick={() => setIsMafiaOnly(false)}
+                >
                   전체
                 </button>
-                <button className='h-9 w-20 rounded-2xl bg-slate-600 text-sm text-white hover:scale-105'>
+                <button
+                  className={`${!isMafiaOnly && 'bg-transparent/10'} h-9 w-20 rounded-2xl bg-slate-600 text-sm text-white hover:scale-105`}
+                  onClick={() => setIsMafiaOnly(true)}
+                >
                   마피아
                 </button>
               </div>
@@ -107,18 +114,6 @@ const ChattingList = () => {
             </div>
           </div>
         </motion.div>
-      ) : (
-        <motion.button
-          key='button'
-          className='fixed bottom-6 right-6 flex h-12 w-12 items-center justify-center rounded-full border border-slate-400 bg-slate-600 hover:scale-105'
-          onClick={() => open()}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <ChatBubbleIcon />
-        </motion.button>
       )}
     </AnimatePresence>
   );
