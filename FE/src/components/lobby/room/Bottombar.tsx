@@ -2,6 +2,7 @@
 
 import ChatBubbleIcon from '@/components/common/icons/ChatBubbleIcon';
 import CloseIcon from '@/components/common/icons/CloseIcon';
+import PlayIcon from '@/components/common/icons/PlayIcon';
 import VideoCameraIcon from '@/components/common/icons/VideoCameraIcon';
 import VideoCameraSlashIcon from '@/components/common/icons/VideoCameraSlashIcon';
 import { useSidebarStore } from '@/stores/sidebarStore';
@@ -21,6 +22,10 @@ const Bottombar = () => {
       <div className='flex flex-row items-center gap-6'>
         <h1 className='text-lg text-white'>남은 시간 / 01:15</h1>
         <div className='flex flex-row items-center gap-4'>
+          <button className='flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105'>
+            <PlayIcon className='fill-slate-200' />
+            <p>게임 시작</p>
+          </button>
           <button
             className='flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105'
             onClick={() => setIsAudioOn(!isAudioOn)}
