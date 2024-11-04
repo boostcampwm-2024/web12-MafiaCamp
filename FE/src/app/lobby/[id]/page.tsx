@@ -1,4 +1,5 @@
 import ChattingList from '@/components/lobby/room/ChattingList';
+import VideoViewer from '@/components/lobby/room/VideoViewer';
 import Link from 'next/link';
 
 export async function generateMetadata({
@@ -22,14 +23,17 @@ export default async function Page({
   const id = (await params).id;
 
   return (
-    <div className='flex flex-row items-center justify-between'>
-      <h1 className='fixed left-4 top-4 text-5xl text-white'>{id}</h1>
-      <Link
-        className='fixed left-4 top-20 flex h-10 w-20 items-center justify-center rounded-full bg-white text-slate-800 hover:scale-105'
-        href='/lobby'
-      >
-        나가기
-      </Link>
+    <div>
+      <div className='fixed left-6 top-6 z-10 bg-blue-100'>
+        <h1 className='text-5xl text-white'>{id}</h1>
+        <Link
+          className='flex h-10 w-20 items-center justify-center rounded-full bg-white text-slate-800 hover:scale-105'
+          href='/lobby'
+        >
+          나가기
+        </Link>
+      </div>
+      <VideoViewer />
       <ChattingList />
     </div>
   );
