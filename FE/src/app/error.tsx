@@ -12,10 +12,10 @@ export default function Error() {
     <div className='flex w-full flex-col items-center pt-9'>
       <Lottie animationData={LottieFile} />
       <div className='flex flex-col items-center'>
-        <h2 className='text-3xl font-bold text-white'>
+        <h2 className='text-3xl font-bold text-white max-[480px]:text-2xl'>
           앗... 오류가 발생하였습니다.
         </h2>
-        <div className='flex flex-col items-center pt-4 text-slate-100'>
+        <div className='flex flex-col items-center pt-4 text-slate-100 max-[480px]:text-sm'>
           <p>시스템에 오류가 발생하였습니다.</p>
           <p>잠시 후에 다시 시도해 주세요. </p>
         </div>
