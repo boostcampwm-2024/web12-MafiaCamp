@@ -12,6 +12,16 @@ export async function generateMetadata({
   return {
     title: `게임 - ${id}`,
     description: 'MafiaCamp의 게임방',
+    keywords: [
+      'MafiaCamp',
+      '마피아 캠프',
+      '마피아캠프',
+      '마피아',
+      '실시간',
+      '화상 채팅',
+      '화상',
+      '게임',
+    ],
   };
 }
 
