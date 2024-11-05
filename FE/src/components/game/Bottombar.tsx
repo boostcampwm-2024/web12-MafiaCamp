@@ -5,6 +5,7 @@ import CloseIcon from '@/components/common/icons/CloseIcon';
 import PlayIcon from '@/components/common/icons/PlayIcon';
 import VideoCameraIcon from '@/components/common/icons/VideoCameraIcon';
 import VideoCameraSlashIcon from '@/components/common/icons/VideoCameraSlashIcon';
+import useDragScroll from '@/hooks/useDragScroll';
 import { useSidebarStore } from '@/stores/sidebarStore';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -14,10 +15,27 @@ const Bottombar = () => {
   const { isOpen, open, close } = useSidebarStore();
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [isAudioOn, setIsAudioOn] = useState(false);
+  const {
+    listRef,
+    onDragStart,
+    onDragMove,
+    onDragEnd,
+    onTouchStart,
+    onTouchMove,
+    onTouchEnd,
+  } = useDragScroll();
 
   return (
     <div
-      className={`${isOpen ? 'right-80' : 'right-0'} absolute bottom-0 left-0 flex h-16 flex-row items-center justify-between gap-4 bg-slate-600/50 px-6 text-sm text-slate-200 transition-all duration-500 ease-out`}
+      className={`${isOpen ? 'right-80' : 'right-0'} absolute bottom-0 left-0 flex h-16 flex-row items-center justify-between gap-4 overflow-x-auto text-nowrap bg-slate-600/50 px-6 text-sm text-slate-200 transition-all duration-500 ease-out`}
+      ref={listRef}
+      onMouseDown={onDragStart}
+      onMouseMove={onDragMove}
+      onMouseUp={onDragEnd}
+      onMouseLeave={onDragEnd}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
     >
       <div className='flex flex-row items-center gap-6'>
         <h1 className='text-lg text-white'>남은 시간 / 01:15</h1>

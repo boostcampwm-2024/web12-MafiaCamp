@@ -27,7 +27,7 @@ export async function generateMetadata({
 
 export default function Page() {
   return (
-    <div>
+    <div className='absolute left-0 top-0 h-screen w-screen overflow-x-hidden'>
       <VideoViewer />
       <Bottombar />
       <ChattingList />
