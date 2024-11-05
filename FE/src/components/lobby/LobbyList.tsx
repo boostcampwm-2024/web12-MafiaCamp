@@ -13,7 +13,7 @@ const LobbyList = () => {
           QUICK START
         </Link>
       </div>
-      <div className='grid grid-cols-3 gap-3'>
+      <div className='grid grid-cols-3 gap-3 max-[1080px]:grid-cols-2 max-[768px]:grid-cols-1'>
         <LobbyItem />
         <LobbyItem />
         <LobbyItem />
