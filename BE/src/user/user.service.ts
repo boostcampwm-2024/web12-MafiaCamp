@@ -19,7 +19,7 @@ export class UserService implements FindUserUsecase, RegisterUserUsecase {
   }
 
   async register(registerUserRequest: RegisterUserRequest): Promise<UserEntity> {
-    const userEntity = UserEntity.make(registerUserRequest.email, registerUserRequest.nickname, registerUserRequest.oAuthId);
+    const userEntity = UserEntity.create(registerUserRequest.email, registerUserRequest.nickname, registerUserRequest.oAuthId);
     await this.userRepository.save(userEntity);
     return userEntity;
   }

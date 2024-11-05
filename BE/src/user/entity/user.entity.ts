@@ -1,4 +1,5 @@
-import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { GameUserEntity } from '../../game-user/enitity/game.user.entity';
 
 @Entity('user')
 export class UserEntity {
@@ -48,6 +49,12 @@ export class UserEntity {
   @Index('idx_created_at')
   createdAt: Date;
 
+  @OneToMany(
+    () => GameUserEntity,
+    gameUser => gameUser.user,
+  )
+  gameUsers: Array<GameUserEntity>;
+
 
   private constructor(email: string, nickname: string, oAuthId: string, score: number, createdAt: Date) {
     this.email = email;
@@ -57,7 +64,7 @@ export class UserEntity {
     this.createdAt = createdAt;
   }
 
-  static make(email: string, nickname: string, oAuthId: string): UserEntity {
+  static create(email: string, nickname: string, oAuthId: string): UserEntity {
     return new UserEntity(email, nickname, oAuthId, 0, new Date());
   }
 }
