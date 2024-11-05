@@ -1,10 +1,10 @@
 export interface Room {
-	id: string;
-	title: string;
-	capacity: number;
-	participants: string[]; // 참가자들의 Socket id
+	roomId: string; // 방장의 Socket id
+	title: string; // 방 제목
+	capacity: number; // 방 정원
+	participants: number; // 방 참가자 수
 	status: RoomStatus;
-	createdAt;
+	createdAt: number; // timestamp
 }
 
 export enum RoomStatus {
