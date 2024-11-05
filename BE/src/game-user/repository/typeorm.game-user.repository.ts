@@ -2,9 +2,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { GameUserRepository } from './game-user.repository';
 import { GameUserEntity } from '../enitity/game.user.entity';
-import { NotFoundGameUserError } from '../../common/error/not.found.game-user.error';
-import { errorMessage } from '../../common/error/error.message';
-import { errorCode } from '../../common/error/error.code';
+import { NotFoundGameUserException } from '../../common/error/not.found.game-user.exception';
 
 export class TypeormGameUserRepository implements GameUserRepository<GameUserEntity, number, number> {
 
@@ -24,7 +22,7 @@ export class TypeormGameUserRepository implements GameUserRepository<GameUserEnt
     if (gameUserEntity) {
       return gameUserEntity;
     }
-    throw new NotFoundGameUserError(errorMessage.NOT_FOUND_GAME_USER_ERROR, errorCode.NOT_FOUND_GAME_USER_ERROR);
+    throw new NotFoundGameUserException();
   }
 
   async findByUserId(userId: number): Promise<GameUserEntity> {
@@ -34,6 +32,6 @@ export class TypeormGameUserRepository implements GameUserRepository<GameUserEnt
     if (gameUserEntity) {
       return gameUserEntity;
     }
-    throw new NotFoundGameUserError(errorMessage.NOT_FOUND_GAME_USER_ERROR, errorCode.NOT_FOUND_GAME_USER_ERROR);
+    throw new NotFoundGameUserException();
   }
 }
