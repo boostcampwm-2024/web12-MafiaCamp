@@ -27,18 +27,20 @@ const Bottombar = () => {
 
   return (
     <div
-      className={`${isOpen ? 'right-80' : 'right-0'} absolute bottom-0 left-0 flex h-16 flex-row items-center justify-between gap-4 overflow-x-auto text-nowrap bg-slate-600/50 px-6 text-sm text-slate-200 transition-all duration-500 ease-out`}
-      ref={listRef}
-      onMouseDown={onDragStart}
-      onMouseMove={onDragMove}
-      onMouseUp={onDragEnd}
-      onMouseLeave={onDragEnd}
-      onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}
+      className={`${isOpen ? 'right-80' : 'right-0'} absolute bottom-0 left-0 flex h-16 flex-row items-center gap-4 text-nowrap bg-slate-600/50 pl-6 text-sm text-slate-200 transition-all duration-500 ease-out`}
     >
-      <div className='flex flex-row items-center gap-6'>
-        <h1 className='text-lg text-white'>남은 시간 / 01:15</h1>
+      <h1 className='text-lg text-white'>남은 시간 / 01:15</h1>
+      <div
+        className='flex w-full flex-row items-center justify-between gap-4 overflow-x-auto p-1 pr-6'
+        ref={listRef}
+        onMouseDown={onDragStart}
+        onMouseMove={onDragMove}
+        onMouseUp={onDragEnd}
+        onMouseLeave={onDragEnd}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
         <div className='flex flex-row items-center gap-4'>
           <button className='flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105'>
             <PlayIcon className='fill-slate-200' />
@@ -74,14 +76,14 @@ const Bottombar = () => {
             <p>댓글</p>
           </button>
         </div>
+        <Link
+          className='flex h-10 flex-row items-center gap-1 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105'
+          href='/lobby'
+        >
+          <CloseIcon className='fill-slate-200' />
+          <p>나가기</p>
+        </Link>
       </div>
-      <Link
-        className='flex h-10 flex-row items-center gap-1 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105'
-        href='/lobby'
-      >
-        <CloseIcon className='fill-slate-200' />
-        <p>나가기</p>
-      </Link>
     </div>
   );
 };
