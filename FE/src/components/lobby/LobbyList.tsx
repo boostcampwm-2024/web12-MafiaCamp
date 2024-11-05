@@ -3,8 +3,49 @@
 import LottieFile from '@/../public/lottie/no_data.json';
 import Link from 'next/link';
 import Lottie from 'lottie-react';
+import { io } from 'socket.io-client';
+import { useEffect, useState } from 'react';
+import LobbyItem from './LobbyItem';
+
+const socket = io('http://localhost:3001/ws');
 
 const LobbyList = () => {
+  const [roomList, setRoomList] = useState<
+    {
+      roomId: string;
+      title: string;
+      capacity: number;
+      participants: number;
+      status: 'READY' | 'RUNNING' | 'DONE';
+      createdAt: number;
+    }[]
+  >([]);
+
+  useEffect(() => {
+    socket.emit('set-nickname', { nickname: 'HyunJinNo' }); // 닉네임 설정
+
+    socket.on(
+      'room-list',
+      (rooms: {
+        data: {
+          roomId: string;
+          title: string; // 방 제목
+          capacity: number; // 방 정원
+          participants: number; // 방 참가자 수
+          status: 'READY' | 'RUNNING' | 'DONE'; // 'READY', 'RUNNING', 'DONE'
+          createdAt: number; // timestamp
+        }[];
+      }) => {
+        setRoomList(rooms.data);
+      },
+    );
+
+    return () => {
+      socket.off('set-nickname');
+      socket.off('room-list');
+    };
+  }, []);
+
   return (
     <div className='flex w-full flex-col gap-8 pb-20 pt-24'>
       <div className='flex flex-row items-center justify-between border-b border-b-white pb-4'>
@@ -16,18 +57,18 @@ const LobbyList = () => {
           QUICK START
         </Link>
       </div>
-      <div className='flex flex-col items-center pt-10'>
-        <Lottie animationData={LottieFile} className='w-80' />
-        <p className='text-4xl text-white'>방을 생성해 보세요!</p>
-      </div>
-      {/* <div className='grid grid-cols-3 gap-3 max-[1080px]:grid-cols-2 max-[768px]:grid-cols-1'>
-        <LobbyItem />
-        <LobbyItem />
-        <LobbyItem />
-        <LobbyItem />
-        <LobbyItem />
-        <LobbyItem />
-      </div> */}
+      {roomList.length === 0 ? (
+        <div className='flex flex-col items-center pt-10'>
+          <Lottie animationData={LottieFile} className='w-80' />
+          <p className='text-4xl text-white'>방을 생성해 보세요!</p>
+        </div>
+      ) : (
+        <div className='grid grid-cols-3 gap-3 max-[1080px]:grid-cols-2 max-[768px]:grid-cols-1'>
+          {roomList.map((room) => (
+            <LobbyItem key={room.roomId} />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
