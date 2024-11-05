@@ -4,14 +4,14 @@ import { Inject, Injectable } from '@nestjs/common';
 import { FindUserRequest } from './dto/find-user.request';
 import { UserEntity } from './entity/user.entity';
 import { RegisterUserRequest } from './dto/register-user.request';
-import { UserRepository } from './repository/user.repository';
+import { USER_REPOSITORY, UserRepository } from './repository/user.repository';
 import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
 export class UserService implements FindUserUsecase, RegisterUserUsecase {
 
   constructor(
-    @Inject('USER_REPOSITORY')
+    @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository<UserEntity, number>) {
   }
 

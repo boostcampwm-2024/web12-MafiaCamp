@@ -5,11 +5,12 @@ import { Inject } from '@nestjs/common';
 import { NotFoundUserError } from '../../common/error/not.found.user.error';
 import { errorMessage } from '../../common/error/error.message';
 import { errorCode } from '../../common/error/error.code';
+import { InjectRepository } from '@nestjs/typeorm';
 
 export class TypeormUserRepository implements UserRepository<UserEntity, number> {
 
   constructor(
-    @Inject('USER_REPOSITORY')
+    @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>) {
   }
 
