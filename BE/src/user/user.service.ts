@@ -5,6 +5,7 @@ import { FindUserRequest } from './dto/find-user.request';
 import { UserEntity } from './entity/user.entity';
 import { RegisterUserRequest } from './dto/register-user.request';
 import { UserRepository } from './repository/user.repository';
+import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
 export class UserService implements FindUserUsecase, RegisterUserUsecase {
@@ -18,6 +19,7 @@ export class UserService implements FindUserUsecase, RegisterUserUsecase {
     return await this.userRepository.findById(findUserRequest.userId);
   }
 
+  @Transactional()
   async register(registerUserRequest: RegisterUserRequest): Promise<UserEntity> {
     const userEntity = UserEntity.create(registerUserRequest.email, registerUserRequest.nickname, registerUserRequest.oAuthId);
     await this.userRepository.save(userEntity);

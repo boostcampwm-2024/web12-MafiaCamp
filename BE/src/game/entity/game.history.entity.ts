@@ -1,6 +1,7 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { GameHistoryResult } from './game.history.result';
-import { GameStatus } from './game.status';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { GAME_STATUS} from './game.status';
+import { GAME_HISTORY_RESULT } from './game.history.result';
+import { GameUserEntity } from '../../game-user/enitity/game.user.entity';
 
 @Entity('game_history')
 export class GameHistoryEntity {
@@ -28,28 +29,33 @@ export class GameHistoryEntity {
   @Column({
     type: 'enum',
     name: 'game_history_result',
-    enum: GameHistoryResult,
+    enum: GAME_HISTORY_RESULT,
     nullable: true,
   })
-  gameHistoryResult: GameHistoryResult;
+  gameHistoryResult: GAME_HISTORY_RESULT;
 
   @Column({
     type: 'enum',
     name: 'game_status',
-    enum: GameStatus,
+    enum: GAME_STATUS,
     nullable: false,
   })
-  gameStatus: GameStatus;
+  gameStatus: GAME_STATUS;
 
+  @OneToMany(
+    () => GameUserEntity,
+    gameUser => gameUser.gameHistory,
+  )
+  gameUsers: Array<GameUserEntity>;
 
   constructor() {
     this.startTime = new Date();
-    this.gameStatus = GameStatus.PROGRESS;
+    this.gameStatus = GAME_STATUS.PROGRESS;
   }
 
   changeStatusToEnd() {
-    if (this.gameStatus == GameStatus.PROGRESS) {
-      this.gameStatus = GameStatus.END;
+    if (this.gameStatus == GAME_STATUS.PROGRESS) {
+      this.gameStatus = GAME_STATUS.END;
     }
   }
 }

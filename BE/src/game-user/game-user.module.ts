@@ -7,10 +7,9 @@ import { REGISTER_GAME_USER_USECASE } from './usecase/register.game-user.usecase
 import { GameUserService } from './game-user.service';
 import { FIND_GAME_USER_USECASE } from './usecase/find.game-user.usecase';
 import { UserModule } from '../user/user.module';
-import { GameModule } from '../game/game.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([GameUserEntity]),UserModule,GameModule],
+  imports: [TypeOrmModule.forFeature([GameUserEntity]),UserModule],
   providers: [
     {
       provide: GAME_USER_REPOSITORY,

@@ -6,6 +6,7 @@ import { FindUserUsecase } from '../user/usecase/find.user.usecase';
 import { GameUserRepository } from './repository/game-user.repository';
 import { GameUserEntity } from './enitity/game.user.entity';
 import { FindUserRequest } from '../user/dto/find-user.request';
+import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
 export class GameUserService implements FindGameUserUsecase, RegisterGameUserUsecase {
@@ -17,7 +18,7 @@ export class GameUserService implements FindGameUserUsecase, RegisterGameUserUse
     private readonly gameUserRepository: GameUserRepository<GameUserEntity, number, number>) {
   }
 
-
+  @Transactional()
   async register(userId: number, gameHistory: GameHistoryEntity): Promise<void> {
     const userEntity = await this.findUserUseCase.findById(new FindUserRequest(userId));
     const gameUserEntity = GameUserEntity.create(gameHistory, userEntity);
