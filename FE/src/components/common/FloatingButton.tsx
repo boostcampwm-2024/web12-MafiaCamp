@@ -6,7 +6,7 @@ import ChevronUpIcon from './icons/ChevronUpIcon';
 const FloatingButton = () => {
   const pathname = usePathname();
 
-  if (pathname.includes('/lobby/')) {
+  if (pathname.startsWith('/game')) {
     return null;
   }
 

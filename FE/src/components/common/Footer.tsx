@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation';
 const Footer = () => {
   const pathname = usePathname();
 
-  if (pathname.includes('/lobby/')) {
+  if (pathname.startsWith('/game')) {
     return null;
   }
 

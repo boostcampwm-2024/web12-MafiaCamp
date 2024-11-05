@@ -28,7 +28,7 @@ const Header = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (pathname.includes('/lobby/')) {
+  if (pathname.startsWith('/game')) {
     return null;
   }
 

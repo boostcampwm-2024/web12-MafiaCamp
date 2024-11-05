@@ -8,7 +8,7 @@ const LobbyList = () => {
         <h2 className='text-5xl text-white'>로비</h2>
         <Link
           className='flex h-12 w-36 items-center justify-center rounded-2xl bg-white text-sm font-bold text-slate-800 hover:scale-105'
-          href='/lobby/1'
+          href='/game/1'
         >
           QUICK START
         </Link>

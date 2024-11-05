@@ -1,6 +1,6 @@
-import Bottombar from '@/components/lobby/room/Bottombar';
-import ChattingList from '@/components/lobby/room/ChattingList';
-import VideoViewer from '@/components/lobby/room/VideoViewer';
+import Bottombar from '@/components/game/Bottombar';
+import ChattingList from '@/components/game/ChattingList';
+import VideoViewer from '@/components/game/VideoViewer';
 
 export async function generateMetadata({
   params,
