@@ -7,6 +7,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { MdOutlineMenu } from 'react-icons/md';
 
 const Header = () => {
   const pathname = usePathname();
@@ -37,7 +38,7 @@ const Header = () => {
       className={`${pathname === '/' && !isScrolled ? 'bg-slate-600/50' : 'bg-transparent'} ${pathname === '/' ? 'h-[37.5rem]' : 'h-20'} flex w-[80rem] flex-col rounded-b-[11.25rem] px-24 transition-all duration-500 max-[1280px]:w-full`}
     >
       <motion.div
-        className={`${pathname === '/' && !isScrolled ? 'bg-transparent' : 'bg-slate-600/50'} fixed top-0 z-10 flex h-20 w-[80rem] flex-row items-center justify-between self-center rounded-b-3xl px-24 max-[1280px]:w-full`}
+        className={`${pathname === '/' && !isScrolled ? 'bg-transparent' : 'bg-slate-600/50'} fixed top-0 z-10 flex h-20 w-[80rem] flex-row items-center justify-between self-center rounded-b-3xl px-24 max-[1280px]:w-full max-[1280px]:px-12 max-[768px]:px-6`}
         initial={{ translateY: '-0.5rem', opacity: 0 }}
         whileInView={{ translateY: '0rem', opacity: 1 }}
         transition={{ delay: 0.5, duration: 0.5 }}
@@ -51,7 +52,7 @@ const Header = () => {
             height={36}
           />
         </Link>
-        <nav>
+        <nav className='max-[768px]:hidden'>
           <ul className='flex flex-row items-center gap-10 text-slate-200'>
             <li>
               <Link
@@ -79,6 +80,10 @@ const Header = () => {
             </li>
           </ul>
         </nav>
+        <MdOutlineMenu
+          className='hidden text-white max-[768px]:block'
+          size='2rem'
+        />
       </motion.div>
       {pathname === '/' && !isScrolled && (
         <div className='mt-20 flex flex-row items-center gap-10'>

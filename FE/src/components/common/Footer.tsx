@@ -12,7 +12,7 @@ const Footer = () => {
   }
 
   return (
-    <footer className='mt-20 flex w-full justify-center bg-slate-600/50 px-6'>
+    <footer className='mt-20 flex w-full justify-center bg-slate-600/50 px-12 max-[768px]:px-6'>
       <div className='flex h-full w-[67.5rem] flex-col gap-5 pb-12 pt-7'>
         <Image
           src='/common/mafiacamp-logo-small.png'
