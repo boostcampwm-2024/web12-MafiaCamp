@@ -15,10 +15,10 @@ export class RandomJobFactory implements JobFactory {
    */
   allocateGameRoles(playerIds: Array<number>): Record<number, MAFIA_ROLE> {
     const userCount = playerIds.length;
-    return this.allocate(userCount);
+    return this.allocate(userCount,playerIds);
   }
 
-  private allocate(userCount: number): Record<number, MAFIA_ROLE> {
+  private allocate(userCount: number,playerIds:Array<number>): Record<number, MAFIA_ROLE> {
     let possibleRoles: Array<MAFIA_ROLE>;
     switch (userCount) {
       case 6:
@@ -35,7 +35,7 @@ export class RandomJobFactory implements JobFactory {
     }
     const userRoles: Record<number, MAFIA_ROLE> = {};
     this.shuffle(possibleRoles).forEach((role, idx) => {
-      userRoles[idx] = role;
+      userRoles[playerIds[idx]] = role;
     });
     return userRoles;
   }

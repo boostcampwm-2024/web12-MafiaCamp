@@ -25,6 +25,7 @@ export class GameService implements AllocateUserRoleUsecase {
   @Transactional()
   async allocate(jobRequest: AllocateJobRequest): Promise<AllocateJobResponse> {
     const playerIds = jobRequest.playerIds;
+    console.log("JOBRequest.length: ",playerIds);
     const gameHistoryEntity = new GameHistoryEntity();
     await this.gameHistoryRepository.save(gameHistoryEntity);
     const userRoles = this.jobFactory.allocateGameRoles(playerIds);
