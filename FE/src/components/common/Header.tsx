@@ -34,10 +34,10 @@ const Header = () => {
 
   return (
     <header
-      className={`${pathname === '/' && !isScrolled ? 'bg-slate-600/50' : 'bg-transparent'} ${pathname === '/' ? 'h-[37.5rem]' : 'h-20'} flex w-[80rem] flex-col rounded-b-[11.25rem] px-24 transition-all duration-500`}
+      className={`${pathname === '/' && !isScrolled ? 'bg-slate-600/50' : 'bg-transparent'} ${pathname === '/' ? 'h-[37.5rem]' : 'h-20'} flex w-[80rem] flex-col rounded-b-[11.25rem] px-24 transition-all duration-500 max-[1280px]:w-full`}
     >
       <motion.div
-        className={`${pathname === '/' && !isScrolled ? 'bg-transparent' : 'bg-slate-600/50'} fixed top-0 z-10 flex h-20 w-[80rem] flex-row items-center justify-between self-center rounded-b-3xl px-24`}
+        className={`${pathname === '/' && !isScrolled ? 'bg-transparent' : 'bg-slate-600/50'} fixed top-0 z-10 flex h-20 w-[80rem] flex-row items-center justify-between self-center rounded-b-3xl px-24 max-[1280px]:w-full`}
         initial={{ translateY: '-0.5rem', opacity: 0 }}
         whileInView={{ translateY: '0rem', opacity: 1 }}
         transition={{ delay: 0.5, duration: 0.5 }}
