@@ -5,20 +5,20 @@ const RoleInfo = () => {
   return (
     <div className='flex w-full flex-col items-center gap-[3.75rem]'>
       <motion.h2
-        className='h-13 bg-gradient-to-r from-slate-400 to-white bg-clip-text pb-1 text-5xl font-bold text-transparent'
-        initial={{ translateX: '3rem', opacity: 0 }}
+        className='h-13 bg-gradient-to-r from-slate-400 to-white bg-clip-text pb-1 text-5xl font-bold text-transparent max-[768px]:text-4xl max-[540px]:text-3xl max-[440px]:text-2xl'
+        initial={{ translateX: '-3rem', opacity: 0 }}
         whileInView={{ translateX: '0rem', opacity: 1 }}
         transition={{ duration: 0.5 }}
         viewport={{ once: true, amount: 0.9 }}
       >
         직업 정보
       </motion.h2>
-      <div className='flex flex-row items-center gap-4'>
+      <div className='flex flex-row items-center gap-4 max-[1350px]:grid max-[1350px]:grid-cols-2 max-[560px]:grid-cols-1'>
         <motion.div
-          className='flex h-[25rem] w-80 flex-col items-center rounded-3xl bg-slate-600/50 p-8'
-          initial={{ translateX: '10rem', opacity: 0 }}
-          whileInView={{ translateX: '0rem', opacity: 1 }}
-          transition={{ delay: 0.6, duration: 0.5 }}
+          className='flex h-[25rem] w-80 flex-col items-center rounded-3xl bg-slate-600/50 p-8 max-[768px]:w-full'
+          initial={{ rotateY: '-90deg', opacity: 0 }}
+          whileInView={{ rotateY: '0deg', opacity: 1 }}
+          transition={{ duration: 0.5 }}
           viewport={{ once: true, amount: 0.9 }}
         >
           <Image
@@ -31,7 +31,7 @@ const RoleInfo = () => {
             className='flex flex-col items-center gap-12 pt-4'
             initial={{ translateY: '1rem', opacity: 0 }}
             whileInView={{ translateY: '0rem', opacity: 1 }}
-            transition={{ delay: 1.1, duration: 0.5 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
             viewport={{ once: true, amount: 0.9 }}
           >
             <h3 className='text-3xl font-semibold text-white'>시민</h3>
@@ -42,10 +42,10 @@ const RoleInfo = () => {
           </motion.div>
         </motion.div>
         <motion.div
-          className='flex h-[25rem] w-80 flex-col items-center rounded-3xl bg-slate-600/50 p-8'
-          initial={{ translate: '10rem', opacity: 0 }}
-          whileInView={{ translate: '0rem', opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
+          className='flex h-[25rem] w-80 flex-col items-center rounded-3xl bg-slate-600/50 p-8 max-[768px]:w-full'
+          initial={{ rotateY: '-90deg', opacity: 0 }}
+          whileInView={{ rotateY: '0deg', opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
           viewport={{ once: true, amount: 0.9 }}
         >
           <Image src='/home/police.png' alt='police' width={120} height={120} />
@@ -53,7 +53,7 @@ const RoleInfo = () => {
             className='flex flex-col items-center gap-12 pt-4'
             initial={{ translateY: '1rem', opacity: 0 }}
             whileInView={{ translateY: '0rem', opacity: 1 }}
-            transition={{ delay: 0.9, duration: 0.5 }}
+            transition={{ delay: 0.7, duration: 0.5 }}
             viewport={{ once: true, amount: 0.9 }}
           >
             <h3 className='text-3xl font-semibold text-white'>경찰</h3>
@@ -64,10 +64,10 @@ const RoleInfo = () => {
           </motion.div>
         </motion.div>
         <motion.div
-          className='flex h-[25rem] w-80 flex-col items-center rounded-3xl bg-slate-600/50 p-8'
-          initial={{ translateX: '10rem', opacity: 0 }}
-          whileInView={{ translateX: '0rem', opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
+          className='flex h-[25rem] w-80 flex-col items-center rounded-3xl bg-slate-600/50 p-8 max-[768px]:w-full'
+          initial={{ rotateY: '-90deg', opacity: 0 }}
+          whileInView={{ rotateY: '0deg', opacity: 1 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
           viewport={{ once: true, amount: 0.9 }}
         >
           <Image src='/home/doctor.png' alt='doctor' width={120} height={120} />
@@ -75,7 +75,7 @@ const RoleInfo = () => {
             className='flex flex-col items-center gap-12 pt-4 text-white'
             initial={{ translateY: '1rem', opacity: 0 }}
             whileInView={{ translateY: '0rem', opacity: 1 }}
-            transition={{ delay: 0.7, duration: 0.5 }}
+            transition={{ delay: 0.9, duration: 0.5 }}
             viewport={{ once: true, amount: 0.9 }}
           >
             <h3 className='text-3xl font-semibold'>의사</h3>
@@ -86,10 +86,10 @@ const RoleInfo = () => {
           </motion.div>
         </motion.div>
         <motion.div
-          className='flex h-[25rem] w-80 flex-col items-center rounded-3xl bg-slate-600/50 p-8 text-white'
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
+          className='flex h-[25rem] w-80 flex-col items-center rounded-3xl bg-slate-600/50 p-8 text-white max-[768px]:w-full'
+          initial={{ rotateY: '-90deg', opacity: 0 }}
+          whileInView={{ rotateY: '0deg', opacity: 1 }}
+          transition={{ delay: 0.6, duration: 0.5 }}
           viewport={{ once: true, amount: 0.9 }}
         >
           <Image src='/home/mafia.png' alt='mafia' width={120} height={120} />
@@ -97,7 +97,7 @@ const RoleInfo = () => {
             className='flex flex-col items-center gap-12 pt-4'
             initial={{ translateY: '1rem', opacity: 0 }}
             whileInView={{ translateY: '0rem', opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.5 }}
+            transition={{ delay: 1.1, duration: 0.5 }}
             viewport={{ once: true, amount: 0.9 }}
           >
             <h3 className='text-3xl font-semibold'>마피아</h3>

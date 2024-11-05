@@ -37,7 +37,7 @@ const Header = () => {
 
   return (
     <header
-      className={`${pathname === '/' && !isScrolled ? 'bg-slate-600/50' : 'bg-transparent'} ${pathname === '/' ? 'h-[37.5rem] max-[1080px]:h-full' : 'h-20'} flex w-[80rem] flex-col rounded-b-[11.25rem] px-24 pb-6 transition-all duration-500 max-[1280px]:w-full`}
+      className={`${pathname === '/' && !isScrolled ? 'bg-slate-600/50' : 'bg-transparent'} ${pathname === '/' ? 'h-[37.5rem] max-[1080px]:h-[45rem]' : 'h-20'} flex w-[80rem] flex-col rounded-b-[11.25rem] px-24 pb-6 transition-all duration-500 max-[1280px]:w-full max-[1024px]:px-6`}
     >
       <HeaderSidebar visible={isVisible} close={() => setIsVisible(false)} />
       <motion.div
@@ -90,18 +90,18 @@ const Header = () => {
         />
       </motion.div>
       {pathname === '/' && !isScrolled && (
-        <div className='mt-20 flex flex-row items-center justify-between max-[1080px]:flex-col max-[1080px]:gap-6'>
-          <div className='flex flex-col gap-24 pt-20 max-[1080px]:flex-row max-[1080px]:gap-6 max-[786px]:flex-col'>
+        <div className='mt-20 flex flex-row items-center justify-between max-[1080px]:flex-col max-[1080px]:gap-6 max-[768px]:h-[40rem]'>
+          <div className='flex flex-col gap-24 pt-20 max-[1080px]:flex-row max-[1080px]:gap-6 max-[786px]:flex-col max-[768px]:items-center'>
             <motion.h1
-              className='text-4xl text-white max-[768px]:text-3xl'
+              className='flex flex-col text-nowrap text-4xl text-white max-[768px]:items-center max-[768px]:text-3xl'
               initial={{ translateY: '0.5rem', opacity: 0 }}
               whileInView={{ translateY: '0rem', opacity: 1 }}
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
             >
-              <p className='text-nowrap'>누구나 즐길 수 있는</p>
-              <p className='text-nowrap'>마피아 게임,</p>
-              <p className='text-nowrap font-sans text-5xl font-bold max-[768px]:text-4xl'>
+              <p>누구나 즐길 수 있는</p>
+              <p>마피아 게임,</p>
+              <p className='font-sans text-5xl font-bold max-[768px]:text-4xl'>
                 MafiaCamp
               </p>
             </motion.h1>

@@ -33,10 +33,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='ko'>
-      <body className={`${notoSansKr.className} flex flex-col items-center`}>
+      <body
+        className={`${notoSansKr.className} flex flex-col items-center overflow-x-hidden`}
+      >
         <Background />
         <Header />
-        <div className='w-[67.5rem] max-[1080px]:w-full'>{children}</div>
+        <div className='w-[67.5rem] px-6 max-[1080px]:w-full'>{children}</div>
         <Footer />
         <FloatingButton />
       </body>
