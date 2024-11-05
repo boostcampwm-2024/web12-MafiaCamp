@@ -1,5 +1,4 @@
-import LobbyBanner from '@/components/lobby/LobbyBanner';
-import LobbyList from '@/components/lobby/LobbyList';
+import LobbyViewer from '@/components/lobby/LobbyViewer';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -19,10 +18,5 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return (
-    <div className='flex flex-col items-center'>
-      <LobbyBanner />
-      <LobbyList />
-    </div>
-  );
+  return <LobbyViewer />;
 }

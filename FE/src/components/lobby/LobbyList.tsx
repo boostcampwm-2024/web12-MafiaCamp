@@ -3,13 +3,15 @@
 import LottieFile from '@/../public/lottie/no_data.json';
 import Link from 'next/link';
 import Lottie from 'lottie-react';
-import { io } from 'socket.io-client';
 import { useEffect, useState } from 'react';
 import LobbyItem from './LobbyItem';
+import { Socket } from 'socket.io-client';
 
-const socket = io('http://localhost:3001/ws');
+interface LobbyListProps {
+  socket: Socket;
+}
 
-const LobbyList = () => {
+const LobbyList = ({ socket }: LobbyListProps) => {
   const [roomList, setRoomList] = useState<
     {
       roomId: string;
@@ -22,8 +24,6 @@ const LobbyList = () => {
   >([]);
 
   useEffect(() => {
-    socket.emit('set-nickname', { nickname: 'HyunJinNo' }); // 닉네임 설정
-
     socket.on(
       'room-list',
       (rooms: {
@@ -41,10 +41,9 @@ const LobbyList = () => {
     );
 
     return () => {
-      socket.off('set-nickname');
       socket.off('room-list');
     };
-  }, []);
+  }, [socket]);
 
   return (
     <div className='flex w-full flex-col gap-8 pb-20 pt-24'>
