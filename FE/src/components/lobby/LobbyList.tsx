@@ -1,5 +1,8 @@
+'use client';
+
+import LottieFile from '@/../public/lottie/no_data.json';
 import Link from 'next/link';
-import LobbyItem from './LobbyItem';
+import Lottie from 'lottie-react';
 
 const LobbyList = () => {
   return (
@@ -13,14 +16,18 @@ const LobbyList = () => {
           QUICK START
         </Link>
       </div>
-      <div className='grid grid-cols-3 gap-3 max-[1080px]:grid-cols-2 max-[768px]:grid-cols-1'>
-        <LobbyItem />
-        <LobbyItem />
-        <LobbyItem />
-        <LobbyItem />
-        <LobbyItem />
-        <LobbyItem />
+      <div className='flex flex-col items-center pt-10'>
+        <Lottie animationData={LottieFile} className='w-80' />
+        <p className='text-4xl text-white'>방을 생성해 보세요!</p>
       </div>
+      {/* <div className='grid grid-cols-3 gap-3 max-[1080px]:grid-cols-2 max-[768px]:grid-cols-1'>
+        <LobbyItem />
+        <LobbyItem />
+        <LobbyItem />
+        <LobbyItem />
+        <LobbyItem />
+        <LobbyItem />
+      </div> */}
     </div>
   );
 };
