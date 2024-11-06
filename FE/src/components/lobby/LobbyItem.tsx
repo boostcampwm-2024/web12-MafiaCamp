@@ -36,7 +36,8 @@ const LobbyItem = ({ room }: LobbyItemProps) => {
             </p>
           </div>
           <button
-            className='h-9 w-[7.5rem] rounded-2xl bg-white text-sm font-semibold text-slate-800 hover:scale-105'
+            className={`${room.status === 'READY' ? 'bg-white text-slate-800 hover:scale-105' : 'cursor-not-allowed bg-slate-800 text-slate-400'} h-9 w-[7.5rem] rounded-2xl text-sm font-semibold`}
+            disabled={room.status !== 'READY'}
             onClick={() => handleEnterRoom()}
           >
             참가하기
