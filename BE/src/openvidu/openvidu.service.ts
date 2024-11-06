@@ -9,8 +9,6 @@ export class OpenviduService {
   constructor(private configService: ConfigService) {
     const OPENVIDU_URL = this.configService.get<string>('OPENVIDU_URL');
     const OPENVIDU_SECRET = this.configService.get<string>('OPENVIDU_SECRET');
-    console.log(OPENVIDU_URL, OPENVIDU_SECRET);
-
     this.openvidu = new OpenVidu(OPENVIDU_URL, OPENVIDU_SECRET);
   }
 
