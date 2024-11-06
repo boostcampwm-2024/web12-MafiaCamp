@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { OpenVidu } from 'openvidu-node-client';
 import { ConfigService } from '@nestjs/config';
+import { VideoServerUsecase } from '../usecase/video-server.usecase';
 
 @Injectable()
-export class OpenviduService {
+export class OpenviduService implements VideoServerUsecase {
   private openvidu: OpenVidu;
 
   constructor(private configService: ConfigService) {
@@ -11,8 +12,7 @@ export class OpenviduService {
     const OPENVIDU_SECRET = this.configService.get<string>('OPENVIDU_SECRET');
     this.openvidu = new OpenVidu(OPENVIDU_URL, OPENVIDU_SECRET);
   }
-
-  async testConnection() {
+  async testConnection(): Promise<boolean> {
     try {
       await this.openvidu.fetch();
       console.log('OpenVidu 서버에 연결되었습니다.');
