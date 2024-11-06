@@ -1,6 +1,7 @@
 import { Room } from '@/types/room';
 import UsersIcon from '../common/icons/UsersIcon';
 import { ROOM_STATUS } from '@/constants/roomStatus';
+import Link from 'next/link';
 
 interface LobbyItemProps {
   room: Room;
@@ -23,9 +24,12 @@ const LobbyItem = ({ room }: LobbyItemProps) => {
               <span className='font-bold'>{room.capacity}</span>
             </p>
           </div>
-          <button className='h-9 w-[7.5rem] rounded-2xl bg-white text-sm font-semibold text-slate-800 hover:scale-105'>
+          <Link
+            className='flex h-9 w-[7.5rem] items-center justify-center rounded-2xl bg-white text-sm font-semibold text-slate-800 hover:scale-105'
+            href={`/game/${room.roomId}`}
+          >
             참가하기
-          </button>
+          </Link>
         </div>
       </div>
     </div>

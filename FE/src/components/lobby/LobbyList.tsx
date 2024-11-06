@@ -5,23 +5,19 @@ import Link from 'next/link';
 import Lottie from 'lottie-react';
 import { useEffect, useState } from 'react';
 import LobbyItem from './LobbyItem';
-import { Socket } from 'socket.io-client';
 import { Room } from '@/types/room';
+import { useSocketStore } from '@/stores/socketStore';
 
-interface LobbyListProps {
-  socket: Socket;
-}
-
-const LobbyList = ({ socket }: LobbyListProps) => {
+const LobbyList = () => {
+  const { socket } = useSocketStore();
   const [roomList, setRoomList] = useState<Room[]>([]);
 
   useEffect(() => {
-    socket.on('room-list', (rooms: Room[]) => setRoomList(rooms));
-
-    socket.emit('room-list');
+    socket?.on('room-list', (rooms: Room[]) => setRoomList(rooms));
+    socket?.emit('room-list');
 
     return () => {
-      socket.off('room-list');
+      socket?.off('room-list');
     };
   }, [socket]);
 
@@ -31,7 +27,7 @@ const LobbyList = ({ socket }: LobbyListProps) => {
         <h2 className='text-5xl text-white'>로비</h2>
         <button
           className='flex h-12 w-36 items-center justify-center rounded-2xl bg-white text-sm font-bold text-slate-800 hover:scale-105'
-          onClick={() => socket.emit('room-list')}
+          onClick={() => socket?.emit('room-list')}
         >
           게임방 조회 임시 버튼
         </button>
