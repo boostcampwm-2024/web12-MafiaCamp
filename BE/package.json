@@ -25,6 +25,7 @@
     "@nestjs/core": "^10.0.0",
     "@nestjs/platform-express": "^10.0.0",
     "dotenv": "^16.4.5",
+    "mysql2": "^3.11.3",
     "openvidu-node-client": "^2.30.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1"
