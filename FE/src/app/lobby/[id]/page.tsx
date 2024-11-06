@@ -1,5 +1,6 @@
+import Bottombar from '@/components/lobby/room/Bottombar';
 import ChattingList from '@/components/lobby/room/ChattingList';
-import Link from 'next/link';
+import VideoViewer from '@/components/lobby/room/VideoViewer';
 
 export async function generateMetadata({
   params,
@@ -14,22 +15,11 @@ export async function generateMetadata({
   };
 }
 
-export default async function Page({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const id = (await params).id;
-
+export default function Page() {
   return (
-    <div className='flex flex-row items-center justify-between'>
-      <h1 className='fixed left-4 top-4 text-5xl text-white'>{id}</h1>
-      <Link
-        className='fixed left-4 top-20 flex h-10 w-20 items-center justify-center rounded-full bg-white text-slate-800 hover:scale-105'
-        href='/lobby'
-      >
-        나가기
-      </Link>
+    <div>
+      <VideoViewer />
+      <Bottombar />
       <ChattingList />
     </div>
   );
