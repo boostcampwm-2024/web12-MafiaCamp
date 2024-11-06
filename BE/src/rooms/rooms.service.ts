@@ -15,12 +15,8 @@ export class RoomsService {
   }
 
   createRoom(createRoomDto: CreateRoomDto) {
-    const { roomId, title, capacity } = createRoomDto;
-
     const room: Room = {
-      roomId,
-      title,
-      capacity,
+      ...createRoomDto,
       participants: 1,
       status: RoomStatus.READY,
       createdAt: Date.now(),

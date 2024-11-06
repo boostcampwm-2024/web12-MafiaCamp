@@ -1,5 +1,3 @@
-import { RoomsModule } from './rooms.module';
-
 export interface Room {
   roomId: string; // 방장의 Socket id
   title: string; // 방 제목
