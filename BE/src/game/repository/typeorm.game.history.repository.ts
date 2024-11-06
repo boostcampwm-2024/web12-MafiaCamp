@@ -21,7 +21,7 @@ export class TypeormGameHistoryRepository implements GameHistoryRepository<GameH
     throw new NotFoundGameHistoryException();
   }
 
-  async save(gameHistoryEntity: GameHistoryEntity): Promise<GameHistoryEntity> {
-    return await this._repository.save(gameHistoryEntity);
+  async save(gameHistoryEntity: GameHistoryEntity): Promise<void> {
+    await this._repository.insert(gameHistoryEntity);
   }
 }

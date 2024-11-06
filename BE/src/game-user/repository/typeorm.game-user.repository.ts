@@ -11,8 +11,8 @@ export class TypeormGameUserRepository implements GameUserRepository<GameUserEnt
   }
 
 
-  async save(gameUserEntity: GameUserEntity): Promise<GameUserEntity> {
-    return await this._repository.save(gameUserEntity);
+  async save(gameUserEntity: GameUserEntity): Promise<void> {
+    await this._repository.insert(gameUserEntity);
   }
 
   async findByGameId(gameId: number): Promise<GameUserEntity> {

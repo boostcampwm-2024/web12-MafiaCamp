@@ -12,7 +12,7 @@ export class TypeormUserRepository implements UserRepository<UserEntity, number>
   }
 
   async save(userEntity: UserEntity): Promise<void> {
-    await this.userRepository.save(userEntity);
+    await this.userRepository.insert(userEntity);
   }
 
   async findById(userId: number): Promise<UserEntity> {
