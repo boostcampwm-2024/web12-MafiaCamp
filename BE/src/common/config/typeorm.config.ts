@@ -7,6 +7,7 @@ import { GameUserEntity } from '../../game-user/enitity/game.user.entity';
 import { GameHistoryEntity } from '../../game/entity/game.history.entity';
 
 
+
 export const typeOrmInfo = (configService: ConfigService): DataSourceOptions => ({
   type: 'mysql' as const,
   host: configService.get('DB_HOST'),
