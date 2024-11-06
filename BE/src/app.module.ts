@@ -7,8 +7,9 @@ import { GameUserModule } from './game-user/game-user.module';
 import { GameModule } from './game/game.module';
 import { LoggerModule } from './common/logger/logger.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { LoggerInterceptor } from './common/logger/logger.interceptor';
+import { HttpLoggerInterceptor } from './common/logger/http.logger.interceptor';
 import { TraceMiddleware } from './common/logger/trace.middleware';
+import { WebsocketLoggerInterceptor } from './common/logger/websocket.logger.interceptor';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -24,14 +25,18 @@ import { TraceMiddleware } from './common/logger/trace.middleware';
     UserModule,
     GameUserModule,
     GameModule,
-    LoggerModule
+    LoggerModule,
   ],
-  providers:[
+  providers: [
     {
       provide: APP_INTERCEPTOR,
-      useClass: LoggerInterceptor
-    }
-  ]
+      useClass: HttpLoggerInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: WebsocketLoggerInterceptor,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
