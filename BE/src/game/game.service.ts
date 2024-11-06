@@ -1,10 +1,10 @@
-import { AllocateUserRoleUsecase } from './usecase/allocate.user.role.usecase';
+import { AllocateUserRoleUsecase } from './usecase/allocate.user-role.usecase';
 import { Inject, Injectable } from '@nestjs/common';
 import { AllocateJobRequest } from './dto/allocate.job.request';
 import { AllocateJobResponse } from './dto/allocate.job.response';
 import { JOB_FACTORY, JobFactory } from './job.factory';
-import { GAME_HISTORY_REPOSITORY, GameHistoryRepository } from './repository/game.history.repository';
-import { GameHistoryEntity } from './entity/game.history.entity';
+import { GAME_HISTORY_REPOSITORY, GameHistoryRepository } from './repository/game-history.repository';
+import { GameHistoryEntity } from './entity/game-history.entity';
 import { Transactional } from 'typeorm-transactional';
 
 @Injectable()

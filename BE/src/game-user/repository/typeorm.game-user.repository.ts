@@ -1,7 +1,7 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { GameUserRepository } from './game-user.repository';
-import { GameUserEntity } from '../enitity/game.user.entity';
+import { GameUserEntity } from '../enitity/game-user.entity';
 import { NotFoundGameUserException } from '../../common/error/not.found.game-user.exception';
 
 export class TypeormGameUserRepository implements GameUserRepository<GameUserEntity, number, number> {

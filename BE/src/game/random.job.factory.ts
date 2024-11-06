@@ -1,5 +1,5 @@
 import { JobFactory } from './job.factory';
-import { MAFIA_ROLE } from './mafia.role';
+import { MAFIA_ROLE } from './mafia-role';
 import { Injectable } from '@nestjs/common';
 import { GameInvalidPlayerCountException } from '../common/error/game.invalid.player.count.exception';
 import { RoleCountNegativeException } from '../common/error/role.count.negative.exception';

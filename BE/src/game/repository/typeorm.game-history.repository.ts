@@ -1,7 +1,7 @@
-import { GameHistoryEntity } from '../entity/game.history.entity';
+import { GameHistoryEntity } from '../entity/game-history.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { GameHistoryRepository } from './game.history.repository';
+import { GameHistoryRepository } from './game-history.repository';
 import { NotFoundGameHistoryException } from '../../common/error/not.found.game.history.exception';
 
 export class TypeormGameHistoryRepository implements GameHistoryRepository<GameHistoryEntity, number> {

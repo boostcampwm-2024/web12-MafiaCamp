@@ -1,4 +1,4 @@
-import { MAFIA_ROLE } from '../mafia.role';
+import { MAFIA_ROLE } from '../mafia-role';
 
 export class AllocateJobResponse {
   readonly userJobs : Record<number, MAFIA_ROLE>;

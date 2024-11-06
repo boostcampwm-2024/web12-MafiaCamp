@@ -1,5 +1,5 @@
 import { Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { GameUserEntity } from '../../game-user/enitity/game.user.entity';
+import { GameUserEntity } from '../../game-user/enitity/game-user.entity';
 
 @Entity('user')
 export class UserEntity {

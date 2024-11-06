@@ -3,8 +3,8 @@ import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { addTransactionalDataSource } from 'typeorm-transactional';
 import { ConfigService } from '@nestjs/config';
 import { UserEntity } from '../../user/entity/user.entity';
-import { GameUserEntity } from '../../game-user/enitity/game.user.entity';
-import { GameHistoryEntity } from '../../game/entity/game.history.entity';
+import { GameUserEntity } from '../../game-user/enitity/game-user.entity';
+import { GameHistoryEntity } from '../../game/entity/game-history.entity';
 
 
 export const typeOrmInfo = (configService: ConfigService): DataSourceOptions => ({

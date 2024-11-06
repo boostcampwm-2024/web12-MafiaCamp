@@ -1,4 +1,4 @@
-import { GameHistoryEntity } from '../../game/entity/game.history.entity';
+import { GameHistoryEntity } from '../../game/entity/game-history.entity';
 
 export const REGISTER_GAME_USER_USECASE = Symbol('REGISTER_GAME_USER_USECASE');
 
