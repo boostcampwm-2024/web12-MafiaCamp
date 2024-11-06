@@ -6,43 +6,36 @@ import CloseIcon from '@/components/common/icons/CloseIcon';
 import UsersIcon from '@/components/common/icons/UsersIcon';
 import { useSidebarStore } from '@/stores/sidebarStore';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
-
-// TODO
-const chatList = [
-  { isSelf: false, nickname: 'another1', content: '안녕하세요.' },
-  {
-    isSelf: false,
-    nickname: 'another2',
-    content: '안녕하세요. 만나서 반갑습니다.',
-  },
-  { isSelf: true, nickname: 'HyunJinNo', content: '안녕하세요.' },
-  { isSelf: false, nickname: 'another1', content: '안녕하세요.' },
-  {
-    isSelf: false,
-    nickname: 'another2',
-    content: '안녕하세요. 만나서 반갑습니다.',
-  },
-  { isSelf: true, nickname: 'HyunJinNo', content: '안녕하세요.' },
-  {
-    isSelf: false,
-    nickname: 'another2',
-    content: '안녕하세요. 만나서 반갑습니다.',
-  },
-  { isSelf: true, nickname: 'HyunJinNo', content: '안녕하세요.' },
-];
+import { FormEvent, useEffect, useState } from 'react';
+import { useSocketStore } from '@/stores/socketStore';
+import { Chat } from '@/types/chat';
 
 const ChattingList = () => {
+  // TODO: 커스텀 훅 생성
+  const { nickname, socket } = useSocketStore();
   const { isOpen, initialize, close } = useSidebarStore();
+  const [chatList, setChatList] = useState<Chat[]>([]);
+  const [message, setMessage] = useState('');
 
   // TODO: 추후 수정 필요
   const [isMafiaOnly, setIsMafiaOnly] = useState(false);
 
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    socket?.emit('send-chat', { message });
+    setMessage('');
+  };
+
   useEffect(() => {
+    socket?.on('chat', (chat: Chat) => {
+      setChatList([...chatList, chat]);
+    });
+
     return () => {
+      socket?.off('chat');
       initialize();
     };
-  }, [initialize]);
+  }, [chatList, initialize, socket]);
 
   return (
     <AnimatePresence>
@@ -80,39 +73,50 @@ const ChattingList = () => {
               chatList.map((chat, index) => (
                 <ChattingItem
                   key={index}
-                  isSelf={chat.isSelf}
-                  nickname={chat.nickname}
-                  content={chat.content}
+                  isSelf={chat.from === nickname}
+                  nickname={chat.from}
+                  content={chat.message}
                 />
               ))
             )}
           </div>
-          <div className='flex h-40 w-full flex-col items-center gap-4 bg-white p-4'>
+          <form
+            className='flex h-40 w-full flex-col items-center gap-4 bg-white p-4'
+            onSubmit={handleSubmit}
+          >
             <textarea
               className='h-[4.75rem] w-full resize-none rounded-lg p-3 text-sm text-slate-800 outline-none ring-1 ring-slate-400'
+              value={message}
+              autoComplete='off'
               placeholder='내용을 입력해 주세요.'
+              onChange={(e) => setMessage(e.target.value)}
             />
             <div className='flex w-full flex-row items-center justify-between'>
               <div className='flex flex-row items-center gap-2'>
                 <p className='text-slate-800'>수신자</p>
                 <button
                   className={`${isMafiaOnly && 'bg-transparent/10'} h-9 w-[3.75rem] rounded-2xl bg-slate-600 text-sm text-white hover:scale-105`}
+                  type='button'
                   onClick={() => setIsMafiaOnly(false)}
                 >
                   전체
                 </button>
                 <button
                   className={`${!isMafiaOnly && 'bg-transparent/10'} h-9 w-20 rounded-2xl bg-slate-600 text-sm text-white hover:scale-105`}
+                  type='button'
                   onClick={() => setIsMafiaOnly(true)}
                 >
                   마피아
                 </button>
               </div>
-              <button className='flex h-9 w-9 items-center justify-center rounded-full bg-slate-600 hover:scale-105'>
+              <button
+                className='flex h-9 w-9 items-center justify-center rounded-full bg-slate-600 hover:scale-105'
+                type='submit'
+              >
                 <PaperAirplainIcon />
               </button>
             </div>
-          </div>
+          </form>
         </motion.div>
       )}
     </AnimatePresence>
