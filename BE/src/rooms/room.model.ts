@@ -1,3 +1,5 @@
+import { RoomsModule } from './rooms.module';
+
 export interface Room {
   roomId: string; // 방장의 Socket id
   title: string; // 방 제목
@@ -7,8 +9,10 @@ export interface Room {
   createdAt: number; // timestamp
 }
 
-export enum RoomStatus {
-  READY = 'READY',
-  RUNNING = 'RUNNING',
-  DONE = 'DONE',
-}
+export const RoomStatus = {
+  READY: 'READY',
+  RUNNING: 'RUNNING',
+  DONE: 'DONE',
+} as const;
+
+export type RoomStatus = typeof RoomStatus[keyof typeof RoomStatus];
