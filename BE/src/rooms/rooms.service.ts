@@ -1,38 +1,42 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { Room, RoomStatus } from './room.model';
 
 @Injectable()
 export class RoomsService {
-	private rooms: Room[] = [];
+  private rooms: Room[] = [];
 
-	getRooms() {
-		return [...this.rooms];
-	}
+  getRooms() {
+    return [...this.rooms];
+  }
 
-	createRoom(createRoomDto: CreateRoomDto) {
-		const { roomId, title, capacity } = createRoomDto;
-		
-		const room: Room = {
-			roomId,
-			title,
-			capacity,
-			participants: 1,
-			status: RoomStatus.READY,
-			createdAt: Date.now()
-		};
-		
-		this.rooms = [...this.rooms, room];
-	}
+  createRoom(createRoomDto: CreateRoomDto) {
+    const { roomId, title, capacity } = createRoomDto;
 
-	enterRoom(roomId) {
-		const room = this.rooms.find((room) => room.roomId === roomId);
-		if (!room) {
-			throw new NotFoundException();
-		}
-		if (room.capacity === room.participants) {
-			throw new BadRequestException();
-		}
-		room.participants += 1;
-	}
+    const room: Room = {
+      roomId,
+      title,
+      capacity,
+      participants: 1,
+      status: RoomStatus.READY,
+      createdAt: Date.now(),
+    };
+
+    this.rooms = [...this.rooms, room];
+  }
+
+  enterRoom(roomId) {
+    const room = this.rooms.find((room) => room.roomId === roomId);
+    if (!room) {
+      throw new NotFoundException();
+    }
+    if (room.capacity === room.participants) {
+      throw new BadRequestException();
+    }
+    room.participants += 1;
+  }
 }
