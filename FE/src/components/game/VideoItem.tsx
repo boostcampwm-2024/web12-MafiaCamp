@@ -2,16 +2,20 @@
 
 import VideoCameraIcon from '@/components/common/icons/VideoCameraIcon';
 import VideoCameraSlashIcon from '@/components/common/icons/VideoCameraSlashIcon';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { FaMicrophone, FaMicrophoneSlash } from 'react-icons/fa';
 
 const VideoItem = () => {
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [isAudioOn, setIsAudioOn] = useState(false);
 
   return (
     <div className='flex w-full flex-col items-center rounded-3xl border border-slate-200 bg-slate-900'>
-      <div className='h-full w-full rounded-t-3xl bg-slate-900'></div>
+      <video
+        className={`${!isCameraOn && 'bg-slate-900'} h-full w-full rounded-t-3xl`}
+        ref={videoRef}
+      />
       <div className='flex w-full flex-row items-center justify-between gap-3 rounded-b-3xl bg-slate-600/50 px-4 py-3'>
         <p className='text-sm text-white'>HyunJinNo</p>
         <div className='flex flex-row items-center gap-3'>

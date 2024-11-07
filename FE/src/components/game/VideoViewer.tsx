@@ -2,7 +2,7 @@
 
 import { useSidebarStore } from '@/stores/sidebarStore';
 import VideoItem from './VideoItem';
-import useDragScroll from '@/hooks/useDragScroll';
+import { useDragScroll } from '@/hooks/useDragScroll';
 
 const VideoViewer = () => {
   const { isOpen } = useSidebarStore();
@@ -15,6 +15,7 @@ const VideoViewer = () => {
     onTouchMove,
     onTouchEnd,
   } = useDragScroll();
+
   return (
     <div
       className={`${isOpen ? 'right-[21.5rem]' : 'right-6'} absolute bottom-[6.5rem] left-6 top-6 max-h-screen overflow-auto transition-all duration-500 ease-out`}
