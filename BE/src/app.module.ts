@@ -3,6 +3,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeORMConfig } from './common/config/typeorm.config';
 import { OpenviduModule } from './openvidu/openvidu.module';
+import { UserModule } from './user/user.module';
+import { GameUserModule } from './game-user/game-user.module';
+import { GameModule } from './game/game.module';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -16,6 +20,10 @@ import { OpenviduModule } from './openvidu/openvidu.module';
       useFactory: async (configService: ConfigService) =>
         typeORMConfig(configService),
     }),
+    UserModule,
+    GameUserModule,
+    GameModule,
+    EventsModule,
   ],
 })
 export class AppModule {}
