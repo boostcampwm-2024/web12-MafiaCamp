@@ -1,4 +1,3 @@
-DROP TABLE IF EXISTS ROOM;
 DROP TABLE IF EXISTS GAME_USER;
 DROP TABLE IF EXISTS USER;
 DROP TABLE IF EXISTS GAME_HISTORY;
@@ -15,22 +14,13 @@ CREATE TABLE user(
     INDEX idx_created_at(created_at)
 );
 
-CREATE TABLE room(
-    room_id bigint auto_increment primary key,
-    user_id bigint not null,
-    room_name varchar(30) not null,
-    game_status enum('STAY','PROGRESS') not null default 'STAY',
-    created_at datetime not null,
-
-    FOREIGN KEY(user_id) REFERENCES user(user_id)
-        ON DELETE CASCADE
-);
 
 CREATE TABLE game_history(
     game_id bigint auto_increment primary key,
     start_time datetime not null,
     end_time datetime null,
     game_history_result enum('MAFIA','CITIZEN') null,
+    game_status enum('PROGRESS','END') not null,
 
     INDEX idx_start_time(start_time)
 );
