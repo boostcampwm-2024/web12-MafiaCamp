@@ -22,6 +22,7 @@ lerna-debug.log*
 
 # IDEs and editors
 /.idea
+.idea/
 .project
 .classpath
 .c9/
@@ -55,3 +56,7 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# local ssl
+*.pem
+
