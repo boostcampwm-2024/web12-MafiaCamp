@@ -25,11 +25,17 @@ export async function generateMetadata({
   };
 }
 
-export default function Page() {
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const id = (await params).id;
+
   return (
     <div className='absolute left-0 top-0 h-screen w-screen overflow-x-hidden'>
       <VideoViewer />
-      <Bottombar />
+      <Bottombar roomId={id} />
       <ChattingList />
     </div>
   );

@@ -11,9 +11,13 @@ import { useSocketStore } from '@/stores/socketStore';
 import Link from 'next/link';
 import { FaMicrophone, FaMicrophoneSlash } from 'react-icons/fa';
 
-const Bottombar = () => {
+interface BottombarProps {
+  roomId: string;
+}
+
+const Bottombar = ({ roomId }: BottombarProps) => {
   const { isOpen, open, close } = useSidebarStore();
-  const { audioEnabled, videoEnabled, setState } = useSocketStore();
+  const { socket, audioEnabled, videoEnabled, setState } = useSocketStore();
   const {
     listRef,
     onDragStart,
@@ -41,7 +45,10 @@ const Bottombar = () => {
         onTouchEnd={onTouchEnd}
       >
         <div className='flex flex-row items-center gap-4'>
-          <button className='flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105'>
+          <button
+            className='flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105'
+            onClick={() => socket?.emit('start-game', { roomId })}
+          >
             <PlayIcon className='fill-slate-200' />
             <p>게임 시작</p>
           </button>

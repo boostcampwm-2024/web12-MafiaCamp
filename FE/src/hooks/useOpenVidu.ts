@@ -3,7 +3,8 @@ import { OpenVidu, Publisher, Subscriber } from 'openvidu-browser';
 import { useEffect, useState } from 'react';
 
 export const useOpenVidu = () => {
-  const { session, audioEnabled, videoEnabled, setState } = useSocketStore();
+  const { socket, session, audioEnabled, videoEnabled, setState } =
+    useSocketStore();
   const [publisher, setPublisher] = useState<Publisher | null>(null);
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
 
@@ -60,52 +61,36 @@ export const useOpenVidu = () => {
 
         setState({ session });
 
-        // TODO: Back-end API 연동
-        // TODO: 토큰 발급 요청
-        /*
-      const response = await axios.post(
-              `${APPLICATION_SERVER_URL}api/sessions`,
-              { sessionId: 'SessionA' },
-              {
-                  headers: { 'Content-Type': 'application/json' },
-              }
-          );
+        socket?.on(
+          'video-info',
+          async (data: { token: string; sessionId: string }) => {
+            /**
+             * 4. 토큰을 사용하여 실제 연결 수립
+             * - OpenVidu 서버와 WebRTC 연결 설정
+             * - 인증 및 미디어 서버와의 초기 핸드셰이크
+             */
+            await session.connect(data.token);
 
-          const token = await axios.post(
-              `${APPLICATION_SERVER_URL}api/sessions/${response.data.sessionId}/connections`,
-              {},
-              {
-                  headers: { 'Content-Type': 'application/json' },
-              }
-          );
-      */
-        const token = 'TODO: 토근 발급 요청';
+            // 5. 로컬 스트림(자신의 비디오/오디오) 초기화
+            const publisher = await openvidu.initPublisherAsync(undefined, {
+              audioSource: undefined, // 기본 마이크
+              videoSource: undefined, // 기본 카메라
+              publishAudio: true, // 오디오 활성화
+              publishVideo: true, // 카메라 활성화
+              resolution: '640x480', // 해상도 설정
+              frameRate: 30, // FPS 설정
+              insertMode: 'APPEND', // 비디오 요소 추가 방식
+              mirror: false, // 미러링 여부
+            });
 
-        /**
-         * 4. 토큰을 사용하여 실제 연결 수립
-         * - OpenVidu 서버와 WebRTC 연결 설정
-         * - 인증 및 미디어 서버와의 초기 핸드셰이크
-         */
-        await session.connect(token);
-
-        // 5. 로컬 스트림(자신의 비디오/오디오) 초기화
-        const publisher = await openvidu.initPublisherAsync(undefined, {
-          audioSource: undefined, // 기본 마이크
-          videoSource: undefined, // 기본 카메라
-          publishAudio: true, // 오디오 활성화
-          publishVideo: true, // 카메라 활성화
-          resolution: '640x480', // 해상도 설정
-          frameRate: 30, // FPS 설정
-          insertMode: 'APPEND', // 비디오 요소 추가 방식
-          mirror: false, // 미러링 여부
-        });
-
-        /**
-         * 6. 스트림 발행 시작
-         * - 다른 참가자들이 내 스트림을 볼 수 있게 됨
-         */
-        await session.publish(publisher);
-        setPublisher(publisher);
+            /**
+             * 6. 스트림 발행 시작
+             * - 다른 참가자들이 내 스트림을 볼 수 있게 됨
+             */
+            await session.publish(publisher);
+            setPublisher(publisher);
+          },
+        );
       } catch (error) {
         console.error(`Error joining session: ${error}`);
       }
@@ -125,6 +110,8 @@ export const useOpenVidu = () => {
   return {
     publisher,
     subscribers,
+    audioEnabled,
+    videoEnabled,
     toggleAudio,
     toggleVideo,
   };
