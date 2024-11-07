@@ -11,8 +11,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { HttpLoggerInterceptor } from './common/logger/http.logger.interceptor';
 import { TraceMiddleware } from './common/logger/trace.middleware';
 import { WebsocketLoggerInterceptor } from './common/logger/websocket.logger.interceptor';
-import { EventsModule } from './events/events.module';
-import { OpenviduModule } from './openvidu/openvidu.module';
+import { EventModule } from './event/event.module';
 import { SocketStateModule } from './socket-state/socket-state.module';
 
 @Module({
@@ -30,7 +29,7 @@ import { SocketStateModule } from './socket-state/socket-state.module';
     GameUserModule,
     GameModule,
     VideoServerModule,
-    EventsModule,
+    EventModule,
     LoggerModule,
     SocketStateModule,
   ],

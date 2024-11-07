@@ -9,7 +9,7 @@ import { FIND_GAME_USER_USECASE } from './usecase/find.game-user.usecase';
 import { UserModule } from '../user/user.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([GameUserEntity]),UserModule],
+  imports: [TypeOrmModule.forFeature([GameUserEntity]), UserModule],
   providers: [
     {
       provide: GAME_USER_REPOSITORY,
