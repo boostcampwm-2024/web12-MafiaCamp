@@ -12,9 +12,11 @@ import { Socket } from 'socket.io';
 import { CreateRoomDto } from 'src/rooms/dto/create-room.dto';
 import { Room } from 'src/rooms/room.model';
 import { RoomsService } from 'src/rooms/rooms.service';
-import { Logger } from '@nestjs/common';
+import { Logger, UseInterceptors } from '@nestjs/common';
 import { WebSocketServer } from './wss';
+import { WebsocketLoggerInterceptor } from 'src/common/logger/websocket.logger.interceptor';
 
+@UseInterceptors(WebsocketLoggerInterceptor)
 @WebSocketGateway({
   namespace: 'ws',
   cors: {
