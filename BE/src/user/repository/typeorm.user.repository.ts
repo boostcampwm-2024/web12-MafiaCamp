@@ -1,10 +1,7 @@
 import { UserRepository } from './user.repository';
 import { UserEntity } from '../entity/user.entity';
 import { Repository } from 'typeorm';
-import { Inject } from '@nestjs/common';
-import { NotFoundUserError } from '../../common/error/not.found.user.error';
-import { errorMessage } from '../../common/error/error.message';
-import { errorCode } from '../../common/error/error.code';
+import { NotFoundUserException } from '../../common/error/not.found.user.exception';
 import { InjectRepository } from '@nestjs/typeorm';
 
 export class TypeormUserRepository implements UserRepository<UserEntity, number> {
@@ -25,7 +22,7 @@ export class TypeormUserRepository implements UserRepository<UserEntity, number>
     if (userEntity) {
       return userEntity;
     }
-    throw new NotFoundUserError(errorMessage.NOT_FOUND_USER_ERROR, errorCode.NOT_FOUND_USER_ERROR);
+    throw new NotFoundUserException();
   }
 
 }
