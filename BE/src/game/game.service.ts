@@ -6,14 +6,20 @@ import { JOB_FACTORY, JobFactory } from './job.factory';
 import { GAME_HISTORY_REPOSITORY, GameHistoryRepository } from './repository/game-history.repository';
 import { GameHistoryEntity } from './entity/game-history.entity';
 import { Transactional } from 'typeorm-transactional';
+import { CountdownTimeoutUsecase } from './usecase/countdown.timeout.usecase';
+import { StartCountdownRequest } from './dto/start.countdown.request';
+import { StopCountdownRequest } from './dto/stop.countdown.request';
+import { COUNTDOWN_TIMER, CountdownTimer } from './countdown.timer';
 
 @Injectable()
-export class GameService implements AllocateUserRoleUsecase {
+export class GameService implements AllocateUserRoleUsecase, CountdownTimeoutUsecase {
   constructor(
     @Inject(JOB_FACTORY)
     private readonly jobFactory: JobFactory,
     @Inject(GAME_HISTORY_REPOSITORY)
-    private readonly gameHistoryRepository: GameHistoryRepository<GameHistoryEntity, number>
+    private readonly gameHistoryRepository: GameHistoryRepository<GameHistoryEntity, number>,
+    @Inject(COUNTDOWN_TIMER)
+    private readonly countdownTimer: CountdownTimer
     ){
   }
 
@@ -29,6 +35,17 @@ export class GameService implements AllocateUserRoleUsecase {
     await this.gameHistoryRepository.save(gameHistoryEntity);
     const userRoles = this.jobFactory.allocateGameRoles(playerIds);
     return new AllocateJobResponse(userRoles);
+  }
+
+  /*
+
+   */
+  countdownStart(startCountdownRequest: StartCountdownRequest): void {
+    this.countdownTimer.start(startCountdownRequest.roomId, startCountdownRequest.situation);
+  }
+
+  countdownStop(stopCountdownRequest: StopCountdownRequest): void {
+    this.countdownTimer.stop(stopCountdownRequest.roomId);
   }
 
 }
