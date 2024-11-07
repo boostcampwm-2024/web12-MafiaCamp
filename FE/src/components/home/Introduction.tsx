@@ -6,9 +6,9 @@ import * as motion from 'framer-motion/client';
 
 const Introduction = () => {
   return (
-    <div className='flex w-full flex-col items-center gap-8 pt-[25rem]'>
+    <div className='flex w-full flex-col items-center gap-8 text-nowrap pt-[25rem]'>
       <motion.h2
-        className='bg-gradient-to-r from-slate-400 to-white bg-clip-text text-5xl font-bold text-transparent'
+        className='bg-gradient-to-r from-slate-400 to-white bg-clip-text text-5xl font-bold text-transparent max-[768px]:text-4xl max-[540px]:text-3xl max-[440px]:text-2xl'
         initial={{ translateX: '-3rem', opacity: 0 }}
         whileInView={{ translateX: '0rem', opacity: 1 }}
         transition={{ duration: 0.5 }}
@@ -17,7 +17,7 @@ const Introduction = () => {
         온라인으로 즐기는 마피아 게임
       </motion.h2>
       <motion.p
-        className='text-2xl text-slate-200'
+        className='text-2xl text-slate-200 max-[768px]:text-xl max-[540px]:text-lg max-[440px]:text-base'
         initial={{ translateX: '-3rem', opacity: 0 }}
         whileInView={{ translateX: '0rem', opacity: 1 }}
         transition={{ delay: 0.3, duration: 0.5 }}
@@ -25,9 +25,9 @@ const Introduction = () => {
       >
         화상 채팅으로 마피아 게임을 즐겨보세요!
       </motion.p>
-      <div className='flex w-full flex-row items-center justify-between pt-8'>
+      <div className='flex w-full flex-row items-center justify-between gap-8 pt-8 max-[1080px]:flex-col'>
         <motion.div
-          className='aspect-square w-[31.25rem] rounded-full bg-blue-800/50'
+          className='aspect-square w-4/5 max-w-[31.25rem] rounded-full bg-blue-800/50'
           initial={{ rotate: '-90deg', opacity: 0 }}
           whileInView={{ rotate: '0deg', opacity: 1 }}
           transition={{ duration: 0.5 }}
@@ -36,7 +36,7 @@ const Introduction = () => {
           <Lottie animationData={LottieFile} className='bg-transparent' />
         </motion.div>
         <motion.div
-          className='text-xl text-white'
+          className='text-xl text-white max-[768px]:text-lg max-[540px]:text-base max-[440px]:text-sm'
           initial={{ translateX: '-1rem', opacity: 0 }}
           whileInView={{ translateX: '0rem', opacity: 1 }}
           transition={{ duration: 0.5 }}

@@ -7,12 +7,12 @@ import { usePathname } from 'next/navigation';
 const Footer = () => {
   const pathname = usePathname();
 
-  if (pathname.includes('/lobby/')) {
+  if (pathname.startsWith('/game')) {
     return null;
   }
 
   return (
-    <footer className='mt-20 flex h-60 w-full justify-center bg-slate-600/50'>
+    <footer className='mt-20 flex w-full justify-center bg-slate-600/50 px-12 max-[768px]:px-6'>
       <div className='flex h-full w-[67.5rem] flex-col gap-5 pb-12 pt-7'>
         <Image
           src='/common/mafiacamp-logo-small.png'
@@ -48,7 +48,7 @@ const Footer = () => {
             </button>
           </div>
         </div>
-        <div className='flex flex-row items-center justify-between text-sm text-slate-200'>
+        <div className='flex flex-row items-center justify-between gap-3 text-sm text-slate-200 max-[768px]:flex-col'>
           <p>Copyright MafiaCamp. All rights reserved</p>
           <div className='flex flex-row items-center gap-10'>
             <Link className='hover:text-white' href='terms'>

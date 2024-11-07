@@ -1,10 +1,10 @@
-import type { Metadata } from 'next';
 import '@/styles/globals.css';
 import { Noto_Sans_KR } from 'next/font/google';
 import Background from '@/components/common/Background';
 import Header from '@/components/common/Header';
 import FloatingButton from '@/components/common/FloatingButton';
 import Footer from '@/components/common/Footer';
+import { Metadata } from 'next';
 
 const notoSansKr = Noto_Sans_KR({ weight: ['500'], subsets: ['latin'] });
 
@@ -33,12 +33,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='ko'>
-      <body
-        className={`${notoSansKr.className} flex flex-col items-center overflow-x-hidden`}
-      >
+      <body className={`${notoSansKr.className} flex flex-col items-center`}>
         <Background />
         <Header />
-        <div className='w-[67.5rem]'>{children}</div>
+        <div className='w-[67.5rem] px-6 max-[1080px]:w-full'>{children}</div>
         <Footer />
         <FloatingButton />
       </body>

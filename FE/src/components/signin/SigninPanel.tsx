@@ -6,13 +6,14 @@ import Image from 'next/image';
 
 const SigninPanel = () => {
   return (
-    <div className='flex w-[30rem] flex-col items-center rounded-3xl bg-slate-600/50 p-10'>
+    <div className='flex w-[30rem] flex-col items-center rounded-3xl bg-slate-600/50 p-10 max-[512px]:w-full'>
       <Lottie animationData={LottieFile} className='h-[6.25rem]' />
-      <h2 className='pt-5 text-2xl font-bold text-white'>
-        MafiaCamp에 오신 것을 환영합니다.
+      <h2 className='flex items-center gap-x-2 pt-5 text-2xl font-bold text-white max-[512px]:flex-col max-[400px]:text-xl'>
+        MafiaCamp에 오신 것을 <span>환영합니다.</span>
       </h2>
-      <p className='pt-2 text-sm text-slate-200'>
-        MafiaCamp는 누구나 즐길 수 있는 온라인 화상 마피아 게임입니다.
+      <p className='flex items-center gap-x-1 pt-2 text-sm text-slate-200 max-[512px]:flex-col'>
+        MafiaCamp는 누구나 즐길 수 있는
+        <span>온라인 화상 마피아 게임입니다.</span>
       </p>
       <div className='flex flex-col items-center gap-3 pt-10 text-sm font-semibold text-slate-800'>
         <button className='relative h-[2.875rem] w-[17.25rem] rounded-3xl bg-[#FFEB3B] hover:scale-105'>

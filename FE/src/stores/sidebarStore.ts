@@ -27,9 +27,8 @@ const sidebarStore: StateCreator<SidebarStoreType> = (set) => ({
   close: () => set({ isOpen: false }),
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const useSidebarStore = create<SidebarStoreType>()<any>(
+export const useSidebarStore = create<SidebarStoreType>()(
   process.env.NODE_ENV === 'development'
-    ? devtools(sidebarStore)
+    ? (devtools(sidebarStore) as StateCreator<SidebarStoreType>)
     : sidebarStore,
 );
