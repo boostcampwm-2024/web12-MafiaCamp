@@ -29,7 +29,7 @@ const VideoItem = ({
     <div className='flex w-full flex-col items-center rounded-3xl border border-slate-200 bg-slate-900'>
       {videoEnabled ? (
         <video
-          className='h-full w-full rounded-t-3xl bg-slate-900'
+          className='h-full w-full rounded-t-3xl'
           ref={videoRef}
           autoPlay
           playsInline
