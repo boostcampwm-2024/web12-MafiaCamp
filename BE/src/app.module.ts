@@ -1,8 +1,8 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { VideoServerModule } from './video-server/video-server.module';
 import { typeORMConfig } from './common/typeorm/typeorm.config';
-import { OpenviduModule } from './openvidu/openvidu.module';
 import { UserModule } from './user/user.module';
 import { GameUserModule } from './game-user/game-user.module';
 import { GameModule } from './game/game.module';
@@ -18,7 +18,6 @@ import { EventsModule } from './events/events.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    OpenviduModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -28,6 +27,7 @@ import { EventsModule } from './events/events.module';
     UserModule,
     GameUserModule,
     GameModule,
+    VideoServerModule,
     LoggerModule,
     EventsModule,
   ],
@@ -44,8 +44,6 @@ import { EventsModule } from './events/events.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(TraceMiddleware)
-      .forRoutes('*');
+    consumer.apply(TraceMiddleware).forRoutes('*');
   }
 }
