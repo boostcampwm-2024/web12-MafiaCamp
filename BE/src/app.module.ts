@@ -5,22 +5,23 @@ import { typeORMConfig } from './common/config/typeorm.config';
 import { UserModule } from './user/user.module';
 import { GameUserModule } from './game-user/game-user.module';
 import { GameModule } from './game/game.module';
+import { EventsModule } from './events/events.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({
-    isGlobal: true,
-  }),
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) =>
         typeORMConfig(configService),
-
     }),
     UserModule,
     GameUserModule,
-    GameModule
+    GameModule,
+    EventsModule,
   ],
 })
-export class AppModule {
-}
+export class AppModule {}
