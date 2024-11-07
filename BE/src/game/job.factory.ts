@@ -1,4 +1,4 @@
-import { MAFIA_ROLE } from './mafia.role';
+import { MAFIA_ROLE } from './mafia-role';
 
 export const JOB_FACTORY = Symbol('JOB_FACTORY');
 export interface JobFactory {

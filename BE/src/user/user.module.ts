@@ -8,25 +8,23 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from './entity/user.entity';
 
 @Module({
-  imports:[
-    TypeOrmModule.forFeature([UserEntity])
+  imports: [
+    TypeOrmModule.forFeature([UserEntity]),
   ]
-  , providers:[
+  , providers: [
     {
-      provide:USER_REPOSITORY,
-      useClass:TypeormUserRepository
+      provide: USER_REPOSITORY,
+      useClass: TypeormUserRepository,
     },
     {
-      provide:FIND_USER_USECASE,
-      useClass:UserService
+      provide: FIND_USER_USECASE,
+      useClass: UserService,
     },
     {
-      provide:REGISTER_USER_USECASE,
-      useClass:UserService
-    }
+      provide: REGISTER_USER_USECASE,
+      useClass: UserService,
+    },
   ],
-  exports:[FIND_USER_USECASE,REGISTER_USER_USECASE]
+  exports: [FIND_USER_USECASE, REGISTER_USER_USECASE],
 })
-export class UserModule {
-
-}
+export class UserModule {}

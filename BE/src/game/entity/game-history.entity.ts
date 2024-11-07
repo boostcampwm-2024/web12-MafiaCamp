@@ -1,7 +1,7 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { GAME_STATUS} from './game.status';
-import { GAME_HISTORY_RESULT } from './game.history.result';
-import { GameUserEntity } from '../../game-user/enitity/game.user.entity';
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { GAME_STATUS} from './game-status';
+import { GAME_HISTORY_RESULT } from './game-history.result';
+import { GameUserEntity } from '../../game-user/enitity/game-user.entity';
 
 @Entity('game_history')
 export class GameHistoryEntity {
@@ -12,14 +12,14 @@ export class GameHistoryEntity {
   })
   gameId: number;
 
-  @Column({
+  @CreateDateColumn({
     type: 'datetime',
     name: 'start_time',
     nullable: false,
   })
   startTime: Date;
 
-  @Column({
+  @CreateDateColumn({
     type: 'datetime',
     name: 'end_time',
     nullable: true,

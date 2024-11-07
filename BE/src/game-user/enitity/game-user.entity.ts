@@ -1,7 +1,7 @@
 import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
-import { MAFIA_ROLE } from '../../game/mafia.role';
-import { GAME_USER_RESULT } from './game.user.result';
-import { GameHistoryEntity } from '../../game/entity/game.history.entity';
+import { MAFIA_ROLE } from '../../game/mafia-role';
+import { GAME_USER_RESULT } from './game-user.result';
+import { GameHistoryEntity } from '../../game/entity/game-history.entity';
 import { UserEntity } from '../../user/entity/user.entity';
 
 @Entity("game_user")

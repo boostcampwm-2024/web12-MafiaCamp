@@ -1,10 +1,7 @@
 export class FindUserRequest {
 
-  private readonly _userId: number;
-  constructor(userId: number) {
-    this._userId = userId;
+  constructor(private readonly _userId: number) {
   }
-
 
   get userId(): number {
     return this._userId;

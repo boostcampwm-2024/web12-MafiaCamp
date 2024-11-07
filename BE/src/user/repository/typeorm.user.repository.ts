@@ -8,15 +8,15 @@ export class TypeormUserRepository implements UserRepository<UserEntity, number>
 
   constructor(
     @InjectRepository(UserEntity)
-    private readonly userRepository: Repository<UserEntity>) {
+    private readonly _repository: Repository<UserEntity>) {
   }
 
   async save(userEntity: UserEntity): Promise<void> {
-    await this.userRepository.save(userEntity);
+    await this._repository.insert(userEntity);
   }
 
   async findById(userId: number): Promise<UserEntity> {
-    const userEntity = await this.userRepository.findOneBy({
+    const userEntity = await this._repository.findOneBy({
       userId: userId,
     });
     if (userEntity) {
