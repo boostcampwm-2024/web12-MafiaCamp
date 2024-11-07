@@ -13,7 +13,6 @@ import { TraceMiddleware } from './common/logger/trace.middleware';
 import { WebsocketLoggerInterceptor } from './common/logger/websocket.logger.interceptor';
 import { EventsModule } from './events/events.module';
 
-
 @Module({
   imports: [
     ConfigModule.forRoot({
