@@ -10,21 +10,25 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { HttpLoggerInterceptor } from './common/logger/http.logger.interceptor';
 import { TraceMiddleware } from './common/logger/trace.middleware';
 import { WebsocketLoggerInterceptor } from './common/logger/websocket.logger.interceptor';
+import { EventsModule } from './events/events.module';
+import { OpenviduModule } from './openvidu/openvidu.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({
-    isGlobal: true,
-  }),
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    OpenviduModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) =>
         typeORMConfig(configService),
-
     }),
     UserModule,
     GameUserModule,
     GameModule,
+    EventsModule,
     LoggerModule,
   ],
   providers: [

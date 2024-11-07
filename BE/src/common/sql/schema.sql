@@ -14,12 +14,14 @@ CREATE TABLE user(
     INDEX idx_created_at(created_at)
 );
 
+
 CREATE TABLE game_history(
     game_id bigint auto_increment primary key,
     start_time datetime not null,
     end_time datetime null,
     game_history_result enum('MAFIA','CITIZEN') null,
     game_status enum('PROGRESS','END') not null,
+
     INDEX idx_start_time(start_time)
 );
 
