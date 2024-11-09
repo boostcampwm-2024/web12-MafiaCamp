@@ -6,7 +6,9 @@ import LobbyList from './LobbyList';
 import { useEffect } from 'react';
 import { useSocketStore } from '@/stores/socketStore';
 
-const socket = io(`${process.env.NEXT_PUBLIC_BACKEND_URL}/ws`);
+const socket = io(`${process.env.NEXT_PUBLIC_BACKEND_URL}/ws`, {
+  transports: ['websocket', 'polling'],
+});
 
 const LobbyViewer = () => {
   const { setState } = useSocketStore();
