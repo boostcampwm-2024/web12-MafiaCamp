@@ -3,9 +3,19 @@
 import { useSidebarStore } from '@/stores/sidebarStore';
 import VideoItem from './VideoItem';
 import { useDragScroll } from '@/hooks/useDragScroll';
-import { useOpenVidu } from '@/hooks/useOpenVidu';
+import { Publisher } from 'openvidu-browser';
 
-const VideoViewer = () => {
+interface VideoViewerProps {
+  publisher: Publisher | null;
+  audioEnabled: boolean;
+  videoEnabled: boolean;
+}
+
+const VideoViewer = ({
+  publisher,
+  audioEnabled,
+  videoEnabled,
+}: VideoViewerProps) => {
   const { isOpen } = useSidebarStore();
   const {
     listRef,
@@ -16,9 +26,6 @@ const VideoViewer = () => {
     onTouchMove,
     onTouchEnd,
   } = useDragScroll();
-
-  // TODO: 수정 필요
-  const { publisher, audioEnabled, videoEnabled } = useOpenVidu();
 
   return (
     <div
@@ -32,7 +39,7 @@ const VideoViewer = () => {
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
-      <div className='grid h-full min-w-[67.5rem] grid-cols-4 gap-6'>
+      <div className='grid h-full min-w-[67.5rem] grid-cols-4 grid-rows-2 gap-6'>
         <VideoItem
           streamManager={publisher}
           audioEnabled={audioEnabled}

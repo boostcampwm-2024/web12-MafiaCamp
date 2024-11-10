@@ -12,12 +12,13 @@ import Link from 'next/link';
 import { FaMicrophone, FaMicrophoneSlash } from 'react-icons/fa';
 
 interface BottombarProps {
-  roomId: string;
+  toggleAudio: () => void;
+  toggleVideo: () => void;
 }
 
-const Bottombar = ({ roomId }: BottombarProps) => {
+const Bottombar = ({ toggleAudio, toggleVideo }: BottombarProps) => {
   const { isOpen, open, close } = useSidebarStore();
-  const { socket, audioEnabled, videoEnabled, setState } = useSocketStore();
+  const { socket, audioEnabled, videoEnabled } = useSocketStore();
   const {
     listRef,
     onDragStart,
@@ -47,14 +48,14 @@ const Bottombar = ({ roomId }: BottombarProps) => {
         <div className='flex flex-row items-center gap-4'>
           <button
             className='flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105'
-            onClick={() => socket?.emit('start-game', { roomId })}
+            onClick={() => socket?.emit('start-game')}
           >
             <PlayIcon className='fill-slate-200' />
             <p>게임 시작</p>
           </button>
           <button
             className='flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105'
-            onClick={() => setState({ audioEnabled: !audioEnabled })}
+            onClick={() => toggleAudio()}
           >
             {audioEnabled ? (
               <FaMicrophone className='scale-125 cursor-pointer text-slate-200 hover:text-white' />
@@ -65,7 +66,7 @@ const Bottombar = ({ roomId }: BottombarProps) => {
           </button>
           <button
             className='flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105'
-            onClick={() => setState({ videoEnabled: !videoEnabled })}
+            onClick={() => toggleVideo()}
           >
             {videoEnabled ? (
               <VideoCameraIcon className='scale-90 cursor-pointer fill-slate-200 hover:fill-white' />

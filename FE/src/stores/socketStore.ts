@@ -23,8 +23,8 @@ const initialState: SocketState = {
   nickname: '',
   socket: null,
   session: null,
-  audioEnabled: false,
-  videoEnabled: false,
+  audioEnabled: true,
+  videoEnabled: true,
 };
 
 export type SocketStoreType = SocketState & SocketActions;

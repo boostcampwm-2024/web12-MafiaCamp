@@ -27,17 +27,12 @@ const VideoItem = ({
 
   return (
     <div className='flex w-full flex-col items-center rounded-3xl border border-slate-200 bg-slate-900'>
-      {videoEnabled ? (
-        <video
-          className='h-full w-full rounded-t-3xl'
-          ref={videoRef}
-          autoPlay
-          playsInline
-        />
-      ) : (
-        <div className='h-full w-full rounded-t-3xl bg-slate-900' />
-      )}
-
+      <video
+        className='h-full w-full rounded-t-3xl'
+        ref={videoRef}
+        autoPlay
+        playsInline
+      />
       <div className='flex w-full flex-row items-center justify-between gap-3 rounded-b-3xl bg-slate-600/50 px-4 py-3'>
         <p className='text-sm text-white'>HyunJinNo</p>
         <div className='flex flex-row items-center gap-3'>
