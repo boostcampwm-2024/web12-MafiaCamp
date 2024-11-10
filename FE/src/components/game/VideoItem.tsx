@@ -2,12 +2,12 @@
 
 import VideoCameraIcon from '@/components/common/icons/VideoCameraIcon';
 import VideoCameraSlashIcon from '@/components/common/icons/VideoCameraSlashIcon';
-import { Publisher } from 'openvidu-browser';
+import { Publisher, Subscriber } from 'openvidu-browser';
 import { useEffect, useRef } from 'react';
 import { FaMicrophone, FaMicrophoneSlash } from 'react-icons/fa';
 
 interface VideoItemProps {
-  streamManager: Publisher | null;
+  streamManager: Publisher | Subscriber | null;
   audioEnabled: boolean;
   videoEnabled: boolean;
 }
@@ -28,7 +28,7 @@ const VideoItem = ({
   return (
     <div className='flex w-full flex-col items-center rounded-3xl border border-slate-200 bg-slate-900'>
       <video
-        className='h-full w-full rounded-t-3xl'
+        className='h-full w-full overflow-y-hidden rounded-t-3xl object-cover'
         ref={videoRef}
         autoPlay
         playsInline

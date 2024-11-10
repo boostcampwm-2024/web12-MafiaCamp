@@ -3,7 +3,7 @@ import { OpenVidu, Publisher, Subscriber } from 'openvidu-browser';
 import { useEffect, useState } from 'react';
 
 export const useOpenVidu = () => {
-  const { socket, session, audioEnabled, videoEnabled, setState } =
+  const { nickname, socket, session, audioEnabled, videoEnabled, setState } =
     useSocketStore();
   const [publisher, setPublisher] = useState<Publisher | null>(null);
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
@@ -42,6 +42,8 @@ export const useOpenVidu = () => {
         session.on('streamCreated', (event) => {
           // 자동으로 새 스트림 구독
           const subscriber = session.subscribe(event.stream, undefined);
+          subscriber.subscribeToAudio(true);
+          subscriber.subscribeToVideo(true);
           setSubscribers([...subscribers, subscriber]);
         });
 
@@ -69,7 +71,7 @@ export const useOpenVidu = () => {
              * - OpenVidu 서버와 WebRTC 연결 설정
              * - 인증 및 미디어 서버와의 초기 핸드셰이크
              */
-            await session.connect(data.token);
+            await session.connect(data.token, nickname);
 
             // 5. 로컬 스트림(자신의 비디오/오디오) 초기화
             const publisher = await openvidu.initPublisherAsync(undefined, {

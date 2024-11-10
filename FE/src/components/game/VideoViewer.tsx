@@ -3,16 +3,18 @@
 import { useSidebarStore } from '@/stores/sidebarStore';
 import VideoItem from './VideoItem';
 import { useDragScroll } from '@/hooks/useDragScroll';
-import { Publisher } from 'openvidu-browser';
+import { Publisher, Subscriber } from 'openvidu-browser';
 
 interface VideoViewerProps {
   publisher: Publisher | null;
+  subscribers: Subscriber[];
   audioEnabled: boolean;
   videoEnabled: boolean;
 }
 
 const VideoViewer = ({
   publisher,
+  subscribers,
   audioEnabled,
   videoEnabled,
 }: VideoViewerProps) => {
@@ -45,13 +47,14 @@ const VideoViewer = ({
           audioEnabled={audioEnabled}
           videoEnabled={videoEnabled}
         />
-        {/* <VideoItem />
-        <VideoItem />
-        <VideoItem />
-        <VideoItem />
-        <VideoItem />
-        <VideoItem />
-        <VideoItem /> */}
+        {subscribers.map((subscriber) => (
+          <VideoItem
+            key={subscriber.id}
+            streamManager={subscriber}
+            audioEnabled={false}
+            videoEnabled={false}
+          />
+        ))}
       </div>
     </div>
   );
