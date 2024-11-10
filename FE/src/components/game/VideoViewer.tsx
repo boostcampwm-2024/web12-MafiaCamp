@@ -47,9 +47,9 @@ const VideoViewer = ({
           audioEnabled={audioEnabled}
           videoEnabled={videoEnabled}
         />
-        {subscribers.map((subscriber) => (
+        {subscribers.map((subscriber, index) => (
           <VideoItem
-            key={subscriber.id}
+            key={index}
             streamManager={subscriber}
             audioEnabled={subscriber.properties.subscribeToAudio ?? false}
             videoEnabled={subscriber.properties.subscribeToVideo ?? false}

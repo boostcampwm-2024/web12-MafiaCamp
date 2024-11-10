@@ -42,9 +42,9 @@ const ChattingList = () => {
       {isOpen && (
         <motion.div
           className='absolute right-0 top-0 flex h-screen w-80 flex-col justify-between bg-slate-600/50'
-          initial={{ translateX: '100%' }}
-          animate={{ translateX: '0%' }}
-          exit={{ translateX: '100%' }}
+          initial={{ x: '100%' }}
+          animate={{ x: '0%' }}
+          exit={{ x: '100%' }}
           transition={{ bounce: false }}
         >
           <div className='flex h-16 w-full flex-row items-center justify-between gap-3 bg-slate-600 p-4 text-white'>

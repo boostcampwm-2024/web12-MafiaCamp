@@ -37,14 +37,14 @@ const VideoItem = ({
         <p className='text-sm text-white'>HyunJinNo</p>
         <div className='flex flex-row items-center gap-3'>
           {audioEnabled ? (
-            <FaMicrophone className='cursor-pointer text-slate-200 hover:text-white' />
+            <FaMicrophone className='text-slate-200' />
           ) : (
-            <FaMicrophoneSlash className='scale-125 cursor-pointer text-slate-200 hover:text-white' />
+            <FaMicrophoneSlash className='scale-125 text-slate-200' />
           )}
           {videoEnabled ? (
-            <VideoCameraIcon className='scale-90 cursor-pointer fill-slate-200 hover:fill-white' />
+            <VideoCameraIcon className='scale-90 fill-slate-200' />
           ) : (
-            <VideoCameraSlashIcon className='scale-90 cursor-pointer fill-slate-200 hover:fill-white' />
+            <VideoCameraSlashIcon className='scale-90 fill-slate-200' />
           )}
         </div>
       </div>

@@ -60,7 +60,7 @@ export const useOpenVidu = () => {
 
         // 연결 중 에러 발생 시
         session.on('exception', (exception) => {
-          console.warn(`세션 예외 발생: ${exception}`);
+          console.warn(exception);
         });
 
         setState({ session });
@@ -103,7 +103,7 @@ export const useOpenVidu = () => {
     return () => {
       if (session) {
         session.disconnect();
-        setState({ session: null });
+        setState({ session: null, audioEnabled: true, videoEnabled: true });
         setPublisher(null);
         setSubscribers([]);
       }
