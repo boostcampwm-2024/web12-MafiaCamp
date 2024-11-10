@@ -41,9 +41,11 @@ export const useOpenVidu = () => {
          */
         session.on('streamCreated', (event) => {
           // 자동으로 새 스트림 구독
-          const subscriber = session.subscribe(event.stream, undefined);
-          subscriber.subscribeToAudio(true);
-          subscriber.subscribeToVideo(true);
+          const subscriber = session.subscribe(event.stream, undefined, {
+            insertMode: 'APPEND',
+            subscribeToAudio: true,
+            subscribeToVideo: true,
+          });
           setSubscribers([...subscribers, subscriber]);
         });
 

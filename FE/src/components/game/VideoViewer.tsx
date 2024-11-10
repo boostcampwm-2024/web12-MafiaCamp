@@ -51,8 +51,8 @@ const VideoViewer = ({
           <VideoItem
             key={subscriber.id}
             streamManager={subscriber}
-            audioEnabled={false}
-            videoEnabled={false}
+            audioEnabled={subscriber.properties.subscribeToAudio ?? false}
+            videoEnabled={subscriber.properties.subscribeToVideo ?? false}
           />
         ))}
       </div>
