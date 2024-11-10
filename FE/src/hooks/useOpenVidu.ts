@@ -1,5 +1,10 @@
 import { useSocketStore } from '@/stores/socketStore';
-import { OpenVidu, Publisher, Subscriber } from 'openvidu-browser';
+import {
+  OpenVidu,
+  Publisher,
+  Subscriber,
+  VideoInsertMode,
+} from 'openvidu-browser';
 import { useEffect, useState } from 'react';
 
 export const useOpenVidu = () => {
@@ -42,7 +47,7 @@ export const useOpenVidu = () => {
         session.on('streamCreated', (event) => {
           // 자동으로 새 스트림 구독
           const subscriber = session.subscribe(event.stream, undefined, {
-            insertMode: 'APPEND',
+            insertMode: VideoInsertMode.APPEND,
             subscribeToAudio: true,
             subscribeToVideo: true,
           });
@@ -83,7 +88,7 @@ export const useOpenVidu = () => {
               publishVideo: true, // 카메라 활성화
               resolution: '640x480', // 해상도 설정
               frameRate: 30, // FPS 설정
-              insertMode: 'APPEND', // 비디오 요소 추가 방식
+              insertMode: VideoInsertMode.APPEND, // 비디오 요소 추가 방식
               mirror: false, // 미러링 여부
             });
 
