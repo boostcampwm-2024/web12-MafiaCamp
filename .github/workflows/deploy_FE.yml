@@ -28,7 +28,7 @@ jobs:
 
       # 의존성 설치하기
       - name: Install dependencies
-        run: npm install
+        run: npm install --force
 
       # 애플리케이션 빌드하기
       - name: Build application
@@ -42,8 +42,12 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
+          proxy_host: $${{ secrets.PROXY_HOST }}
+          proxy_username: $${{ secrets.PROXY_USERNAME }}
+          proxy_password: $${{ secrets.PROXY_PASSWORD }}
+          proxy_port: $${{ secrets.PROXY_PORT }}
           source: "./.next"
-          target: ${{ secrets.TARGET }}
+          target: "/mafiacamp/mafiacamp-fe/FE"
 
       # ssh 원격 접속을 통해 빌드 파일 실행하기
       - name: Executing remote ssh commands using password
@@ -53,6 +57,10 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
+          proxy_host: $${{ secrets.PROXY_HOST }}
+          proxy_username: $${{ secrets.PROXY_USERNAME }}
+          proxy_password: $${{ secrets.PROXY_PASSWORD }}
+          proxy_port: $${{ secrets.PROXY_PORT }}
           script: |
             cd
             cd mafiacamp/mafiacamp-fe/FE
