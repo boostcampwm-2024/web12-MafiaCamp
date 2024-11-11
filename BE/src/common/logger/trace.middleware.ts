@@ -4,7 +4,6 @@ import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 export class TraceMiddleware implements NestMiddleware {
   use(req: any, res: any, next: (error?: any) => void) {
-
     const traceId = req.headers['x-trace-id'] || uuidv4();
     const spanId = uuidv4();
 

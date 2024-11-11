@@ -3,6 +3,5 @@ import { AllocateJobResponse } from '../dto/allocate.job.response';
 
 export const ALLOCATE_USER_ROLE_USECASE = Symbol('ALLOCATE_USER_ROLE_USECASE');
 export interface AllocateUserRoleUsecase {
-
   allocate(jobRequest: AllocateJobRequest): Promise<AllocateJobResponse>;
 }

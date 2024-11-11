@@ -4,13 +4,13 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { winstonConfig } from './winston.config';
 
 @Module({
-  imports:[
+  imports: [
     WinstonModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: winstonConfig
-    })
+      useFactory: winstonConfig,
+    }),
   ],
-  exports: [WinstonModule]
+  exports: [WinstonModule],
 })
 export class LoggerModule {}

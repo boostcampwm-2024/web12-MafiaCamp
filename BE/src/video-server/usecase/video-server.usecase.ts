@@ -1,5 +1,5 @@
-import { OpenViduRole } from 'openvidu-node-client';
 import { SessionParticipant } from '../types/session-participant.type';
+import { OpenViduRoleType } from '../types/openvidu.type';
 
 export const VIDEO_SERVER_USECASE = Symbol.for('VIDEO_SERVER_USECASE');
 
@@ -9,7 +9,7 @@ export interface VideoServerUsecase {
   generateToken(
     roomId: string,
     userId: string,
-    role: OpenViduRole,
+    role: OpenViduRoleType,
     nickname?: string,
   ): Promise<string>;
   getActiveParticipants(roomId: string): Promise<SessionParticipant[]>;

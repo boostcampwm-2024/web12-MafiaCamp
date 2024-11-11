@@ -1,4 +1,10 @@
-import { CallHandler, ExecutionContext, Inject, Injectable, NestInterceptor } from '@nestjs/common';
+import {
+  CallHandler,
+  ExecutionContext,
+  Inject,
+  Injectable,
+  NestInterceptor,
+} from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { Observable } from 'rxjs';
@@ -7,8 +13,8 @@ import { Observable } from 'rxjs';
 export abstract class BasicLoggerInterceptor implements NestInterceptor {
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER)
-    protected readonly logger: Logger) {
-  }
+    protected readonly logger: Logger,
+  ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const startTime = Date.now();
@@ -16,17 +22,29 @@ export abstract class BasicLoggerInterceptor implements NestInterceptor {
 
     if (contextType === 'http') {
       return this.handleHttpRequest(context, next, startTime);
-    }else if (contextType === 'ws') {
+    } else if (contextType === 'ws') {
       return this.handleWebsocketEvent(context, next, startTime);
     }
 
     return next.handle();
   }
 
-  protected abstract handleHttpRequest(context: ExecutionContext, next: CallHandler, startTime: number): Observable<any>;
-  protected abstract handleWebsocketEvent(context: ExecutionContext, next: CallHandler, startTime: number): Observable<any>;
+  protected abstract handleHttpRequest(
+    context: ExecutionContext,
+    next: CallHandler,
+    startTime: number,
+  ): Observable<any>;
+  protected abstract handleWebsocketEvent(
+    context: ExecutionContext,
+    next: CallHandler,
+    startTime: number,
+  ): Observable<any>;
 
-  protected createLogInfo(traceId: string, spanId: string, parentSpanId?: string) {
+  protected createLogInfo(
+    traceId: string,
+    spanId: string,
+    parentSpanId?: string,
+  ) {
     return {
       traceId,
       spanId,
@@ -44,5 +62,4 @@ export abstract class BasicLoggerInterceptor implements NestInterceptor {
   protected getDuration(startTime: number) {
     return `${Date.now() - startTime}ms`;
   }
-
 }

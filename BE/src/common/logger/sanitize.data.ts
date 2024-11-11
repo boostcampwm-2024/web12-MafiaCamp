@@ -4,7 +4,7 @@ export function sanitizeData(data: any): Record<string, any> {
   const sanitized = { ...data };
   const sensitiveFields = ['password', 'token', 'secret'];
 
-  sensitiveFields.forEach(field => {
+  sensitiveFields.forEach((field) => {
     if (field in sanitized) {
       sanitized[field] = '***filtered**data***';
     }

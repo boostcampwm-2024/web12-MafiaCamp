@@ -9,7 +9,7 @@
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "db:schema": "source .env && mysql -u$DB_USER -p$DB_PASSWORD $DB_NAME < ./src/common/sql/schema.sql",
-    "start": "npm run db:schema && nest start",
+    "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",

@@ -16,7 +16,10 @@ export class RandomJobFactory implements JobFactory {
     return this.allocate(userCount, playerIds);
   }
 
-  private allocate(userCount: number, playerIds: Array<number>): Record<number, MAFIA_ROLE> {
+  private allocate(
+    userCount: number,
+    playerIds: Array<number>,
+  ): Record<number, MAFIA_ROLE> {
     let possibleRoles: Array<MAFIA_ROLE>;
     switch (userCount) {
       case 6:
@@ -42,7 +45,12 @@ export class RandomJobFactory implements JobFactory {
     return possibleRoles.sort(() => Math.random() - 0.5);
   }
 
-  private makeRoles(mafia: number, police: number, doctor: number, citizen: number): Array<MAFIA_ROLE> {
+  private makeRoles(
+    mafia: number,
+    police: number,
+    doctor: number,
+    citizen: number,
+  ): Array<MAFIA_ROLE> {
     this.verifyNegativeNumber(mafia, police, doctor, citizen);
     return [
       ...Array(mafia).fill(MAFIA_ROLE.MAFIA),
@@ -52,7 +60,12 @@ export class RandomJobFactory implements JobFactory {
     ];
   }
 
-  private verifyNegativeNumber(mafia: number, police: number, doctor: number, citizen: number) {
+  private verifyNegativeNumber(
+    mafia: number,
+    police: number,
+    doctor: number,
+    citizen: number,
+  ) {
     if (mafia < 0 || police < 0 || doctor < 0 || citizen < 0) {
       throw new RoleCountNegativeException();
     }

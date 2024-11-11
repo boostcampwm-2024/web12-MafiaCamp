@@ -9,8 +9,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { GameHistoryEntity } from './entity/game-history.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([GameHistoryEntity])]
-  , providers: [
+  imports: [TypeOrmModule.forFeature([GameHistoryEntity])],
+  providers: [
     {
       provide: JOB_FACTORY,
       useClass: RandomJobFactory,
@@ -24,9 +24,6 @@ import { GameHistoryEntity } from './entity/game-history.entity';
       useClass: TypeormGameHistoryRepository,
     },
   ],
-  exports: [
-    ALLOCATE_USER_ROLE_USECASE,
-  ],
+  exports: [ALLOCATE_USER_ROLE_USECASE],
 })
-export class GameModule {
-}
+export class GameModule {}
