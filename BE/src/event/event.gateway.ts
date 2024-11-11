@@ -13,8 +13,8 @@ import { GameRoomService } from 'src/game-room/game-room.service';
 import { Logger, UseInterceptors } from '@nestjs/common';
 import { WebsocketLoggerInterceptor } from 'src/common/logger/websocket.logger.interceptor';
 import { EventClient } from './event-client.model';
-import { OpenViduRole } from 'openvidu-node-client';
 import { EventManager } from './event-manager';
+import { Event } from './event.const';
 
 // @UseInterceptors(WebsocketLoggerInterceptor)
 @WebSocketGateway({
@@ -35,7 +35,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   handleConnection(socket: Socket) {
     this.logger.log(`client connected: ${socket.id}`);
     const client = new EventClient(socket, this.eventManager);
-    client.subscribe('RoomDataChanged');
+    client.subscribe(Event.ROOM_DATA_CHANGED);
     this.connectedClients.set(socket, client);
   }
 
@@ -109,7 +109,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   private publishRoomDataChangedEvent() {
-    this.eventManager.publish('RoomDataChanged', {
+    this.eventManager.publish(Event.ROOM_DATA_CHANGED, {
       event: 'room-list',
       data: this.gameRoomService.getRooms(),
     });

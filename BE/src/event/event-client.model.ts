@@ -1,5 +1,5 @@
 import { Socket } from 'socket.io';
-import { EventManager, Subscription } from './event-manager';
+import { EventManager, Subscriber, Subscription } from './event-manager';
 
 export class EventClient {
   private readonly subscriptions: Subscription[] = [];
@@ -23,10 +23,8 @@ export class EventClient {
   }
 
   subscribe(eventName: string) {
-    const handler = this.emit.bind(this);
-    const subscription = this.eventManager.subscribe(eventName, (e) =>
-      handler(e.event, e.data),
-    );
+    const handler: Subscriber = (e) => this.emit(e.event, e.data);
+    const subscription = this.eventManager.subscribe(eventName, handler);
     this.subscriptions.push(subscription);
   }
 
