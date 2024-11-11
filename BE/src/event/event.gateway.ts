@@ -8,8 +8,8 @@ import {
   WsResponse,
 } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
-import { CreateRoomRequest } from 'src/room/dto/create-room.request';
-import { RoomService } from 'src/room/room.service';
+import { CreateRoomRequest } from 'src/game-room/dto/create-room.request';
+import { GameRoomService } from 'src/game-room/game-room.service';
 import { Inject, Logger, UseInterceptors } from '@nestjs/common';
 import { WebsocketLoggerInterceptor } from 'src/common/logger/websocket.logger.interceptor';
 import {
@@ -19,7 +19,6 @@ import {
 import { EventClient } from './event-client.model';
 import { OpenViduRole } from 'openvidu-node-client';
 import { EventManager } from './event-manager';
-import { subscribe } from 'diagnostics_channel';
 
 // @UseInterceptors(WebsocketLoggerInterceptor)
 @WebSocketGateway({
@@ -28,8 +27,7 @@ import { subscribe } from 'diagnostics_channel';
     origin: '*',
   },
 })
-export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect
-{
+export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private logger = new Logger(EventGateway.name);
   private connectedClients: Map<Socket, EventClient> = new Map();
 
@@ -37,7 +35,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect
     @Inject(VIDEO_SERVER_USECASE)
     private readonly videoServerUseCase: VideoServerUsecase,
     private readonly eventManager: EventManager,
-    private readonly roomService: RoomService,
+    private readonly gameRoomService: GameRoomService,
   ) {}
 
   handleConnection(socket: Socket) {
@@ -61,24 +59,22 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect
   ) {
     const { nickname } = data;
     const client = this.connectedClients.get(socket);
-    client.setNickname(nickname);
+    client.nickname = nickname;
   }
 
   @SubscribeMessage('room-list')
   getRooms(): WsResponse<any> {
     return {
       event: 'room-list',
-      data: this.roomService.getRooms(),
+      data: this.gameRoomService.getRooms(),
     };
   }
 
   @SubscribeMessage('create-room')
   createRoom(@MessageBody() createRoomRequest: CreateRoomRequest) {
-    this.roomService.createRoom(createRoomRequest);
-    this.eventManager.publish('RoomDataChanged', {
-      name: 'room-list',
-      data: this.roomService.getRooms()
-    });
+    this.gameRoomService.createRoom(createRoomRequest);
+    this.publishRoomDataChangedEvent();
+
     return {
       event: 'create-room',
       data: {
@@ -94,17 +90,22 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect
   ) {
     const { roomId } = data;
     const client = this.connectedClients.get(socket);
-    this.roomService.enterRoom(client, roomId);
+    this.gameRoomService.enterRoom(client, roomId);
+    this.publishRoomDataChangedEvent();
   }
 
   @SubscribeMessage('send-chat')
-  messageRoom(
-    @MessageBody() data: { message: string },
+  sendChatToRoom(
+    @MessageBody() data: { roomId: string, message: string },
     @ConnectedSocket() socket: Socket
   ) {
-    const { message } = data;
+    const { roomId, message } = data;
     const client = this.connectedClients.get(socket);
-    this.roomService.sendAll(client, 'test', message);
+    this.gameRoomService.sendChat(roomId, {
+      from: client.nickname,
+      to: 'room',
+      message
+    });
   }
 
   // @SubscribeMessage('start-game')
@@ -120,4 +121,11 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect
   //     });
   //   })
   // }
+
+  private publishRoomDataChangedEvent() {
+    this.eventManager.publish('RoomDataChanged', {
+      event: 'room-list',
+      data: this.gameRoomService.getRooms()
+    });
+  }
 }

@@ -6,9 +6,10 @@ import { CreateRoomRequest } from './dto/create-room.request';
 import { GameRoom } from './model/game-room.model';
 import { EventClient } from 'src/event/event-client.model';
 import { GameClient } from './model/game-client.model';
+import { GameChat } from './model/game-chat.model';
 
 @Injectable()
-export class RoomService {
+export class GameRoomService {
   private rooms: GameRoom[] = [];
 
   getRooms() {
@@ -16,8 +17,7 @@ export class RoomService {
   }
 
   createRoom(createRoomRequest: CreateRoomRequest) {
-    const room = GameRoom.from(createRoomRequest);
-    this.rooms = [...this.rooms, room];
+    this.rooms.push(GameRoom.from(createRoomRequest));
   }
 
   enterRoom(client: EventClient, roomId: string) {
@@ -25,12 +25,12 @@ export class RoomService {
       .enter(new GameClient(client));
   }
 
-  sendAll(client: EventClient, roomId: string, message: string) {
+  sendChat(roomId: string, chat: GameChat) {
     this.findRoomById(roomId)
-      .sendAll(new GameClient(client), message);
+      .sendAll('chat', chat);
   }
 
-  findRoomById(roomId) {
+  findRoomById(roomId: string) {
     const room = this.rooms.find((room) => room.roomId === roomId);
     if (!room) {
       throw new NotFoundException();

@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 
 export type SocketEvent = {
-    name: string;
+    event: string;
     data: any;
 };
 
@@ -15,6 +15,7 @@ export type Subscription = {
 export class EventManager {
     private readonly subscribers: Record<string, Subscriber[]> = {};
 
+    // todo: 비동기로 만들기
     publish(eventName: string, e: SocketEvent) {
         const subscribers = this.subscribers;
         if (!subscribers[eventName]) {
