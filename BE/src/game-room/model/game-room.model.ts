@@ -11,10 +11,7 @@ export class GameRoom {
   private createdAt: number = Date.now();
   private readonly clients: GameClient[] = [];
 
-  constructor(
-    private title: string,
-    private capacity: number
-  ) {}
+  constructor(private title: string, private capacity: number) {}
 
   set roomId(roomId) {
     this._roomId = roomId;
@@ -35,12 +32,23 @@ export class GameRoom {
     }
     this.participants++;
     this.clients.push(client);
-    const participants = this.clients.map(c => c.getNickname())
+    const participants = this.clients.map((c) => c.nickname);
     this.sendAll('participants', participants);
   }
 
   sendAll(event, ...args) {
     this.clients.forEach((c) => c.send(event, ...args));
+  }
+
+  async startGame(sessionId: string, generateToken) {
+    const roomId = this._roomId;
+    this.clients.forEach(async (c) => {
+      const token = await generateToken(roomId, c.nickname, 'PUBLISHER');
+      c.send('video-info', {
+        token,
+        sessionId,
+      });
+    });
   }
 
   toResponse() {
@@ -50,7 +58,7 @@ export class GameRoom {
       capacity: this.capacity,
       participants: this.participants,
       status: this.status,
-      createdAt: this.createdAt
+      createdAt: this.createdAt,
     };
   }
 }

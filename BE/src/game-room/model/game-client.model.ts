@@ -1,12 +1,10 @@
-import { EventClient } from "src/event/event-client.model";
-import { MAFIA_ROLE } from "src/game/mafia-role";
+import { EventClient } from 'src/event/event-client.model';
+import { MAFIA_ROLE } from 'src/game/mafia-role';
 
 export class GameClient {
-  private _job: MAFIA_ROLE
+  private _job: MAFIA_ROLE;
 
-  constructor(
-    private readonly client: EventClient
-  ) {}
+  constructor(private readonly client: EventClient) {}
 
   get job() {
     return this._job;
@@ -20,7 +18,7 @@ export class GameClient {
     this.client.emit(event, ...args);
   }
 
-  getNickname() {
+  get nickname() {
     return this.client.nickname;
   }
 }

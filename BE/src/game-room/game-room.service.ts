@@ -1,16 +1,23 @@
-import {
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateRoomRequest } from './dto/create-room.request';
 import { GameRoom } from './model/game-room.model';
 import { EventClient } from 'src/event/event-client.model';
 import { GameClient } from './model/game-client.model';
 import { GameChat } from './model/game-chat.model';
+import {
+  VIDEO_SERVER_USECASE,
+  VideoServerUsecase,
+} from 'src/video-server/usecase/video-server.usecase';
+import { OpenViduRoleType } from 'src/video-server/types/openvidu.type';
 
 @Injectable()
 export class GameRoomService {
   private rooms: GameRoom[] = [];
+
+  constructor(
+    @Inject(VIDEO_SERVER_USECASE)
+    private readonly videoServerUseCase: VideoServerUsecase,
+  ) {}
 
   getRooms() {
     return this.rooms.map((r) => r.toResponse());
@@ -21,13 +28,11 @@ export class GameRoomService {
   }
 
   enterRoom(client: EventClient, roomId: string) {
-    this.findRoomById(roomId)
-      .enter(new GameClient(client));
+    this.findRoomById(roomId).enter(new GameClient(client));
   }
 
   sendChat(roomId: string, chat: GameChat) {
-    this.findRoomById(roomId)
-      .sendAll('chat', chat);
+    this.findRoomById(roomId).sendAll('chat', chat);
   }
 
   findRoomById(roomId: string) {
@@ -36,5 +41,26 @@ export class GameRoomService {
       throw new NotFoundException();
     }
     return room;
+  }
+
+  async startGame(roomId: string) {
+    const room = this.findRoomById(roomId);
+    const sessionId = await this.videoServerUseCase.createSession(roomId);
+
+    const generateToken = async (
+      roomId: string,
+      userId: string,
+      role: OpenViduRoleType,
+      nickname?: string,
+    ): Promise<string> => {
+      return await this.videoServerUseCase.generateToken(
+        roomId,
+        userId,
+        role,
+        nickname,
+      );
+    };
+
+    await room.startGame(sessionId, generateToken);
   }
 }

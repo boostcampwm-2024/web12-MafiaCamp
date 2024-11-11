@@ -17,18 +17,20 @@ export class EventClient {
   set nickname(nickname: string) {
     this._nickname = nickname;
   }
-  
+
   emit(event: string, ...args) {
     this.socket.emit(event, ...args);
   }
 
   subscribe(eventName: string) {
     const handler = this.emit.bind(this);
-    const subscription = this.eventManager.subscribe(eventName, (e) => handler(e.event, e.data));
+    const subscription = this.eventManager.subscribe(eventName, (e) =>
+      handler(e.event, e.data),
+    );
     this.subscriptions.push(subscription);
   }
 
   unsubscribeAll() {
-    this.subscriptions.forEach(s => s.unsubscribe());
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 }

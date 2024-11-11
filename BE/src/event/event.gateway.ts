@@ -10,12 +10,8 @@ import {
 import { Socket } from 'socket.io';
 import { CreateRoomRequest } from 'src/game-room/dto/create-room.request';
 import { GameRoomService } from 'src/game-room/game-room.service';
-import { Inject, Logger, UseInterceptors } from '@nestjs/common';
+import { Logger, UseInterceptors } from '@nestjs/common';
 import { WebsocketLoggerInterceptor } from 'src/common/logger/websocket.logger.interceptor';
-import {
-  VIDEO_SERVER_USECASE,
-  VideoServerUsecase,
-} from 'src/video-server/usecase/video-server.usecase';
 import { EventClient } from './event-client.model';
 import { OpenViduRole } from 'openvidu-node-client';
 import { EventManager } from './event-manager';
@@ -32,8 +28,6 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private connectedClients: Map<Socket, EventClient> = new Map();
 
   constructor(
-    @Inject(VIDEO_SERVER_USECASE)
-    private readonly videoServerUseCase: VideoServerUsecase,
     private readonly eventManager: EventManager,
     private readonly gameRoomService: GameRoomService,
   ) {}
@@ -96,36 +90,28 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('send-chat')
   sendChatToRoom(
-    @MessageBody() data: { roomId: string, message: string },
-    @ConnectedSocket() socket: Socket
+    @MessageBody() data: { roomId: string; message: string },
+    @ConnectedSocket() socket: Socket,
   ) {
     const { roomId, message } = data;
     const client = this.connectedClients.get(socket);
     this.gameRoomService.sendChat(roomId, {
       from: client.nickname,
       to: 'room',
-      message
+      message,
     });
   }
 
-  // @SubscribeMessage('start-game')
-  // async startGame(@ConnectedSocket() socket: Socket) {
-  //   const roomId = this.connectedClients.get(socket).roomId;
-  //   const sessionId = await this.videoServerUseCase.createSession(roomId);
-  //   const room = this.roomService.findRoomById(roomId);
-  //   room.clients.forEach(async c => {
-  //     const token = await this.videoServerUseCase.generateToken(roomId, c.nickname, OpenViduRole.PUBLISHER);
-  //     c.emit('video-info', {
-  //       token,
-  //       sessionId
-  //     });
-  //   })
-  // }
+  @SubscribeMessage('start-game')
+  async startGame(@MessageBody() data: { roomId: string }) {
+    const { roomId } = data;
+    await this.gameRoomService.startGame(roomId);
+  }
 
   private publishRoomDataChangedEvent() {
     this.eventManager.publish('RoomDataChanged', {
       event: 'room-list',
-      data: this.gameRoomService.getRooms()
+      data: this.gameRoomService.getRooms(),
     });
   }
 }
