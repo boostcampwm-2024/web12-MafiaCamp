@@ -20,8 +20,13 @@ const ChattingList = () => {
   // TODO: 추후 수정 필요
   const [isMafiaOnly, setIsMafiaOnly] = useState(false);
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+
+    if (message.trim() === '') {
+      return;
+    }
+
     socket?.emit('send-chat', { message });
     setMessage('');
   };
@@ -90,6 +95,12 @@ const ChattingList = () => {
               autoComplete='off'
               placeholder='내용을 입력해 주세요.'
               onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit(e);
+                }
+              }}
             />
             <div className='flex w-full flex-row items-center justify-between'>
               <div className='flex flex-row items-center gap-2'>

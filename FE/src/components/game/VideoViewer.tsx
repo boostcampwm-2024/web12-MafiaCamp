@@ -55,8 +55,8 @@ const VideoViewer = ({
             key={index}
             nickname={subscriber.stream.connection.data.split('%/%')[0]}
             streamManager={subscriber}
-            audioEnabled={subscriber.properties.subscribeToAudio ?? false}
-            videoEnabled={subscriber.properties.subscribeToVideo ?? false}
+            audioEnabled={subscriber.stream.audioActive}
+            videoEnabled={subscriber.stream.videoActive}
           />
         ))}
       </div>
