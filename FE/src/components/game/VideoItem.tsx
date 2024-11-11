@@ -7,12 +7,14 @@ import { useEffect, useRef } from 'react';
 import { FaMicrophone, FaMicrophoneSlash } from 'react-icons/fa';
 
 interface VideoItemProps {
+  nickname: string;
   streamManager: Publisher | Subscriber | null;
   audioEnabled: boolean;
   videoEnabled: boolean;
 }
 
 const VideoItem = ({
+  nickname,
   streamManager,
   audioEnabled,
   videoEnabled,
@@ -34,7 +36,7 @@ const VideoItem = ({
         playsInline
       />
       <div className='flex w-full flex-row items-center justify-between gap-3 rounded-b-3xl bg-slate-600/50 px-4 py-3'>
-        <p className='text-sm text-white'>HyunJinNo</p>
+        <p className='text-sm text-white'>{nickname}</p>
         <div className='flex flex-row items-center gap-3'>
           {audioEnabled ? (
             <FaMicrophone className='text-slate-200' />

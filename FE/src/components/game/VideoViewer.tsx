@@ -4,6 +4,7 @@ import { useSidebarStore } from '@/stores/sidebarStore';
 import VideoItem from './VideoItem';
 import { useDragScroll } from '@/hooks/useDragScroll';
 import { Publisher, Subscriber } from 'openvidu-browser';
+import { useSocketStore } from '@/stores/socketStore';
 
 interface VideoViewerProps {
   publisher: Publisher | null;
@@ -19,6 +20,7 @@ const VideoViewer = ({
   videoEnabled,
 }: VideoViewerProps) => {
   const { isOpen } = useSidebarStore();
+  const { nickname } = useSocketStore();
   const {
     listRef,
     onDragStart,
@@ -43,6 +45,7 @@ const VideoViewer = ({
     >
       <div className='grid h-full min-w-[67.5rem] grid-cols-4 grid-rows-2 gap-6'>
         <VideoItem
+          nickname={nickname}
           streamManager={publisher}
           audioEnabled={audioEnabled}
           videoEnabled={videoEnabled}
@@ -50,6 +53,7 @@ const VideoViewer = ({
         {subscribers.map((subscriber, index) => (
           <VideoItem
             key={index}
+            nickname={subscriber.stream.connection.data.split('%/%')[0]}
             streamManager={subscriber}
             audioEnabled={subscriber.properties.subscribeToAudio ?? false}
             videoEnabled={subscriber.properties.subscribeToVideo ?? false}
