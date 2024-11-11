@@ -1,16 +1,18 @@
+'use client';
+
 import React, { FormEvent } from 'react';
 import CloseIcon from '../common/icons/CloseIcon';
 import { useForm } from 'react-hook-form';
 import { RoomCreateFormSchema } from '@/libs/zod/roomCreateFormSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Socket } from 'socket.io-client';
+import { useSocketStore } from '@/stores/socketStore';
 
 interface CreateRoomModalProps {
-  socket: Socket;
   close: () => void;
 }
 
-const CreateRoomModal = ({ socket, close }: CreateRoomModalProps) => {
+const CreateRoomModal = ({ close }: CreateRoomModalProps) => {
+  const { socket } = useSocketStore();
   const methods = useForm<{ title: string; capacity: string }>({
     resolver: zodResolver(RoomCreateFormSchema),
     defaultValues: {
@@ -30,7 +32,9 @@ const CreateRoomModal = ({ socket, close }: CreateRoomModalProps) => {
     }
 
     const { title, capacity } = methods.getValues();
-    socket.emit('create-room', { title, capacity: Number(capacity) });
+    socket?.emit('create-room', { title, capacity: Number(capacity) });
+
+    // TODO: 생성된 방으로 바로 이동하기
     close();
   };
 
