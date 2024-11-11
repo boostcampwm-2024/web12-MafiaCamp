@@ -11,8 +11,6 @@ interface VideoViewerProps {
   participants: string[];
   publisher: Publisher | null;
   subscribers: Subscriber[];
-  audioEnabled: boolean;
-  videoEnabled: boolean;
 }
 
 const VideoViewer = ({
@@ -20,8 +18,6 @@ const VideoViewer = ({
   participants,
   publisher,
   subscribers,
-  audioEnabled,
-  videoEnabled,
 }: VideoViewerProps) => {
   const { isOpen } = useSidebarStore();
   const { nickname } = useSocketStore();
@@ -53,8 +49,8 @@ const VideoViewer = ({
           <VideoItem
             nickname={nickname}
             streamManager={publisher}
-            audioEnabled={audioEnabled}
-            videoEnabled={videoEnabled}
+            audioEnabled={publisher?.stream.audioActive ?? false}
+            videoEnabled={publisher?.stream.videoActive ?? false}
           />
           {subscribers.map((subscriber, index) => (
             <VideoItem

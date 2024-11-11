@@ -13,13 +13,21 @@ import { FaMicrophone, FaMicrophoneSlash } from 'react-icons/fa';
 
 interface BottombarProps {
   roomId: string;
+  audioEnabled?: boolean;
+  videoEnabled?: boolean;
   toggleAudio: () => void;
   toggleVideo: () => void;
 }
 
-const Bottombar = ({ roomId, toggleAudio, toggleVideo }: BottombarProps) => {
+const Bottombar = ({
+  roomId,
+  audioEnabled,
+  videoEnabled,
+  toggleAudio,
+  toggleVideo,
+}: BottombarProps) => {
   const { isOpen, open, close } = useSidebarStore();
-  const { socket, audioEnabled, videoEnabled } = useSocketStore();
+  const { socket } = useSocketStore();
   const {
     listRef,
     onDragStart,
@@ -55,7 +63,7 @@ const Bottombar = ({ roomId, toggleAudio, toggleVideo }: BottombarProps) => {
             <p>게임 시작</p>
           </button>
           <button
-            className='flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105'
+            className={`${audioEnabled === undefined && 'hidden'} flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105`}
             onClick={() => toggleAudio()}
           >
             {audioEnabled ? (
@@ -66,7 +74,7 @@ const Bottombar = ({ roomId, toggleAudio, toggleVideo }: BottombarProps) => {
             <p>오디오</p>
           </button>
           <button
-            className='flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105'
+            className={`${videoEnabled === undefined && 'hidden'} flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105`}
             onClick={() => toggleVideo()}
           >
             {videoEnabled ? (

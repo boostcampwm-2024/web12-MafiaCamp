@@ -8,8 +8,6 @@ interface SocketState {
   nickname: string;
   socket: Socket | null;
   session: Session | null;
-  audioEnabled: boolean;
-  videoEnabled: boolean;
 }
 
 // 액션 인터페이스 정의
@@ -23,8 +21,6 @@ const initialState: SocketState = {
   nickname: '',
   socket: null,
   session: null,
-  audioEnabled: true,
-  videoEnabled: true,
 };
 
 export type SocketStoreType = SocketState & SocketActions;
