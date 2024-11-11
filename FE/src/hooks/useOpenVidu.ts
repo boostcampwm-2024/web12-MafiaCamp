@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 export const useOpenVidu = () => {
   const { nickname, socket, session, audioEnabled, videoEnabled, setState } =
     useSocketStore();
+  const [isGameStarted, setIsGameStarted] = useState(false);
   const [publisher, setPublisher] = useState<Publisher | null>(null);
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
 
@@ -94,6 +95,7 @@ export const useOpenVidu = () => {
              */
             await session.publish(publisher);
             setPublisher(publisher);
+            setIsGameStarted(true);
           },
         );
       } catch (error) {
@@ -115,6 +117,7 @@ export const useOpenVidu = () => {
   }, []);
 
   return {
+    isGameStarted,
     publisher,
     subscribers,
     audioEnabled,

@@ -34,7 +34,7 @@ const NicknameModal = ({ setHasNickname }: NicknameModalProps) => {
           <h2 className='text-2xl text-slate-800'>닉네임 설정하기</h2>
           <CloseIcon
             className='scale-150 cursor-pointer rounded-lg fill-slate-600 hover:bg-slate-100'
-            onClick={() => router.back()}
+            onClick={() => router.push('/')}
           />
         </div>
         <div className='flex flex-col gap-12 rounded-2xl bg-slate-100 p-6 text-slate-800'>
@@ -55,7 +55,7 @@ const NicknameModal = ({ setHasNickname }: NicknameModalProps) => {
           <button
             className='h-[2.75rem] w-[7.75rem] rounded-3xl border border-slate-200 text-sm font-semibold text-slate-800 drop-shadow-sm hover:scale-105'
             type='button'
-            onClick={() => router.back()}
+            onClick={() => router.push('/')}
           >
             취소
           </button>

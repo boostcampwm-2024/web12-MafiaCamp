@@ -1,6 +1,6 @@
 'use client';
 
-import React, { FormEvent } from 'react';
+import React, { FormEvent, useEffect } from 'react';
 import CloseIcon from '../common/icons/CloseIcon';
 import { useForm } from 'react-hook-form';
 import { RoomCreateFormSchema } from '@/libs/zod/roomCreateFormSchema';
@@ -33,10 +33,20 @@ const CreateRoomModal = ({ close }: CreateRoomModalProps) => {
 
     const { title, capacity } = methods.getValues();
     socket?.emit('create-room', { title, capacity: Number(capacity) });
-
-    // TODO: 생성된 방으로 바로 이동하기
-    close();
   };
+
+  useEffect(() => {
+    socket?.on('create-room', (response: { success: boolean }) => {
+      if (response.success) {
+        alert('TODO: 방 바로 이동하기');
+        close();
+      }
+    });
+
+    return () => {
+      socket?.off('create-room');
+    };
+  }, [close, socket]);
 
   return (
     <form

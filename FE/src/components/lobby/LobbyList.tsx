@@ -1,7 +1,6 @@
 'use client';
 
 import LottieFile from '@/../public/lottie/no_data.json';
-import Link from 'next/link';
 import Lottie from 'lottie-react';
 import { useEffect, useState } from 'react';
 import LobbyItem from './LobbyItem';
@@ -27,16 +26,10 @@ const LobbyList = () => {
         <h2 className='text-5xl text-white'>로비</h2>
         <button
           className='flex h-12 w-36 items-center justify-center rounded-2xl bg-white text-sm font-bold text-slate-800 hover:scale-105'
-          onClick={() => socket?.emit('room-list')}
-        >
-          게임방 조회 임시 버튼
-        </button>
-        <Link
-          className='flex h-12 w-36 items-center justify-center rounded-2xl bg-white text-sm font-bold text-slate-800 hover:scale-105'
-          href='/game/1'
+          onClick={() => alert('TODO: 구현 예정')}
         >
           QUICK START
-        </Link>
+        </button>
       </div>
       {roomList.length === 0 ? (
         <div className='flex flex-col items-center pt-10'>

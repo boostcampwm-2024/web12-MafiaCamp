@@ -10,7 +10,12 @@ import { FormEvent, useEffect, useRef, useState } from 'react';
 import { useSocketStore } from '@/stores/socketStore';
 import { Chat } from '@/types/chat';
 
-const ChattingList = () => {
+interface ChattingListProps {
+  roomId: string;
+  totalParticipants: number;
+}
+
+const ChattingList = ({ roomId, totalParticipants }: ChattingListProps) => {
   // TODO: 커스텀 훅 생성
   const { nickname, socket } = useSocketStore();
   const { isOpen, initialize, close } = useSidebarStore();
@@ -27,7 +32,7 @@ const ChattingList = () => {
       return;
     }
 
-    socket?.emit('send-chat', { message });
+    socket?.emit('send-chat', { roomId, message });
     setMessage('');
   };
 
@@ -39,7 +44,6 @@ const ChattingList = () => {
         top: chatListRef.current.scrollHeight,
         behavior: 'smooth',
       });
-      // chatListRef.current.scrollTop = chatListRef.current.scrollHeight;
     }
   }, [chatList]);
 
@@ -72,7 +76,7 @@ const ChattingList = () => {
               <div className='flex flex-row items-center gap-2 text-sm'>
                 <UsersIcon />
                 <p className='text-nowrap text-white'>
-                  6 / <span className='font-bold'>8</span>
+                  {totalParticipants} / <span className='font-bold'>8</span>
                 </p>
               </div>
               <CloseIcon
