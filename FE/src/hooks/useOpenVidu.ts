@@ -46,12 +46,8 @@ export const useOpenVidu = () => {
          */
         session.on('streamCreated', (event) => {
           // 자동으로 새 스트림 구독
-          const subscriber = session.subscribe(event.stream, undefined, {
-            insertMode: VideoInsertMode.APPEND,
-            subscribeToAudio: true,
-            subscribeToVideo: true,
-          });
-          setSubscribers([...subscribers, subscriber]);
+          const subscriber = session.subscribe(event.stream, undefined);
+          setSubscribers((prevSubscribers) => [...prevSubscribers, subscriber]);
         });
 
         // 참가자의 스트림이 제거될 때
@@ -106,6 +102,8 @@ export const useOpenVidu = () => {
     })();
 
     return () => {
+      socket?.off('video-info');
+
       if (session) {
         session.disconnect();
         setState({ session: null, audioEnabled: true, videoEnabled: true });

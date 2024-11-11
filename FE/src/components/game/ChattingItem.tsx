@@ -11,7 +11,7 @@ const ChattingItem = ({ isSelf, nickname, content }: ChattingItemProps) => {
         <div className='flex h-6 items-center justify-center rounded-t-lg bg-slate-600 px-3'>
           {nickname}
         </div>
-        <div className='w-full rounded-b-lg rounded-tl-lg bg-slate-600 p-3'>
+        <div className='w-full whitespace-pre-wrap rounded-b-lg rounded-tl-lg bg-slate-600 p-3'>
           {content}
         </div>
       </div>
@@ -23,7 +23,7 @@ const ChattingItem = ({ isSelf, nickname, content }: ChattingItemProps) => {
       <div className='flex h-6 items-center justify-center rounded-t-lg bg-white px-3'>
         {nickname}
       </div>
-      <div className='w-full rounded-b-lg rounded-tr-lg bg-white p-3'>
+      <div className='w-full whitespace-pre-wrap rounded-b-lg rounded-tr-lg bg-white p-3'>
         {content}
       </div>
     </div>
