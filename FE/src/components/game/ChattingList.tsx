@@ -6,7 +6,7 @@ import CloseIcon from '@/components/common/icons/CloseIcon';
 import UsersIcon from '@/components/common/icons/UsersIcon';
 import { useSidebarStore } from '@/stores/sidebarStore';
 import { AnimatePresence, motion } from 'framer-motion';
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 import { useSocketStore } from '@/stores/socketStore';
 import { Chat } from '@/types/chat';
 
@@ -30,6 +30,18 @@ const ChattingList = () => {
     socket?.emit('send-chat', { message });
     setMessage('');
   };
+
+  const chatListRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (chatListRef.current) {
+      chatListRef.current.scroll({
+        top: chatListRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+      // chatListRef.current.scrollTop = chatListRef.current.scrollHeight;
+    }
+  }, [chatList]);
 
   useEffect(() => {
     socket?.on('chat', (chat: Chat) => {
@@ -69,7 +81,10 @@ const ChattingList = () => {
               />
             </div>
           </div>
-          <div className='flex h-full w-full flex-col gap-4 overflow-y-scroll px-4 py-4'>
+          <div
+            className='flex h-full w-full flex-col gap-4 overflow-y-scroll px-4 py-4'
+            ref={chatListRef}
+          >
             {chatList.length === 0 ? (
               <p className='self-center text-sm text-slate-200'>
                 댓글을 작성해 보세요.
