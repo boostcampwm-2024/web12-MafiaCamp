@@ -3,30 +3,31 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateRoomRequest } from './dto/create-room.request';
-import { Room } from './room.model';
-import { EventClient } from 'src/event/event.client';
+import { GameRoom } from './model/game-room.model';
+import { EventClient } from 'src/event/event-client.model';
+import { GameClient } from './model/game-client.model';
 
 @Injectable()
 export class RoomService {
-  private rooms: Room[] = [];
+  private rooms: GameRoom[] = [];
 
   getRooms() {
     return this.rooms.map((r) => r.toResponse());
   }
 
   createRoom(createRoomRequest: CreateRoomRequest) {
-    const room = Room.from(createRoomRequest);
+    const room = GameRoom.from(createRoomRequest);
     this.rooms = [...this.rooms, room];
   }
 
   enterRoom(client: EventClient, roomId: string) {
-    const room = this.findRoomById(roomId);
-    room.enter(client);
+    this.findRoomById(roomId)
+      .enter(new GameClient(client));
   }
 
-  sendAll(client: EventClient, message: string) {
-    const room = this.findRoomById(client.roomId);
-    room.sendAll(client, message);
+  sendAll(client: EventClient, roomId: string, message: string) {
+    this.findRoomById(roomId)
+      .sendAll(new GameClient(client), message);
   }
 
   findRoomById(roomId) {

@@ -5,4 +5,4 @@ import { RoomService } from './room.service';
   providers: [RoomService],
   exports: [RoomService],
 })
-export class RoomsModule {}
+export class RoomModule {}

@@ -12,7 +12,6 @@ import { HttpLoggerInterceptor } from './common/logger/http.logger.interceptor';
 import { TraceMiddleware } from './common/logger/trace.middleware';
 import { WebsocketLoggerInterceptor } from './common/logger/websocket.logger.interceptor';
 import { EventModule } from './event/event.module';
-import { SocketStateModule } from './socket-state/socket-state.module';
 
 @Module({
   imports: [
@@ -31,7 +30,6 @@ import { SocketStateModule } from './socket-state/socket-state.module';
     VideoServerModule,
     EventModule,
     LoggerModule,
-    SocketStateModule,
   ],
   providers: [
     {

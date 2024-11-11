@@ -16,8 +16,10 @@ import {
   VIDEO_SERVER_USECASE,
   VideoServerUsecase,
 } from 'src/video-server/usecase/video-server.usecase';
-import { EventClient } from './event.client';
+import { EventClient } from './event-client.model';
 import { OpenViduRole } from 'openvidu-node-client';
+import { EventManager } from './event-manager';
+import { subscribe } from 'diagnostics_channel';
 
 // @UseInterceptors(WebsocketLoggerInterceptor)
 @WebSocketGateway({
@@ -34,16 +36,21 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect
   constructor(
     @Inject(VIDEO_SERVER_USECASE)
     private readonly videoServerUseCase: VideoServerUsecase,
+    private readonly eventManager: EventManager,
     private readonly roomService: RoomService,
   ) {}
 
   handleConnection(socket: Socket) {
     this.logger.log(`client connected: ${socket.id}`);
-    this.connectedClients.set(socket, new EventClient(socket));
+    const client = new EventClient(socket, this.eventManager);
+    client.subscribe('RoomDataChanged');
+    this.connectedClients.set(socket, client);
   }
 
   handleDisconnect(socket: Socket) {
     this.logger.log(`client disconnected: ${socket.id}`);
+    const client = this.connectedClients.get(socket);
+    client.unsubscribeAll();
     this.connectedClients.delete(socket);
   }
 
@@ -68,6 +75,10 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect
   @SubscribeMessage('create-room')
   createRoom(@MessageBody() createRoomRequest: CreateRoomRequest) {
     this.roomService.createRoom(createRoomRequest);
+    this.eventManager.publish('RoomDataChanged', {
+      name: 'room-list',
+      data: this.roomService.getRooms()
+    });
     return {
       event: 'create-room',
       data: {
@@ -93,20 +104,20 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect
   ) {
     const { message } = data;
     const client = this.connectedClients.get(socket);
-    this.roomService.sendAll(client, message);
+    this.roomService.sendAll(client, 'test', message);
   }
 
-  @SubscribeMessage('start-game')
-  async startGame(@ConnectedSocket() socket: Socket) {
-    const roomId = this.connectedClients.get(socket).roomId;
-    const sessionId = await this.videoServerUseCase.createSession(roomId);
-    const room = this.roomService.findRoomById(roomId);
-    room.clients.forEach(async c => {
-      const token = await this.videoServerUseCase.generateToken(roomId, c.nickname, OpenViduRole.PUBLISHER);
-      c.emit('video-info', {
-        token,
-        sessionId
-      });
-    })
-  }
+  // @SubscribeMessage('start-game')
+  // async startGame(@ConnectedSocket() socket: Socket) {
+  //   const roomId = this.connectedClients.get(socket).roomId;
+  //   const sessionId = await this.videoServerUseCase.createSession(roomId);
+  //   const room = this.roomService.findRoomById(roomId);
+  //   room.clients.forEach(async c => {
+  //     const token = await this.videoServerUseCase.generateToken(roomId, c.nickname, OpenViduRole.PUBLISHER);
+  //     c.emit('video-info', {
+  //       token,
+  //       sessionId
+  //     });
+  //   })
+  // }
 }
