@@ -16,7 +16,7 @@ export abstract class BasicLoggerInterceptor implements NestInterceptor {
 
     if (contextType === 'http') {
       return this.handleHttpRequest(context, next, startTime);
-    }else if (contextType === 'ws') {
+    } else if (contextType === 'ws') {
       return this.handleWebsocketEvent(context, next, startTime);
     }
 
@@ -24,6 +24,7 @@ export abstract class BasicLoggerInterceptor implements NestInterceptor {
   }
 
   protected abstract handleHttpRequest(context: ExecutionContext, next: CallHandler, startTime: number): Observable<any>;
+
   protected abstract handleWebsocketEvent(context: ExecutionContext, next: CallHandler, startTime: number): Observable<any>;
 
   protected createLogInfo(traceId: string, spanId: string, parentSpanId?: string) {
