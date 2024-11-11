@@ -9,6 +9,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { useSocketStore } from '@/stores/socketStore';
 import { Chat } from '@/types/chat';
+import { useSearchParams } from 'next/navigation';
 
 interface ChattingListProps {
   roomId: string;
@@ -21,6 +22,7 @@ const ChattingList = ({ roomId, totalParticipants }: ChattingListProps) => {
   const { isOpen, initialize, close } = useSidebarStore();
   const [chatList, setChatList] = useState<Chat[]>([]);
   const [message, setMessage] = useState('');
+  const capacity = useSearchParams().get('capacity');
 
   // TODO: 추후 수정 필요
   const [isMafiaOnly, setIsMafiaOnly] = useState(false);
@@ -76,7 +78,8 @@ const ChattingList = ({ roomId, totalParticipants }: ChattingListProps) => {
               <div className='flex flex-row items-center gap-2 text-sm'>
                 <UsersIcon />
                 <p className='text-nowrap text-white'>
-                  {totalParticipants} / <span className='font-bold'>8</span>
+                  {totalParticipants} /{' '}
+                  <span className='font-bold'>{capacity}</span>
                 </p>
               </div>
               <CloseIcon

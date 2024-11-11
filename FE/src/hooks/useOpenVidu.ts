@@ -52,7 +52,8 @@ export const useOpenVidu = () => {
         session.on('streamDestroyed', (event) => {
           setSubscribers(
             subscribers.filter(
-              (subscriber) => subscriber !== event.stream.streamManager,
+              (subscriber) =>
+                subscriber.stream.streamManager !== event.stream.streamManager,
             ),
           );
         });

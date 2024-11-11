@@ -9,16 +9,9 @@ import { FaMicrophone, FaMicrophoneSlash } from 'react-icons/fa';
 interface VideoItemProps {
   nickname: string;
   streamManager: Publisher | Subscriber | null;
-  audioEnabled: boolean;
-  videoEnabled: boolean;
 }
 
-const VideoItem = ({
-  nickname,
-  streamManager,
-  audioEnabled,
-  videoEnabled,
-}: VideoItemProps) => {
+const VideoItem = ({ nickname, streamManager }: VideoItemProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -38,12 +31,12 @@ const VideoItem = ({
       <div className='flex w-full flex-row items-center justify-between gap-3 rounded-b-3xl bg-slate-600/50 px-4 py-3'>
         <p className='text-sm text-white'>{nickname}</p>
         <div className='flex flex-row items-center gap-3'>
-          {audioEnabled ? (
+          {streamManager?.stream.audioActive ? (
             <FaMicrophone className='text-slate-200' />
           ) : (
             <FaMicrophoneSlash className='scale-125 text-slate-200' />
           )}
-          {videoEnabled ? (
+          {streamManager?.stream.videoActive ? (
             <VideoCameraIcon className='scale-90 fill-slate-200' />
           ) : (
             <VideoCameraSlashIcon className='scale-90 fill-slate-200' />
