@@ -23,9 +23,6 @@
       "@/components/*": ["./src/components/*"]
     }
   },
-  "typeAcquisition": {
-    "include": ["jest"]
-  },
   "include": [
     "next-env.d.ts",
     "**/*.ts",

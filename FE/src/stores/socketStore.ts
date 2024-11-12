@@ -11,7 +11,7 @@ interface SocketState {
 }
 
 // 액션 인터페이스 정의
-interface SocketActions {
+interface SocketAction {
   initialize: () => void;
   setState: (data: Partial<SocketState>) => void;
 }
@@ -23,7 +23,7 @@ const initialState: SocketState = {
   session: null,
 };
 
-export type SocketStoreType = SocketState & SocketActions;
+export type SocketStoreType = SocketState & SocketAction;
 
 const socketStore: StateCreator<SocketStoreType> = (set) => ({
   ...initialState,
