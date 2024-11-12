@@ -1,14 +1,12 @@
 import { AllocateUserRoleUsecase } from './usecase/allocate.user-role.usecase';
 import { Inject, Injectable } from '@nestjs/common';
 import { AllocateJobRequest } from './dto/allocate.job.request';
-import { AllocateJobResponse } from './dto/allocate.job.response';
 import { JOB_FACTORY, JobFactory } from './job.factory';
-import {
-  GAME_HISTORY_REPOSITORY,
-  GameHistoryRepository,
-} from './repository/game-history.repository';
+import { GAME_HISTORY_REPOSITORY, GameHistoryRepository } from './repository/game-history.repository';
 import { GameHistoryEntity } from './entity/game-history.entity';
 import { Transactional } from 'typeorm-transactional';
+import { GameClient } from '../game-room/entity/game-client.model';
+import { MAFIA_ROLE } from './mafia-role';
 
 @Injectable()
 export class GameService implements AllocateUserRoleUsecase {
@@ -20,7 +18,8 @@ export class GameService implements AllocateUserRoleUsecase {
       GameHistoryEntity,
       number
     >,
-  ) {}
+  ) {
+  }
 
   /*
     GameHistory에는 저장이 되지만 아직 GameUser 테이블에는 저장되지 않습니다.
@@ -28,11 +27,9 @@ export class GameService implements AllocateUserRoleUsecase {
     하지만 모든 로직은 완성되어 있어서 바로 사용이 가능합니다.
    */
   @Transactional()
-  async allocate(jobRequest: AllocateJobRequest): Promise<AllocateJobResponse> {
-    const playerIds = jobRequest.playerIds;
+  async allocate(jobRequest: AllocateJobRequest): Promise<void> {
     const gameHistoryEntity = new GameHistoryEntity();
     await this.gameHistoryRepository.save(gameHistoryEntity);
-    const userRoles = this.jobFactory.allocateGameRoles(playerIds);
-    return new AllocateJobResponse(userRoles);
+    const userRoles: Record<GameClient, MAFIA_ROLE> = this.jobFactory.allocateGameRoles(jobRequest.gameRoom);
   }
 }

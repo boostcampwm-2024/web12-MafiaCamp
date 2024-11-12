@@ -9,7 +9,7 @@ export class GameRoom {
   private participants = 0;
   private status: GameRoomStatus = GameRoomStatus.READY;
   private createdAt: number = Date.now();
-  private readonly clients: GameClient[] = [];
+  private readonly _clients: GameClient[] = [];
 
   constructor(private title: string, private capacity: number) {}
 
@@ -19,6 +19,10 @@ export class GameRoom {
 
   get roomId() {
     return this._roomId;
+  }
+
+  get clients(): GameClient[] {
+    return this._clients;
   }
 
   static from(createRoomRequest: CreateRoomRequest) {
@@ -31,18 +35,18 @@ export class GameRoom {
       throw new BadRequestException(); // todo: 적절한 예외 클래스 사용
     }
     this.participants++;
-    this.clients.push(client);
-    const participants = this.clients.map((c) => c.nickname);
+    this._clients.push(client);
+    const participants = this._clients.map((c) => c.nickname);
     this.sendAll('participants', participants);
   }
 
-  sendAll(event, ...args) {
-    this.clients.forEach((c) => c.send(event, ...args));
+  sendAll(event : string, ...args) {
+    this._clients.forEach((c) => c.send(event, ...args));
   }
 
   async startGame(sessionId: string, generateToken) {
     const roomId = this._roomId;
-    this.clients.forEach(async (c) => {
+    this._clients.forEach(async (c) => {
       const token = await generateToken(roomId, c.nickname, 'PUBLISHER');
       c.send('video-info', {
         token,
