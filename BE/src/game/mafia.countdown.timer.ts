@@ -4,22 +4,20 @@ import { TIMEOUT_SITUATION } from './timeout.situation';
 import { interval, Subject, takeUntil, takeWhile } from 'rxjs';
 import { DuplicateTimerException } from '../common/error/duplicate.timer.exception';
 import { NotFoundTimerException } from '../common/error/not.found.timer.exception';
+import { GameRoom } from '../game-room/model/game-room.model';
 
 @Injectable()
 export class MafiaCountdownTimer implements CountdownTimer {
 
-  private readonly stopSignals: Record<string, Subject<any>>;
-  private readonly pauses: Record<string, boolean>;
+  private readonly stopSignals: Record<GameRoom, Subject<any>>;
+  private readonly pauses: Record<GameRoom, boolean>;
 
   constructor() {
     this.stopSignals = {};
     this.pauses = {};
   }
 
-  /*
-  roomId로 진행을 하지만 Room 객체가 생성되면 migration 할 예정
-   */
-  start(room: string, situation: string): void {
+  start(room: GameRoom, situation: string): void {
     if (this.stopSignals[room]) {
       throw new DuplicateTimerException();
     }
@@ -34,21 +32,27 @@ export class MafiaCountdownTimer implements CountdownTimer {
       takeWhile(() => timeLeft > 0 && !this.pauses[room]),
     ).subscribe({
       next: () => {
+        room.sendAll('countdown', {
+          situation: situation,
+          timeLeft: timeLeft,
+        });
         timeLeft--;
-        console.log('이 부분 소켓을 이용해서 계속 룸에 있는 사람들에게 시간을 전송할 예정');
       },
       complete: () => {
-        console.log('해당 타이머가 완료되면 소켓을 이용해서 룸에 있는 사람들에게 전송할 예정');
+        room.sendAll('countdown-exit', {
+          situation: situation,
+          timeLeft: timeLeft,
+        });
         this.stop(room);
       },
     });
   }
 
-  private pause(room: string):void {
+  private pause(room: GameRoom): void {
     this.pauses[room] = true;
   }
 
-  private cleanup(room:string):void {
+  private cleanup(room: GameRoom): void {
     if (this.stopSignals[room]) {
       this.stopSignals[room].next();
       this.stopSignals[room].complete();
@@ -59,7 +63,7 @@ export class MafiaCountdownTimer implements CountdownTimer {
     throw new NotFoundTimerException();
   }
 
-  stop(room: string): void {
+  stop(room: GameRoom): void {
     this.pause(room);
     this.cleanup(room);
   }

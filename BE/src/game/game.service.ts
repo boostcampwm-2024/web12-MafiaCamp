@@ -41,11 +41,11 @@ export class GameService implements AllocateUserRoleUsecase, CountdownTimeoutUse
 
    */
   countdownStart(startCountdownRequest: StartCountdownRequest): void {
-    this.countdownTimer.start(startCountdownRequest.roomId, startCountdownRequest.situation);
+    this.countdownTimer.start(startCountdownRequest.room, startCountdownRequest.situation);
   }
 
   countdownStop(stopCountdownRequest: StopCountdownRequest): void {
-    this.countdownTimer.stop(stopCountdownRequest.roomId);
+    this.countdownTimer.stop(stopCountdownRequest.room);
   }
 
 }

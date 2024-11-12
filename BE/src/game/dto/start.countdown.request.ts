@@ -1,4 +1,6 @@
+import { GameRoom } from '../../game-room/model/game-room.model';
+
 export class StartCountdownRequest {
-  constructor(readonly roomId: string, readonly situation: string) {
+  constructor(readonly room: GameRoom, readonly situation: string) {
   }
 }
