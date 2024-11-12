@@ -10,7 +10,7 @@ export type useDragScrollType = {
   onTouchEnd: (e: TouchEvent<HTMLDivElement>) => void;
 };
 
-export default function useDragScroll(): useDragScrollType {
+export const useDragScroll = (): useDragScrollType => {
   const listRef = useRef<HTMLDivElement>(null);
 
   // element를 드래그하고 있는지 여부
@@ -103,4 +103,4 @@ export default function useDragScroll(): useDragScrollType {
     onTouchMove,
     onTouchEnd,
   };
-}
+};

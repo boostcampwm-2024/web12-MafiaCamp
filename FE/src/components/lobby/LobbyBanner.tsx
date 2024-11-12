@@ -16,8 +16,8 @@ const LobbyBanner = () => {
         <div className='flex w-[67.5rem] flex-row items-center justify-between pt-10 max-[1080px]:flex-col max-[1080px]:gap-4'>
           <motion.div
             className='flex flex-col items-start gap-8 max-[1080px]:items-center'
-            initial={{ translateY: '0.5rem', opacity: 0 }}
-            whileInView={{ translateY: '0rem', opacity: 1 }}
+            initial={{ y: '0.5rem', opacity: 0 }}
+            whileInView={{ y: '0rem', opacity: 1 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
           >

@@ -6,8 +6,8 @@ const RoleInfo = () => {
     <div className='flex w-full flex-col items-center gap-[3.75rem]'>
       <motion.h2
         className='h-13 bg-gradient-to-r from-slate-400 to-white bg-clip-text pb-1 text-5xl font-bold text-transparent max-[768px]:text-4xl max-[540px]:text-3xl max-[440px]:text-2xl'
-        initial={{ translateX: '-3rem', opacity: 0 }}
-        whileInView={{ translateX: '0rem', opacity: 1 }}
+        initial={{ x: '-3rem', opacity: 0 }}
+        whileInView={{ x: '0rem', opacity: 1 }}
         transition={{ duration: 0.5 }}
         viewport={{ once: true, amount: 0.9 }}
       >
@@ -29,8 +29,8 @@ const RoleInfo = () => {
           />
           <motion.div
             className='flex flex-col items-center gap-12 pt-4'
-            initial={{ translateY: '1rem', opacity: 0 }}
-            whileInView={{ translateY: '0rem', opacity: 1 }}
+            initial={{ y: '1rem', opacity: 0 }}
+            whileInView={{ y: '0rem', opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.5 }}
             viewport={{ once: true, amount: 0.9 }}
           >
@@ -51,8 +51,8 @@ const RoleInfo = () => {
           <Image src='/home/police.png' alt='police' width={120} height={120} />
           <motion.div
             className='flex flex-col items-center gap-12 pt-4'
-            initial={{ translateY: '1rem', opacity: 0 }}
-            whileInView={{ translateY: '0rem', opacity: 1 }}
+            initial={{ y: '1rem', opacity: 0 }}
+            whileInView={{ y: '0rem', opacity: 1 }}
             transition={{ delay: 0.7, duration: 0.5 }}
             viewport={{ once: true, amount: 0.9 }}
           >
@@ -73,8 +73,8 @@ const RoleInfo = () => {
           <Image src='/home/doctor.png' alt='doctor' width={120} height={120} />
           <motion.div
             className='flex flex-col items-center gap-12 pt-4 text-white'
-            initial={{ translateY: '1rem', opacity: 0 }}
-            whileInView={{ translateY: '0rem', opacity: 1 }}
+            initial={{ y: '1rem', opacity: 0 }}
+            whileInView={{ y: '0rem', opacity: 1 }}
             transition={{ delay: 0.9, duration: 0.5 }}
             viewport={{ once: true, amount: 0.9 }}
           >
@@ -95,8 +95,8 @@ const RoleInfo = () => {
           <Image src='/home/mafia.png' alt='mafia' width={120} height={120} />
           <motion.div
             className='flex flex-col items-center gap-12 pt-4'
-            initial={{ translateY: '1rem', opacity: 0 }}
-            whileInView={{ translateY: '0rem', opacity: 1 }}
+            initial={{ y: '1rem', opacity: 0 }}
+            whileInView={{ y: '0rem', opacity: 1 }}
             transition={{ delay: 1.1, duration: 0.5 }}
             viewport={{ once: true, amount: 0.9 }}
           >

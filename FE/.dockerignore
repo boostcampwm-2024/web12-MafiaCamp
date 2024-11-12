@@ -1,0 +1,12 @@
+# Node.js 환경
+node_modules
+
+# Git 관련 파일
+.git
+.gitignore
+
+# 환경 설정 파일
+.env
+
+# 빌드 결과물
+.next

@@ -5,16 +5,20 @@ import CloseIcon from '@/components/common/icons/CloseIcon';
 import PlayIcon from '@/components/common/icons/PlayIcon';
 import VideoCameraIcon from '@/components/common/icons/VideoCameraIcon';
 import VideoCameraSlashIcon from '@/components/common/icons/VideoCameraSlashIcon';
-import useDragScroll from '@/hooks/useDragScroll';
+import { useDragScroll } from '@/hooks/useDragScroll';
 import { useSidebarStore } from '@/stores/sidebarStore';
+import { useSocketStore } from '@/stores/socketStore';
 import Link from 'next/link';
-import { useState } from 'react';
 import { FaMicrophone, FaMicrophoneSlash } from 'react-icons/fa';
 
-const Bottombar = () => {
+interface BottombarProps {
+  toggleAudio: () => void;
+  toggleVideo: () => void;
+}
+
+const Bottombar = ({ toggleAudio, toggleVideo }: BottombarProps) => {
   const { isOpen, open, close } = useSidebarStore();
-  const [isCameraOn, setIsCameraOn] = useState(false);
-  const [isAudioOn, setIsAudioOn] = useState(false);
+  const { socket, audioEnabled, videoEnabled } = useSocketStore();
   const {
     listRef,
     onDragStart,
@@ -42,15 +46,18 @@ const Bottombar = () => {
         onTouchEnd={onTouchEnd}
       >
         <div className='flex flex-row items-center gap-4'>
-          <button className='flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105'>
+          <button
+            className='flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105'
+            onClick={() => socket?.emit('start-game')}
+          >
             <PlayIcon className='fill-slate-200' />
             <p>게임 시작</p>
           </button>
           <button
             className='flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105'
-            onClick={() => setIsAudioOn(!isAudioOn)}
+            onClick={() => toggleAudio()}
           >
-            {isAudioOn ? (
+            {audioEnabled ? (
               <FaMicrophone className='scale-125 cursor-pointer text-slate-200 hover:text-white' />
             ) : (
               <FaMicrophoneSlash className='scale-150 cursor-pointer text-slate-200 hover:text-white' />
@@ -59,9 +66,9 @@ const Bottombar = () => {
           </button>
           <button
             className='flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105'
-            onClick={() => setIsCameraOn(!isCameraOn)}
+            onClick={() => toggleVideo()}
           >
-            {isCameraOn ? (
+            {videoEnabled ? (
               <VideoCameraIcon className='scale-90 cursor-pointer fill-slate-200 hover:fill-white' />
             ) : (
               <VideoCameraSlashIcon className='scale-90 cursor-pointer fill-slate-200 hover:fill-white' />

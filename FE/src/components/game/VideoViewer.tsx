@@ -2,9 +2,22 @@
 
 import { useSidebarStore } from '@/stores/sidebarStore';
 import VideoItem from './VideoItem';
-import useDragScroll from '@/hooks/useDragScroll';
+import { useDragScroll } from '@/hooks/useDragScroll';
+import { Publisher, Subscriber } from 'openvidu-browser';
 
-const VideoViewer = () => {
+interface VideoViewerProps {
+  publisher: Publisher | null;
+  subscribers: Subscriber[];
+  audioEnabled: boolean;
+  videoEnabled: boolean;
+}
+
+const VideoViewer = ({
+  publisher,
+  subscribers,
+  audioEnabled,
+  videoEnabled,
+}: VideoViewerProps) => {
   const { isOpen } = useSidebarStore();
   const {
     listRef,
@@ -15,6 +28,7 @@ const VideoViewer = () => {
     onTouchMove,
     onTouchEnd,
   } = useDragScroll();
+
   return (
     <div
       className={`${isOpen ? 'right-[21.5rem]' : 'right-6'} absolute bottom-[6.5rem] left-6 top-6 max-h-screen overflow-auto transition-all duration-500 ease-out`}
@@ -27,15 +41,20 @@ const VideoViewer = () => {
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
-      <div className='grid h-full min-w-[67.5rem] grid-cols-4 gap-6'>
-        <VideoItem />
-        <VideoItem />
-        <VideoItem />
-        <VideoItem />
-        <VideoItem />
-        <VideoItem />
-        <VideoItem />
-        <VideoItem />
+      <div className='grid h-full min-w-[67.5rem] grid-cols-4 grid-rows-2 gap-6'>
+        <VideoItem
+          streamManager={publisher}
+          audioEnabled={audioEnabled}
+          videoEnabled={videoEnabled}
+        />
+        {subscribers.map((subscriber, index) => (
+          <VideoItem
+            key={index}
+            streamManager={subscriber}
+            audioEnabled={subscriber.properties.subscribeToAudio ?? false}
+            videoEnabled={subscriber.properties.subscribeToVideo ?? false}
+          />
+        ))}
       </div>
     </div>
   );

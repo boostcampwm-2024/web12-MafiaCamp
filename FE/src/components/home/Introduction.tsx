@@ -9,8 +9,8 @@ const Introduction = () => {
     <div className='flex w-full flex-col items-center gap-8 text-nowrap pt-[25rem]'>
       <motion.h2
         className='bg-gradient-to-r from-slate-400 to-white bg-clip-text text-5xl font-bold text-transparent max-[768px]:text-4xl max-[540px]:text-3xl max-[440px]:text-2xl'
-        initial={{ translateX: '-3rem', opacity: 0 }}
-        whileInView={{ translateX: '0rem', opacity: 1 }}
+        initial={{ x: '-3rem', opacity: 0 }}
+        whileInView={{ x: '0rem', opacity: 1 }}
         transition={{ duration: 0.5 }}
         viewport={{ once: true, amount: 0.9 }}
       >
@@ -18,8 +18,8 @@ const Introduction = () => {
       </motion.h2>
       <motion.p
         className='text-2xl text-slate-200 max-[768px]:text-xl max-[540px]:text-lg max-[440px]:text-base'
-        initial={{ translateX: '-3rem', opacity: 0 }}
-        whileInView={{ translateX: '0rem', opacity: 1 }}
+        initial={{ x: '-3rem', opacity: 0 }}
+        whileInView={{ x: '0rem', opacity: 1 }}
         transition={{ delay: 0.3, duration: 0.5 }}
         viewport={{ once: true, amount: 0.9 }}
       >
@@ -37,8 +37,8 @@ const Introduction = () => {
         </motion.div>
         <motion.div
           className='text-xl text-white max-[768px]:text-lg max-[540px]:text-base max-[440px]:text-sm'
-          initial={{ translateX: '-1rem', opacity: 0 }}
-          whileInView={{ translateX: '0rem', opacity: 1 }}
+          initial={{ x: '-1rem', opacity: 0 }}
+          whileInView={{ x: '0rem', opacity: 1 }}
           transition={{ duration: 0.5 }}
           viewport={{ once: true, amount: 0.9 }}
         >

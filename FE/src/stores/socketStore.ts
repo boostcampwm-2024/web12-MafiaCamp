@@ -1,3 +1,4 @@
+import { Session } from 'openvidu-browser';
 import { Socket } from 'socket.io-client';
 import { create, StateCreator } from 'zustand';
 import { devtools } from 'zustand/middleware';
@@ -6,6 +7,9 @@ import { devtools } from 'zustand/middleware';
 interface SocketState {
   nickname: string;
   socket: Socket | null;
+  session: Session | null;
+  audioEnabled: boolean;
+  videoEnabled: boolean;
 }
 
 // 액션 인터페이스 정의
@@ -18,6 +22,9 @@ interface SocketActions {
 const initialState: SocketState = {
   nickname: '',
   socket: null,
+  session: null,
+  audioEnabled: true,
+  videoEnabled: true,
 };
 
 export type SocketStoreType = SocketState & SocketActions;

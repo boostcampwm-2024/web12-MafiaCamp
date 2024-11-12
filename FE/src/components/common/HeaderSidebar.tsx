@@ -21,9 +21,9 @@ const HeaderSidebar = ({ visible, close }: HeaderSidebarProps) => {
         >
           <motion.aside
             className='flex h-fit w-52 flex-col items-center gap-4 rounded-b-2xl bg-white p-4 pb-16 text-xl text-slate-800'
-            initial={{ translateY: '-100%' }}
-            animate={{ translateY: '0%' }}
-            exit={{ translateY: '-100%' }}
+            initial={{ y: '-100%' }}
+            animate={{ y: '0%' }}
+            exit={{ y: '-100%' }}
             transition={{ bounce: false }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -33,8 +33,8 @@ const HeaderSidebar = ({ visible, close }: HeaderSidebarProps) => {
             />
             <motion.div
               className='w-full'
-              initial={{ translateY: '1rem', opacity: 0 }}
-              animate={{ translateY: '0rem', opacity: 1 }}
+              initial={{ y: '1rem', opacity: 0 }}
+              animate={{ z: '0rem', opacity: 1 }}
               transition={{ delay: 0.2, bounce: false }}
             >
               <Link
@@ -48,8 +48,8 @@ const HeaderSidebar = ({ visible, close }: HeaderSidebarProps) => {
             </motion.div>
             <motion.div
               className='w-full'
-              initial={{ translateY: '1rem', opacity: 0 }}
-              animate={{ translateY: '0rem', opacity: 1 }}
+              initial={{ y: '1rem', opacity: 0 }}
+              animate={{ y: '0rem', opacity: 1 }}
               transition={{ delay: 0.3, bounce: false }}
             >
               <Link
@@ -63,8 +63,8 @@ const HeaderSidebar = ({ visible, close }: HeaderSidebarProps) => {
             </motion.div>
             <motion.div
               className='w-full'
-              initial={{ translateY: '1rem', opacity: 0 }}
-              animate={{ translateY: '0rem', opacity: 1 }}
+              initial={{ y: '1rem', opacity: 0 }}
+              animate={{ y: '0rem', opacity: 1 }}
               transition={{ delay: 0.4, bounce: false }}
             >
               <Link
@@ -78,8 +78,8 @@ const HeaderSidebar = ({ visible, close }: HeaderSidebarProps) => {
             </motion.div>
             <motion.button
               className='flex w-full flex-row items-center gap-2 p-3 hover:bg-slate-100'
-              initial={{ translateY: '1rem', opacity: 0 }}
-              animate={{ translateY: '0rem', opacity: 1 }}
+              initial={{ y: '1rem', opacity: 0 }}
+              animate={{ y: '0rem', opacity: 1 }}
               transition={{ delay: 0.5, bounce: false }}
               onClick={() => close()}
             >

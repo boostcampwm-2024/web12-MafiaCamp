@@ -42,8 +42,8 @@ const Header = () => {
       <HeaderSidebar visible={isVisible} close={() => setIsVisible(false)} />
       <motion.div
         className={`${pathname === '/' && !isScrolled ? 'bg-transparent' : 'bg-slate-600/50'} fixed top-0 z-10 flex h-20 w-[80rem] flex-row items-center justify-between self-center rounded-b-3xl px-24 max-[1280px]:w-full max-[1280px]:px-12 max-[768px]:px-6`}
-        initial={{ translateY: '-0.5rem', opacity: 0 }}
-        whileInView={{ translateY: '0rem', opacity: 1 }}
+        initial={{ y: '-0.5rem', opacity: 0 }}
+        whileInView={{ y: '0rem', opacity: 1 }}
         transition={{ delay: 0.5, duration: 0.5 }}
         viewport={{ once: true }}
       >
@@ -94,8 +94,8 @@ const Header = () => {
           <div className='flex flex-col gap-24 pt-20 max-[1080px]:flex-row max-[1080px]:gap-6 max-[786px]:flex-col max-[768px]:items-center'>
             <motion.h1
               className='flex flex-col text-nowrap text-4xl text-white max-[768px]:items-center max-[768px]:text-3xl'
-              initial={{ translateY: '0.5rem', opacity: 0 }}
-              whileInView={{ translateY: '0rem', opacity: 1 }}
+              initial={{ y: '0.5rem', opacity: 0 }}
+              whileInView={{ y: '0rem', opacity: 1 }}
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
             >
@@ -107,8 +107,8 @@ const Header = () => {
             </motion.h1>
             <motion.button
               className='h-[3.75rem] w-[11.25rem] rounded-2xl bg-white font-bold text-slate-800 hover:bg-slate-800 hover:text-white max-[768px]:h-12 max-[768px]:w-36 max-[768px]:text-sm'
-              initial={{ translateY: '0.5rem', opacity: 0 }}
-              whileInView={{ translateY: '0rem', opacity: 1 }}
+              initial={{ y: '0.5rem', opacity: 0 }}
+              whileInView={{ y: '0rem', opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.5 }}
               viewport={{ once: true }}
             >
