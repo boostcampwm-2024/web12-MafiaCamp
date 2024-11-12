@@ -75,7 +75,27 @@ export class OpenviduService implements VideoServerUsecase {
       return connection.token;
     } catch (error) {
       console.error(`Failed to generate token: ${error.message}`);
-      throw new Error('세션 생성에 실패했습니다.');
+      throw new Error('토큰 생성에 실패했습니다.');
+    }
+  }
+
+  async handleLeaveParticipant(roomId: string, userId: string): Promise<void> {
+    try {
+      const session = this.sessions.get(roomId);
+      if (!session) throw new Error('세션을 찾을 수 없습니다.');
+
+      await session.fetch();
+      const connection = session.activeConnections.find(
+        (connection) =>
+          JSON.parse(connection.connectionProperties.data).userId === userId,
+      );
+
+      if (connection) {
+        await session.forceDisconnect(connection);
+      }
+    } catch (error) {
+      console.error(`Failed to handle participant leave: ${error.message}`);
+      throw new Error('참가자 연결 해제에 실패했습니다.');
     }
   }
 
