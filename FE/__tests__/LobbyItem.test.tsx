@@ -1,8 +1,8 @@
 import LobbyItem from '@/components/lobby/LobbyItem';
 import { render, screen } from '@testing-library/react';
 
-describe('LobbyItem', () => {
-  test('render a LobbyItem', () => {
+describe('LobbyItem Test', () => {
+  test('LobbyItem Rendering Test', () => {
     render(
       <LobbyItem
         room={{
