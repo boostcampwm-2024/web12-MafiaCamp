@@ -9,27 +9,25 @@ import { GameRoom } from '../game-room/model/game-room.model';
 @Injectable()
 export class MafiaCountdownTimer implements CountdownTimer {
 
-  private readonly stopSignals: Record<GameRoom, Subject<any>>;
-  private readonly pauses: Record<GameRoom, boolean>;
+  private readonly stopSignals: Map<GameRoom, Subject<any>> = new Map<GameRoom, Subject<any>>();
+  private readonly pauses: Map<GameRoom, boolean> = new Map<GameRoom, boolean>();
 
   constructor() {
-    this.stopSignals = {};
-    this.pauses = {};
   }
 
   start(room: GameRoom, situation: string): void {
-    if (this.stopSignals[room]) {
+    if (this.stopSignals.has(room)) {
       throw new DuplicateTimerException();
     }
 
-    this.stopSignals.room = new Subject();
-    this.pauses.room = false;
+    this.stopSignals.set(room, new Subject());
+    this.pauses.set(room, false);
 
     let timeLeft: number = TIMEOUT_SITUATION[situation];
 
     interval(1000).pipe(
-      takeUntil(this.stopSignals[room]),
-      takeWhile(() => timeLeft > 0 && !this.pauses[room]),
+      takeUntil(this.stopSignals.get(room)),
+      takeWhile(() => timeLeft > 0 && !this.pauses.get(room)),
     ).subscribe({
       next: () => {
         room.sendAll('countdown', {
@@ -49,15 +47,16 @@ export class MafiaCountdownTimer implements CountdownTimer {
   }
 
   private pause(room: GameRoom): void {
-    this.pauses[room] = true;
+    this.pauses.set(room, true);
   }
 
   private cleanup(room: GameRoom): void {
-    if (this.stopSignals[room]) {
-      this.stopSignals[room].next();
-      this.stopSignals[room].complete();
-      delete this.stopSignals[room];
-      delete this.pauses[room];
+    const signal = this.stopSignals.get(room);
+    if (signal) {
+      signal.next(null);
+      signal.complete();
+      this.stopSignals.delete(room);
+      this.pauses.delete(room);
     }
 
     throw new NotFoundTimerException();
