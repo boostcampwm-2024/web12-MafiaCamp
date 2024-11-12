@@ -13,8 +13,13 @@ interface GameViewerProps {
 
 const GameViewer = ({ roomId }: GameViewerProps) => {
   const { socket } = useSocketStore();
-  const { isGameStarted, publisher, subscribers, toggleAudio, toggleVideo } =
-    useOpenVidu();
+  const {
+    isGameStarted,
+    gamePublisher,
+    gameSubscribers,
+    toggleAudio,
+    toggleVideo,
+  } = useOpenVidu();
 
   const [participants, setParticipants] = useState<string[]>([]);
 
@@ -35,13 +40,13 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       <VideoViewer
         isGameStarted={isGameStarted}
         participants={participants}
-        publisher={publisher}
-        subscribers={subscribers}
+        gamePublisher={gamePublisher}
+        gameSubscribers={gameSubscribers}
       />
       <Bottombar
         roomId={roomId}
-        audioEnabled={publisher?.stream.audioActive}
-        videoEnabled={publisher?.stream.videoActive}
+        audioEnabled={gamePublisher?.audioEnabled}
+        videoEnabled={gamePublisher?.videoEnabled}
         toggleAudio={toggleAudio}
         toggleVideo={toggleVideo}
       />
