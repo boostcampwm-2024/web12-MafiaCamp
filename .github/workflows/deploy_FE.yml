@@ -26,6 +26,10 @@ jobs:
           # Node.js 버전 설정
           node-version: 20
 
+      # FE 폴더로 이동
+      - name: Move to FE directory
+        run: cd FE
+
       # 의존성 설치하기
       - name: Install dependencies
         run: npm install --force
@@ -42,10 +46,10 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
-          proxy_host: $${{ secrets.PROXY_HOST }}
-          proxy_username: $${{ secrets.PROXY_USERNAME }}
-          proxy_password: $${{ secrets.PROXY_PASSWORD }}
-          proxy_port: $${{ secrets.PROXY_PORT }}
+          proxy_host: ${{ secrets.PROXY_HOST }}
+          proxy_username: ${{ secrets.PROXY_USERNAME }}
+          proxy_password: ${{ secrets.PROXY_PASSWORD }}
+          proxy_port: ${{ secrets.PROXY_PORT }}
           source: "./.next"
           target: "/mafiacamp/mafiacamp-fe/FE"
 
@@ -57,10 +61,10 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
-          proxy_host: $${{ secrets.PROXY_HOST }}
-          proxy_username: $${{ secrets.PROXY_USERNAME }}
-          proxy_password: $${{ secrets.PROXY_PASSWORD }}
-          proxy_port: $${{ secrets.PROXY_PORT }}
+          proxy_host: ${{ secrets.PROXY_HOST }}
+          proxy_username: ${{ secrets.PROXY_USERNAME }}
+          proxy_password: ${{ secrets.PROXY_PASSWORD }}
+          proxy_port: ${{ secrets.PROXY_PORT }}
           script: |
             cd
             cd mafiacamp/mafiacamp-fe/FE
