@@ -4,9 +4,8 @@ import { GAME_USER_RESULT } from './game-user.result';
 import { GameHistoryEntity } from '../../game/entity/game-history.entity';
 import { UserEntity } from '../../user/entity/user.entity';
 
-@Entity("game_user")
+@Entity('game_user')
 export class GameUserEntity {
-
   @PrimaryColumn({
     type: 'bigint',
     name: 'game_id',
@@ -28,27 +27,21 @@ export class GameUserEntity {
   job: MAFIA_ROLE;
 
   @Column({
-    type:'enum',
-    name:'game_user_result',
-    enum:GAME_USER_RESULT,
-    nullable:true
+    type: 'enum',
+    name: 'game_user_result',
+    enum: GAME_USER_RESULT,
+    nullable: true,
   })
-  gameUserResult:GAME_USER_RESULT;
+  gameUserResult: GAME_USER_RESULT;
 
-  @ManyToOne(
-    () => GameHistoryEntity,
-    gameHistory => gameHistory.gameUsers,
-    {
-      onDelete: 'CASCADE',
-    })
+  @ManyToOne(() => GameHistoryEntity, (gameHistory) => gameHistory.gameUsers, {
+    onDelete: 'CASCADE',
+  })
   gameHistory: GameHistoryEntity;
 
-  @ManyToOne(
-    () => UserEntity,
-    user => user.gameUsers,
-    {
-      onDelete: 'CASCADE',
-    })
+  @ManyToOne(() => UserEntity, (user) => user.gameUsers, {
+    onDelete: 'CASCADE',
+  })
   user: UserEntity;
 
   private constructor(gameHistory: GameHistoryEntity, user: UserEntity) {
@@ -56,7 +49,10 @@ export class GameUserEntity {
     this.user = user;
   }
 
-  static create(gameHistory: GameHistoryEntity, user: UserEntity) : GameUserEntity{
+  static create(
+    gameHistory: GameHistoryEntity,
+    user: UserEntity,
+  ): GameUserEntity {
     return new GameUserEntity(gameHistory, user);
   }
 }

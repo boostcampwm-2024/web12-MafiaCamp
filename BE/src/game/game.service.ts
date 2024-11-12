@@ -19,8 +19,8 @@ export class GameService implements AllocateUserRoleUsecase, CountdownTimeoutUse
     @Inject(GAME_HISTORY_REPOSITORY)
     private readonly gameHistoryRepository: GameHistoryRepository<GameHistoryEntity, number>,
     @Inject(COUNTDOWN_TIMER)
-    private readonly countdownTimer: CountdownTimer
-    ){
+    private readonly countdownTimer: CountdownTimer,
+  ) {
   }
 
   /*

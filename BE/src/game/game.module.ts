@@ -12,8 +12,8 @@ import { MafiaCountdownTimer } from './mafia.countdown.timer';
 import { COUNTDOWN_TIMEOUT_USECASE } from './usecase/countdown.timeout.usecase';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([GameHistoryEntity])]
-  , providers: [
+  imports: [TypeOrmModule.forFeature([GameHistoryEntity])],
+  providers: [
     {
       provide: JOB_FACTORY,
       useClass: RandomJobFactory,

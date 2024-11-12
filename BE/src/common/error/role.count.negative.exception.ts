@@ -4,12 +4,14 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 
 export class RoleCountNegativeException extends HttpException {
   constructor() {
-    super({
+    super(
+      {
         code: EXCEPTION_CODE.ROLE_COUNT_NEGATIVE_EXCEPTION,
         message: EXCEPTION_MESSAGE.ROLE_COUNT_NEGATIVE_EXCEPTION,
         error: 'RoleCountNegativeException',
         statusCode: HttpStatus.BAD_REQUEST,
       },
-      HttpStatus.BAD_REQUEST);
+      HttpStatus.BAD_REQUEST,
+    );
   }
 }

@@ -6,18 +6,25 @@ import { BasicLoggerInterceptor } from './basic.logger.interceptor';
 
 @Injectable()
 export class WebsocketLoggerInterceptor extends BasicLoggerInterceptor {
-
-
-  protected handleHttpRequest(context: ExecutionContext, next: CallHandler, startTime: number): Observable<any> {
+  protected handleHttpRequest(
+    context: ExecutionContext,
+    next: CallHandler,
+    startTime: number,
+  ): Observable<any> {
     return undefined;
   }
 
-  protected handleWebsocketEvent(context: ExecutionContext, next: CallHandler, startTime: number): Observable<any> {
+  protected handleWebsocketEvent(
+    context: ExecutionContext,
+    next: CallHandler,
+    startTime: number,
+  ): Observable<any> {
     const client = context.switchToWs().getClient();
     const data = context.switchToWs().getData();
     const { className, handlerName } = this.getExecutionInfo(context);
 
-    const traceId = client.traceId || client.handshake?.query?.traceId || `ws-${uuidv4()}`;
+    const traceId =
+      client.traceId || client.handshake?.query?.traceId || `ws-${uuidv4()}`;
     const spanId = `ws-${uuidv4()}`;
 
     this.logger.info({

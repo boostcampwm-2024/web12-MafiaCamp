@@ -3,4 +3,4 @@ export const GAME_STATUS = {
   END: 'END',
 } as const;
 
-export type GAME_STATUS = typeof GAME_STATUS[keyof typeof GAME_STATUS];
+export type GAME_STATUS = (typeof GAME_STATUS)[keyof typeof GAME_STATUS];

@@ -5,8 +5,11 @@ import { BasicLoggerInterceptor } from './basic.logger.interceptor';
 
 @Injectable()
 export class HttpLoggerInterceptor extends BasicLoggerInterceptor {
-
-  protected handleHttpRequest(context: ExecutionContext, next: CallHandler, startTime: number): Observable<any> {
+  protected handleHttpRequest(
+    context: ExecutionContext,
+    next: CallHandler,
+    startTime: number,
+  ): Observable<any> {
     const request = context.switchToHttp().getRequest();
     const { traceId, spanId, parentSpanId } = request.traceMetadata;
     const { className, handlerName } = this.getExecutionInfo(context);
@@ -50,7 +53,11 @@ export class HttpLoggerInterceptor extends BasicLoggerInterceptor {
     );
   }
 
-  protected handleWebsocketEvent(context: ExecutionContext, next: CallHandler, startTime: number): Observable<any> {
+  protected handleWebsocketEvent(
+    context: ExecutionContext,
+    next: CallHandler,
+    startTime: number,
+  ): Observable<any> {
     return undefined;
   }
 
@@ -70,6 +77,4 @@ export class HttpLoggerInterceptor extends BasicLoggerInterceptor {
     }
     return info;
   }
-
-
 }

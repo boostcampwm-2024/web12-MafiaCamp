@@ -9,19 +9,24 @@ import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
 export class UserService implements FindUserUsecase, RegisterUserUsecase {
-
   constructor(
     @Inject(USER_REPOSITORY)
-    private readonly userRepository: UserRepository<UserEntity, number>) {
-  }
+    private readonly userRepository: UserRepository<UserEntity, number>,
+  ) {}
 
   async findById(findUserRequest: FindUserRequest): Promise<UserEntity> {
     return await this.userRepository.findById(findUserRequest.userId);
   }
 
   @Transactional()
-  async register(registerUserRequest: RegisterUserRequest): Promise<UserEntity> {
-    const userEntity = UserEntity.create(registerUserRequest.email, registerUserRequest.nickname, registerUserRequest.oAuthId);
+  async register(
+    registerUserRequest: RegisterUserRequest,
+  ): Promise<UserEntity> {
+    const userEntity = UserEntity.create(
+      registerUserRequest.email,
+      registerUserRequest.nickname,
+      registerUserRequest.oAuthId,
+    );
     await this.userRepository.save(userEntity);
     return userEntity;
   }
