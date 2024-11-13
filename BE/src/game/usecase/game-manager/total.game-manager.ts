@@ -196,7 +196,7 @@ export class TotalGameManager implements GameManager {
     if (mostVotedUser.length === 1 && mostVotedUser[0] !== null) {
       this.killUser(gameRoom, mostVotedUser[0]);
     }
-    this.ballotBoxs.set(gameRoom, null);
+    this.ballotBoxs.delete(gameRoom);
     console.log('웹 소켓을 활용하여 해당 방 유저들에게 결과를 보낼 예정');
   }
 }
