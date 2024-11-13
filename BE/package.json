@@ -7,6 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
+    "build:check": "tsc --noEmit",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "db:schema": "source .env && mysql -u$DB_USER -p$DB_PASSWORD $DB_NAME < ./src/common/sql/schema.sql",
     "start": "nest start",
