@@ -1,10 +1,10 @@
 import { CountdownTimer } from './countdown.timer';
 import { Injectable } from '@nestjs/common';
-import { TIMEOUT_SITUATION } from './timeout.situation';
+import { TIMEOUT_SITUATION } from '../../timeout.situation';
 import { interval, Subject, takeUntil, takeWhile } from 'rxjs';
-import { DuplicateTimerException } from '../common/error/duplicate.timer.exception';
-import { NotFoundTimerException } from '../common/error/not.found.timer.exception';
-import { GameRoom } from '../game-room/model/game-room.model';
+import { DuplicateTimerException } from '../../../common/error/duplicate.timer.exception';
+import { NotFoundTimerException } from '../../../common/error/not.found.timer.exception';
+import { GameRoom } from '../../../game-room/entity/game-room.model';
 
 @Injectable()
 export class MafiaCountdownTimer implements CountdownTimer {

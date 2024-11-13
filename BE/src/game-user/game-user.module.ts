@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { GameUserEntity } from './enitity/game-user.entity';
+import { GameUserEntity } from './entity/game-user.entity';
 import { GAME_USER_REPOSITORY } from './repository/game-user.repository';
 import { TypeormGameUserRepository } from './repository/typeorm.game-user.repository';
 import { REGISTER_GAME_USER_USECASE } from './usecase/register.game-user.usecase';

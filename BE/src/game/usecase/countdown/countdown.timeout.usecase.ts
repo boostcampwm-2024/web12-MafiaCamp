@@ -1,5 +1,5 @@
-import { StartCountdownRequest } from '../dto/start.countdown.request';
-import { StopCountdownRequest } from '../dto/stop.countdown.request';
+import { StartCountdownRequest } from '../../dto/start.countdown.request';
+import { StopCountdownRequest } from '../../dto/stop.countdown.request';
 
 export const COUNTDOWN_TIMEOUT_USECASE = Symbol('COUNTDOWN_TIMEOUT_USECASE');
 
