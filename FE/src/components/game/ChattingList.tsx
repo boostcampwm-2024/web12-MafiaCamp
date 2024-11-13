@@ -6,25 +6,48 @@ import CloseIcon from '@/components/common/icons/CloseIcon';
 import UsersIcon from '@/components/common/icons/UsersIcon';
 import { useSidebarStore } from '@/stores/sidebarStore';
 import { AnimatePresence, motion } from 'framer-motion';
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 import { useSocketStore } from '@/stores/socketStore';
 import { Chat } from '@/types/chat';
+import { useSearchParams } from 'next/navigation';
 
-const ChattingList = () => {
+interface ChattingListProps {
+  roomId: string;
+  totalParticipants: number;
+}
+
+const ChattingList = ({ roomId, totalParticipants }: ChattingListProps) => {
   // TODO: 커스텀 훅 생성
   const { nickname, socket } = useSocketStore();
   const { isOpen, initialize, close } = useSidebarStore();
   const [chatList, setChatList] = useState<Chat[]>([]);
   const [message, setMessage] = useState('');
+  const capacity = useSearchParams().get('capacity');
 
   // TODO: 추후 수정 필요
   const [isMafiaOnly, setIsMafiaOnly] = useState(false);
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    socket?.emit('send-chat', { message });
+
+    if (message.trim() === '') {
+      return;
+    }
+
+    socket?.emit('send-chat', { roomId, message });
     setMessage('');
   };
+
+  const chatListRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (chatListRef.current) {
+      chatListRef.current.scroll({
+        top: chatListRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  }, [chatList]);
 
   useEffect(() => {
     socket?.on('chat', (chat: Chat) => {
@@ -55,7 +78,8 @@ const ChattingList = () => {
               <div className='flex flex-row items-center gap-2 text-sm'>
                 <UsersIcon />
                 <p className='text-nowrap text-white'>
-                  6 / <span className='font-bold'>8</span>
+                  {totalParticipants} /{' '}
+                  <span className='font-bold'>{capacity}</span>
                 </p>
               </div>
               <CloseIcon
@@ -64,7 +88,10 @@ const ChattingList = () => {
               />
             </div>
           </div>
-          <div className='flex h-full w-full flex-col gap-4 overflow-y-scroll px-4 py-4'>
+          <div
+            className='flex h-full w-full flex-col gap-4 overflow-y-scroll px-4 py-4'
+            ref={chatListRef}
+          >
             {chatList.length === 0 ? (
               <p className='self-center text-sm text-slate-200'>
                 댓글을 작성해 보세요.
@@ -90,6 +117,12 @@ const ChattingList = () => {
               autoComplete='off'
               placeholder='내용을 입력해 주세요.'
               onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit(e);
+                }
+              }}
             />
             <div className='flex w-full flex-row items-center justify-between'>
               <div className='flex flex-row items-center gap-2'>

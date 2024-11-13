@@ -3,28 +3,31 @@
 import { io } from 'socket.io-client';
 import LobbyBanner from './LobbyBanner';
 import LobbyList from './LobbyList';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSocketStore } from '@/stores/socketStore';
-
-const socket = io(`${process.env.NEXT_PUBLIC_BACKEND_URL}/ws`, {
-  transports: ['websocket', 'polling'],
-});
+import NicknameModal from './NicknameModal';
 
 const LobbyViewer = () => {
-  const { setState } = useSocketStore();
+  const { nickname, setState } = useSocketStore();
+  const [hasNickname, setHasNickname] = useState(nickname !== '');
 
   useEffect(() => {
-    const nickname = new Date().getTime().toString(); // TODO: 닉네임 설정
-    setState({ socket, nickname });
-    socket.emit('set-nickname', { nickname });
+    if (hasNickname) {
+      const socket = io(`${process.env.NEXT_PUBLIC_BACKEND_URL}/ws`, {
+        transports: ['websocket', 'polling'],
+      });
 
-    return () => {
-      socket.off('set-nickname');
-    };
-  }, [setState]);
+      setState({ socket });
+      socket.emit('set-nickname', { nickname });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasNickname]);
 
   return (
     <div className='flex flex-col items-center'>
+      {!hasNickname && (
+        <NicknameModal setHasNickname={() => setHasNickname(true)} />
+      )}
       <LobbyBanner />
       <LobbyList />
     </div>

@@ -23,6 +23,12 @@ export async function generateMetadata({
   };
 }
 
-export default async function Page() {
-  return <GameViewer />;
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ roomId: string }>;
+}) {
+  const roomId = (await params).roomId;
+
+  return <GameViewer roomId={roomId} />;
 }

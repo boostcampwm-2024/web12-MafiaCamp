@@ -8,22 +8,20 @@ import {
 import { useEffect, useState } from 'react';
 
 export const useOpenVidu = () => {
-  const { nickname, socket, session, audioEnabled, videoEnabled, setState } =
-    useSocketStore();
+  const { nickname, socket, session, setState } = useSocketStore();
+  const [isGameStarted, setIsGameStarted] = useState(false);
   const [publisher, setPublisher] = useState<Publisher | null>(null);
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
 
   const toggleAudio = () => {
     if (publisher) {
-      publisher.publishAudio(!audioEnabled);
-      setState({ audioEnabled: !audioEnabled });
+      publisher.publishAudio(!publisher.stream.audioActive);
     }
   };
 
   const toggleVideo = () => {
     if (publisher) {
-      publisher.publishVideo(!videoEnabled);
-      setState({ videoEnabled: !videoEnabled });
+      publisher.publishVideo(!publisher.stream.videoActive);
     }
   };
 
@@ -46,19 +44,16 @@ export const useOpenVidu = () => {
          */
         session.on('streamCreated', (event) => {
           // 자동으로 새 스트림 구독
-          const subscriber = session.subscribe(event.stream, undefined, {
-            insertMode: VideoInsertMode.APPEND,
-            subscribeToAudio: true,
-            subscribeToVideo: true,
-          });
-          setSubscribers([...subscribers, subscriber]);
+          const subscriber = session.subscribe(event.stream, undefined);
+          setSubscribers((prevSubscribers) => [...prevSubscribers, subscriber]);
         });
 
         // 참가자의 스트림이 제거될 때
         session.on('streamDestroyed', (event) => {
           setSubscribers(
             subscribers.filter(
-              (subscriber) => subscriber !== event.stream.streamManager,
+              (subscriber) =>
+                subscriber.stream.streamManager !== event.stream.streamManager,
             ),
           );
         });
@@ -98,6 +93,7 @@ export const useOpenVidu = () => {
              */
             await session.publish(publisher);
             setPublisher(publisher);
+            setIsGameStarted(true);
           },
         );
       } catch (error) {
@@ -106,21 +102,26 @@ export const useOpenVidu = () => {
     })();
 
     return () => {
-      if (session) {
-        session.disconnect();
-        setState({ session: null, audioEnabled: true, videoEnabled: true });
-        setPublisher(null);
-        setSubscribers([]);
-      }
+      socket?.off('video-info');
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (session) {
+        session.disconnect();
+        setState({ session: null });
+        setPublisher(null);
+        setSubscribers([]);
+      }
+    };
+  }, [session, setState]);
+
   return {
+    isGameStarted,
     publisher,
     subscribers,
-    audioEnabled,
-    videoEnabled,
     toggleAudio,
     toggleVideo,
   };

@@ -4,27 +4,48 @@ import { useOpenVidu } from '@/hooks/useOpenVidu';
 import Bottombar from './Bottombar';
 import ChattingList from './ChattingList';
 import VideoViewer from './VideoViewer';
+import { useEffect, useState } from 'react';
+import { useSocketStore } from '@/stores/socketStore';
 
-const GameViewer = () => {
-  const {
-    publisher,
-    subscribers,
-    audioEnabled,
-    videoEnabled,
-    toggleAudio,
-    toggleVideo,
-  } = useOpenVidu();
+interface GameViewerProps {
+  roomId: string;
+}
+
+const GameViewer = ({ roomId }: GameViewerProps) => {
+  const { socket } = useSocketStore();
+  const { isGameStarted, publisher, subscribers, toggleAudio, toggleVideo } =
+    useOpenVidu();
+
+  const [participants, setParticipants] = useState<string[]>([]);
+
+  useEffect(() => {
+    socket?.on('participants', (participants: string[]) => {
+      setParticipants(participants);
+    });
+    socket?.emit('enter-room', { roomId: roomId });
+
+    return () => {
+      socket?.off('participants');
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className='absolute left-0 top-0 h-screen w-screen overflow-x-hidden'>
       <VideoViewer
+        isGameStarted={isGameStarted}
+        participants={participants}
         publisher={publisher}
         subscribers={subscribers}
-        audioEnabled={audioEnabled}
-        videoEnabled={videoEnabled}
       />
-      <Bottombar toggleAudio={toggleAudio} toggleVideo={toggleVideo} />
-      <ChattingList />
+      <Bottombar
+        roomId={roomId}
+        audioEnabled={publisher?.stream.audioActive}
+        videoEnabled={publisher?.stream.videoActive}
+        toggleAudio={toggleAudio}
+        toggleVideo={toggleVideo}
+      />
+      <ChattingList roomId={roomId} totalParticipants={participants.length} />
     </div>
   );
 };
