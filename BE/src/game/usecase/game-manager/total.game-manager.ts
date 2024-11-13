@@ -80,7 +80,7 @@ export class TotalGameManager implements GameManager {
     const toVotes = ballotBox.get(to);
     const fromSocketId = from.client.socket.id;
     const voteFlag = this.checkVote(ballotBox, fromSocketId);
-    if (!voteFlag) {
+    if (voteFlag) {
       ballotBox.set(to, toVotes.filter(voteId => voteId !== fromSocketId));
 
     }
@@ -107,7 +107,7 @@ export class TotalGameManager implements GameManager {
     const toVotes = ballotBox.get(to);
     const fromSocketId = from.client.socket.id;
     const voteFlag = this.checkVote(ballotBox, fromSocketId);
-    if (voteFlag) {
+    if (!voteFlag) {
       toVotes.push(fromSocketId);
     }
 
@@ -115,10 +115,10 @@ export class TotalGameManager implements GameManager {
   }
 
   private checkVote(ballotBox: Map<GameClient, string[]>, fromSocketId: string) {
-    let voteFlag = true;
+    let voteFlag = false;
     ballotBox.forEach((votedUser) => {
       if (votedUser.some(voteId => voteId === fromSocketId)) {
-        voteFlag = false;
+        voteFlag = true;
       }
     });
     return voteFlag;
@@ -175,7 +175,7 @@ export class TotalGameManager implements GameManager {
     ballotBox.forEach((votedUser, gameClient) => {
       const userId: string = gameClient.client.socket.id;
       const voteFlag: boolean = this.checkVote(ballotBox, userId);
-      if (voteFlag) {
+      if (!voteFlag) {
         votedUser.push(userId);
       }
     });
