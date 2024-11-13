@@ -44,7 +44,7 @@ export class TotalGameManager implements GameManager {
 
     const playerInfo = gameInfo.get(player);
 
-    playerInfo.status = USER_STATUS.DIE;
+    playerInfo.status = USER_STATUS.DEAD;
     gameInfo.set(player, playerInfo);
 
     console.log('투표로 죽은 해당 유저 죽은 사실 게임 방 유저들에게 소켓으로 보낼 예정');
