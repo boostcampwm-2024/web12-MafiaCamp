@@ -9,8 +9,8 @@ import { GameRoom } from '../../../game-room/entity/game-room.model';
 @Injectable()
 export class MafiaCountdownTimer implements CountdownTimer {
 
-  private readonly stopSignals: Map<GameRoom, Subject<any>> = new Map<GameRoom, Subject<any>>();
-  private readonly pauses: Map<GameRoom, boolean> = new Map<GameRoom, boolean>();
+  private readonly stopSignals= new Map<GameRoom, Subject<any>>();
+  private readonly pauses= new Map<GameRoom, boolean>();
 
   constructor() {
   }

@@ -36,7 +36,7 @@ export class RandomJobFactory implements JobFactory {
       default:
         throw new GameInvalidPlayerCountException();
     }
-    const userRoles: Map<GameClient, MAFIA_ROLE> = new Map<GameClient, MAFIA_ROLE>();
+    const userRoles = new Map<GameClient, MAFIA_ROLE>();
     const mafiaUsers: [GameClient, MAFIA_ROLE][] = [];
     this.shuffle(possibleRoles).forEach((role, idx) => {
       if (role === MAFIA_ROLE.MAFIA) {
@@ -52,7 +52,7 @@ export class RandomJobFactory implements JobFactory {
 
     mafiaUsers.forEach(([currentPlayer, currentRole]) => {
       const otherMafias = mafiaUsers
-        .filter((player) => player[0] !== currentPlayer)
+        .filter((player:[GameClient,MAFIA_ROLE]) => player[0] !== currentPlayer)
         .map(([player, role]) => [player.client.socket.id, role]);
 
       currentPlayer.send('player-role', {
