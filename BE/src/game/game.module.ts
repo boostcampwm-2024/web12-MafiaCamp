@@ -7,6 +7,9 @@ import { TypeormGameHistoryRepository } from './repository/typeorm.game-history.
 import { GAME_HISTORY_REPOSITORY } from './repository/game-history.repository';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GameHistoryEntity } from './entity/game-history.entity';
+import { COUNTDOWN_TIMER } from './countdown.timer';
+import { MafiaCountdownTimer } from './mafia.countdown.timer';
+import { COUNTDOWN_TIMEOUT_USECASE } from './usecase/countdown.timeout.usecase';
 
 @Module({
   imports: [TypeOrmModule.forFeature([GameHistoryEntity])],
@@ -23,7 +26,18 @@ import { GameHistoryEntity } from './entity/game-history.entity';
       provide: GAME_HISTORY_REPOSITORY,
       useClass: TypeormGameHistoryRepository,
     },
+    {
+      provide: COUNTDOWN_TIMER,
+      useClass: MafiaCountdownTimer,
+    },
+    {
+      provide: COUNTDOWN_TIMEOUT_USECASE,
+      useClass: GameService,
+    },
   ],
-  exports: [ALLOCATE_USER_ROLE_USECASE],
+  exports: [
+    ALLOCATE_USER_ROLE_USECASE, COUNTDOWN_TIMEOUT_USECASE,
+  ],
 })
-export class GameModule {}
+export class GameModule {
+}
