@@ -22,6 +22,18 @@ jobs:
       - name: Install dependencies
         run: npm install --prefix BE
 
+      # 코드 린트 검사
+      - name: Run Linter
+        run: npm run lint --prefix BE
+
+      # 타입스크립트 컴파일 검사
+      - name: TypeScript Compile Check
+        run: npm run build:check --prefix BE
+
+      # 테스트 실행 및 커버리지 확인
+#      - name: Run Tests and Check Coverage
+#        run: npm run test:cov --prefix BE
+
       # 애플리케이션 빌드
       - name: Build project
         run: npm run build --prefix BE
