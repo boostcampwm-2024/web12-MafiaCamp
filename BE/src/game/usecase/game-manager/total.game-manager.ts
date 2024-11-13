@@ -145,6 +145,7 @@ export class TotalGameManager implements GameManager {
         }
       });
       newBalletBox.set(null, []);
+      this.ballotBoxs.set(gameRoom, newBalletBox);
       console.log('해당 방 유저들에게 현재 투표 결과 소켓으로 보낼 예정');
       gameRoom.sendAll('primary-game-manager-result', voteResult);
     }else{
