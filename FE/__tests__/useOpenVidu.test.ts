@@ -1,15 +1,21 @@
 import { useOpenVidu } from '@/hooks/useOpenVidu';
+
 import { renderHook } from '@testing-library/react';
 
 describe('OpenVidu Test', () => {
   beforeAll(() => {
     jest.mock('@/stores/socketStore');
+    // mockSocketStore = {
+    //   nickname: "nickname";
+    // }
+    // // useSocketStore();
+
     jest.mock('openvidu-browser', () => {
       OpenVidu: jest.fn();
     });
   });
 
-  beforeEach(() => {});
+  // beforeEach(() => {});
 
   test('OpenVidu Hook Test', () => {
     const { result } = renderHook(() => useOpenVidu());
@@ -18,7 +24,7 @@ describe('OpenVidu Test', () => {
     expect(result.current.gameSubscribers).toBe([]);
   });
 
-  afterEach(() => {});
+  // afterEach(() => {});
 
   afterAll(() => {
     jest.clearAllMocks();
