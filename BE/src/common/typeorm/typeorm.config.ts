@@ -18,6 +18,7 @@ export const typeOrmInfo = (configService: ConfigService): DataSourceOptions =>
     synchronize: false,
     logging: true,
   } as DataSourceOptions);
+
 export const typeORMConfig = async (
   configService: ConfigService,
 ): Promise<TypeOrmModuleOptions> => {
