@@ -1,9 +1,9 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateRoomRequest } from './dto/create-room.request';
-import { GameRoom } from './model/game-room.model';
+import { GameRoom } from './entity/game-room.model';
 import { EventClient } from 'src/event/event-client.model';
-import { GameClient } from './model/game-client.model';
-import { GameChat } from './model/game-chat.model';
+import { GameClient } from './entity/game-client.model';
+import { GameChat } from './entity/game-chat.model';
 import {
   VIDEO_SERVER_USECASE,
   VideoServerUsecase,

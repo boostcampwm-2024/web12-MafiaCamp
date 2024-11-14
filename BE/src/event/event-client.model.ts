@@ -6,7 +6,7 @@ export class EventClient {
   private _nickname: string;
 
   constructor(
-    private readonly socket: Socket,
+    private readonly _socket: Socket,
     private readonly eventManager: EventManager,
   ) {}
 
@@ -18,8 +18,12 @@ export class EventClient {
     this._nickname = nickname;
   }
 
+  get socket(): Socket {
+    return this._socket;
+  }
+
   emit(event: string, ...args) {
-    this.socket.emit(event, ...args);
+    this._socket.emit(event, ...args);
   }
 
   subscribe(eventName: string) {

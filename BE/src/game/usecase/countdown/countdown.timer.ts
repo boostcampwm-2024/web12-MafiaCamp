@@ -1,4 +1,4 @@
-import { GameRoom } from '../game-room/model/game-room.model';
+import { GameRoom } from '../../../game-room/entity/game-room.model';
 
 export const COUNTDOWN_TIMER = Symbol('COUNTDOWN_TIMER');
 

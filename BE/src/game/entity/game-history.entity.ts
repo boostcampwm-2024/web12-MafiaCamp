@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 import { GAME_STATUS } from './game-status';
 import { GAME_HISTORY_RESULT } from './game-history.result';
-import { GameUserEntity } from '../../game-user/enitity/game-user.entity';
+import { GameUserEntity } from '../../game-user/entity/game-user.entity';
 
 @Entity('game_history')
 export class GameHistoryEntity {

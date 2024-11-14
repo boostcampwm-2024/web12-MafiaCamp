@@ -10,7 +10,7 @@ import {
   GAME_USER_REPOSITORY,
   GameUserRepository,
 } from './repository/game-user.repository';
-import { GameUserEntity } from './enitity/game-user.entity';
+import { GameUserEntity } from './entity/game-user.entity';
 import { FindUserRequest } from '../user/dto/find-user.request';
 import { Transactional } from 'typeorm-transactional';
 

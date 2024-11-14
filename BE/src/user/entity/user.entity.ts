@@ -5,7 +5,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { GameUserEntity } from '../../game-user/enitity/game-user.entity';
+import { GameUserEntity } from '../../game-user/entity/game-user.entity';
 
 @Entity('user')
 export class UserEntity {

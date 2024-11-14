@@ -4,7 +4,11 @@ import { MAFIA_ROLE } from 'src/game/mafia-role';
 export class GameClient {
   private _job: MAFIA_ROLE;
 
-  constructor(private readonly client: EventClient) {}
+  constructor(private readonly _client: EventClient) {}
+
+  get client(): EventClient {
+    return this._client;
+  }
 
   get job() {
     return this._job;
@@ -15,10 +19,10 @@ export class GameClient {
   }
 
   send(event, ...args) {
-    this.client.emit(event, ...args);
+    this._client.emit(event, ...args);
   }
 
   get nickname() {
-    return this.client.nickname;
+    return this._client.nickname;
   }
 }

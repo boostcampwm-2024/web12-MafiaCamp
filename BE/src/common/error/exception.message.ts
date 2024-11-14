@@ -6,4 +6,10 @@ export const EXCEPTION_MESSAGE = {
   NOT_FOUND_GAME_USER_EXCEPTION: '해당하는 게임-유저를 찾을 수 없습니다. 다시 시도해주세요',
   DUPLICATE_TIMER_EXCEPTION: '이미 실행중인 타이머가 존재합니다. 다시 시도할 수 없습니다',
   NOT_FOUND_TIMER_EXCEPTION: '해당하는 타이머를 찾을 수 없습니다. 잘못된 시도입니다.',
+  NOT_FOUND_GAME_ROOM_EXCEPTION:
+    '해당하는 게임룸을 찾을 수 없습니다. 다시 시도해주세요.',
+  NOT_FOUND_BALLOT_BOX_EXCEPTION:
+    '해당하는 투표함을 찾을 수 없습니다. 다시 시도해주세요.',
+  UNAUTHORIZED_USER_BALLOT_EXCEPTION:
+    '해당 유저는 투표할 수 있는 권한이 없습니다. 다시 시도해주세요.',
 } as const;
