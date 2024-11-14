@@ -5,6 +5,7 @@ export const TIMEOUT_SITUATION = {
   MAFIA: 30,
   DOCTOR: 20,
   POLICE: 20,
+  INTERMISSION: 5,
 } as const;
 
 export type TIMEOUT_SITUATION = typeof TIMEOUT_SITUATION[keyof typeof TIMEOUT_SITUATION];

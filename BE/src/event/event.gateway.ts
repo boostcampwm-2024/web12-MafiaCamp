@@ -10,11 +10,13 @@ import {
 import { Socket } from 'socket.io';
 import { CreateRoomRequest } from 'src/game-room/dto/create-room.request';
 import { GameRoomService } from 'src/game-room/game-room.service';
-import { Logger, UseInterceptors } from '@nestjs/common';
+import { Inject, Logger, UseInterceptors } from '@nestjs/common';
 import { WebsocketLoggerInterceptor } from 'src/common/logger/websocket.logger.interceptor';
 import { EventClient } from './event-client.model';
 import { EventManager } from './event-manager';
 import { Event } from './event.const';
+import { START_GAME_USECASE } from 'src/game/usecase/start-game/start-game.usecase';
+import { StartGameService } from 'src/game/usecase/start-game/start-game.service';
 
 // @UseInterceptors(WebsocketLoggerInterceptor)
 @WebSocketGateway({
@@ -30,6 +32,8 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly eventManager: EventManager,
     private readonly gameRoomService: GameRoomService,
+    @Inject(START_GAME_USECASE)
+    private readonly startGameService: StartGameService,
   ) {}
 
   handleConnection(socket: Socket) {
@@ -37,6 +41,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const client = new EventClient(socket, this.eventManager);
     client.subscribe(Event.ROOM_DATA_CHANGED);
     this.connectedClients.set(socket, client);
+    this.publishRoomDataChangedEvent();
   }
 
   handleDisconnect(socket: Socket) {
@@ -79,10 +84,9 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('enter-room')
   enterRoom(
-    @MessageBody() data: { roomId: string },
+    @MessageBody('roomId') roomId: string,
     @ConnectedSocket() socket: Socket,
   ) {
-    const { roomId } = data;
     const client = this.connectedClients.get(socket);
     this.gameRoomService.enterRoom(client, roomId);
     this.publishRoomDataChangedEvent();
@@ -103,9 +107,15 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('start-game')
-  async startGame(@MessageBody() data: { roomId: string }) {
-    const { roomId } = data;
-    await this.gameRoomService.startGame(roomId);
+  async startGame(@MessageBody('roomId') roomId: string) {
+    const room = this.gameRoomService.findRoomById(roomId);
+    if (!room.isFull()) {
+      return {
+        event: 'start-game',
+        data: { success: false }
+      };
+    }
+    this.startGameService.start(room);
   }
 
   private publishRoomDataChangedEvent() {

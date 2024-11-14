@@ -12,10 +12,7 @@ export class MafiaCountdownTimer implements CountdownTimer {
   private readonly stopSignals= new Map<GameRoom, Subject<any>>();
   private readonly pauses= new Map<GameRoom, boolean>();
 
-  constructor() {
-  }
-
-  start(room: GameRoom, situation: string): void {
+  start(room: GameRoom, situation: string): Promise<void> {
     if (this.stopSignals.has(room)) {
       throw new DuplicateTimerException();
     }
@@ -25,24 +22,27 @@ export class MafiaCountdownTimer implements CountdownTimer {
 
     let timeLeft: number = TIMEOUT_SITUATION[situation];
 
-    interval(1000).pipe(
-      takeUntil(this.stopSignals.get(room)),
-      takeWhile(() => timeLeft > 0 && !this.pauses.get(room)),
-    ).subscribe({
-      next: () => {
-        room.sendAll('countdown', {
-          situation: situation,
-          timeLeft: timeLeft,
-        });
-        timeLeft--;
-      },
-      complete: () => {
-        room.sendAll('countdown-exit', {
-          situation: situation,
-          timeLeft: timeLeft,
-        });
-        this.stop(room);
-      },
+    return new Promise((resolve) => {
+      interval(1000).pipe(
+        takeUntil(this.stopSignals.get(room)),
+        takeWhile(() => timeLeft > 0 && !this.pauses.get(room)),
+      ).subscribe({
+        next: () => {
+          room.sendAll('countdown', {
+            situation: situation,
+            timeLeft: timeLeft,
+          });
+          timeLeft--;
+        },
+        complete: () => {
+          room.sendAll('countdown-exit', {
+            situation: situation,
+            timeLeft: timeLeft,
+          });
+          this.stop(room);
+          resolve();
+        },
+      });
     });
   }
 
@@ -52,14 +52,14 @@ export class MafiaCountdownTimer implements CountdownTimer {
 
   private cleanup(room: GameRoom): void {
     const signal = this.stopSignals.get(room);
-    if (signal) {
-      signal.next(null);
-      signal.complete();
-      this.stopSignals.delete(room);
-      this.pauses.delete(room);
+    if (!signal) {
+      // 기존에는 signal 유무와 상관없이 항상 Exception이 터지는 코드라서 수정하였습니다.
+      throw new NotFoundTimerException();
     }
-
-    throw new NotFoundTimerException();
+    signal.next(null);
+    signal.complete();
+    this.stopSignals.delete(room);
+    this.pauses.delete(room);
   }
 
   stop(room: GameRoom): void {

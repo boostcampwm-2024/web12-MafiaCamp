@@ -18,7 +18,7 @@ export class GameClient {
     this._job = job;
   }
 
-  send(event, ...args) {
+  send(event: string, ...args) {
     this._client.emit(event, ...args);
   }
 
