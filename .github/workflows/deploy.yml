@@ -51,7 +51,7 @@ jobs:
           proxy_password: ${{ secrets.PROXY_PASSWORD }}
           proxy_port: ${{ secrets.PROXY_PORT }}
           source: "./BE/dist"
-          target: "~/mafiacamp/mafiacamp-be/BE"
+          target: "~/mafiacamp/mafiacamp-be"
           overwrite: true
 
       # ssh 원격 접속을 통해 빌드 파일 실행하기
