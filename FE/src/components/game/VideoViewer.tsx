@@ -6,10 +6,12 @@ import { useDragScroll } from '@/hooks/useDragScroll';
 import { useSocketStore } from '@/stores/socketStore';
 import { GamePublisher } from '@/types/gamePublisher';
 import { GameSubscriber } from '@/types/gameSubscriber';
+import { Role } from '@/constants/role';
 
 interface VideoViewerProps {
   isGameStarted: boolean;
   participants: string[];
+  playerRole: Role | null;
   gamePublisher: GamePublisher | null;
   gameSubscribers: GameSubscriber[];
 }
@@ -17,6 +19,7 @@ interface VideoViewerProps {
 const VideoViewer = ({
   isGameStarted,
   participants,
+  playerRole,
   gamePublisher,
   gameSubscribers,
 }: VideoViewerProps) => {
@@ -49,7 +52,11 @@ const VideoViewer = ({
         <div
           className={`${gameSubscribers.length <= 1 ? 'grid-rows-1' : 'grid-rows-2'} ${gameSubscribers.length <= 3 ? 'grid-cols-2' : gameSubscribers.length <= 5 ? 'grid-cols-3' : 'grid-cols-4'} grid h-full min-w-[67.5rem] gap-6`}
         >
-          <VideoItem nickname={nickname} gameParticipant={gamePublisher} />
+          <VideoItem
+            nickname={nickname}
+            role={playerRole}
+            gameParticipant={gamePublisher}
+          />
           {gameSubscribers.map((gameSubscriber, index) => (
             <VideoItem
               key={index}
@@ -58,6 +65,7 @@ const VideoViewer = ({
                   '%/%',
                 )[0]
               }
+              role={null}
               gameParticipant={gameSubscriber}
             />
           ))}
@@ -70,6 +78,7 @@ const VideoViewer = ({
             <VideoItem
               key={index}
               nickname={participant}
+              role={null}
               gameParticipant={null}
             />
           ))}
