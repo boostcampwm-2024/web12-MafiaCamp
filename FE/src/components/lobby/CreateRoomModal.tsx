@@ -63,13 +63,17 @@ const CreateRoomModal = ({ close }: CreateRoomModalProps) => {
         </div>
         <div className='flex flex-col gap-12 rounded-2xl bg-slate-100 p-6 text-slate-800'>
           <div className='relative flex flex-col gap-3'>
-            <h3 className='text-lg'>방 이름</h3>
+            <label className='text-lg' htmlFor='title'>
+              방 이름
+            </label>
             <input
               className={`${methods.formState.errors.title ? 'ring-red-500' : 'ring-slate-200 hover:ring-slate-400 focus:ring-slate-400'} rounded-2xl px-4 py-3.5 text-sm outline-none ring-1`}
+              id='title'
               type='text'
               placeholder='방 이름을 입력해 주세요. (최대 30자)'
               {...methods.register('title')}
               maxLength={30}
+              autoComplete='off'
               onChange={(e) => {
                 methods.setValue('title', e.target.value);
                 methods.trigger('title');
@@ -82,7 +86,9 @@ const CreateRoomModal = ({ close }: CreateRoomModalProps) => {
             )}
           </div>
           <div className='relative flex flex-col gap-3'>
-            <h3 className='text-lg'>인원 수</h3>
+            <label className='text-lg' htmlFor='capacity'>
+              인원 수
+            </label>
             <select
               className={`${methods.formState.errors.capacity ? 'ring-red-500' : 'ring-slate-200 hover:ring-slate-400 focus:ring-slate-400'} rounded-2xl px-4 py-3.5 text-sm outline-none ring-1`}
               id='capacity'
