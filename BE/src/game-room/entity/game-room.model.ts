@@ -43,18 +43,7 @@ export class GameRoom {
   sendAll(event : string, ...args) {
     this._clients.forEach((c) => c.send(event, ...args));
   }
-
-  async startGame(sessionId: string, generateToken) {
-    const roomId = this._roomId;
-    this._clients.forEach(async (c) => {
-      const token = await generateToken(roomId, c.nickname, 'PUBLISHER');
-      c.send('video-info', {
-        token,
-        sessionId,
-      });
-    });
-  }
-
+  
   toResponse() {
     return {
       roomId: this._roomId,
