@@ -43,6 +43,10 @@ export class GameRoom {
   sendAll(event : string, ...args) {
     this._clients.forEach((c) => c.send(event, ...args));
   }
+
+  isFull() {
+    return this.participants === this.capacity;
+  }
   
   toResponse() {
     return {

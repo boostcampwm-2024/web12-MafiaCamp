@@ -109,6 +109,12 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('start-game')
   async startGame(@MessageBody('roomId') roomId: string) {
     const room = this.gameRoomService.findRoomById(roomId);
+    if (!room.isFull()) {
+      return {
+        event: 'start-game',
+        data: { success: false }
+      };
+    }
     this.gameService.startGame(room);
   }
 
