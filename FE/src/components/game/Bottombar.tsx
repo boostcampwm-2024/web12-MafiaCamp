@@ -5,6 +5,7 @@ import CloseIcon from '@/components/common/icons/CloseIcon';
 import PlayIcon from '@/components/common/icons/PlayIcon';
 import VideoCameraIcon from '@/components/common/icons/VideoCameraIcon';
 import VideoCameraSlashIcon from '@/components/common/icons/VideoCameraSlashIcon';
+import { Situation } from '@/constants/situation';
 import { useDragScroll } from '@/hooks/useDragScroll';
 import { useSidebarStore } from '@/stores/sidebarStore';
 import { useSocketStore } from '@/stores/socketStore';
@@ -12,6 +13,8 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { FaMicrophone, FaMicrophoneSlash } from 'react-icons/fa';
+import { Bounce, toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface BottombarProps {
   roomId: string;
@@ -48,10 +51,28 @@ const Bottombar = ({
   const [situation, setSituation] = useState('');
   const [timeLeft, setTimeLeft] = useState(0);
 
+  const notify = (message: string) =>
+    toast.info(message, {
+      position: 'top-center',
+      autoClose: 5000,
+      closeButton: false,
+      hideProgressBar: false,
+      closeOnClick: false,
+      pauseOnHover: false,
+      draggable: false,
+      progress: undefined,
+      theme: 'light',
+      transition: Bounce,
+    });
+
   useEffect(() => {
     socket?.on(
       'countdown',
-      ({ situation, timeLeft }: { situation: string; timeLeft: number }) => {
+      ({ situation, timeLeft }: { situation: Situation; timeLeft: number }) => {
+        if (situation === 'INTERMISSION' && timeLeft === 5) {
+          notify('잠시 후 게임이 시작됩니다.');
+        }
+
         setSituation(situation);
         setTimeLeft(timeLeft);
       },
@@ -66,7 +87,8 @@ const Bottombar = ({
     <div
       className={`${isOpen ? 'right-80' : 'right-0'} absolute bottom-0 left-0 flex h-16 flex-row items-center gap-4 text-nowrap bg-slate-600/50 pl-6 text-sm text-slate-200 transition-all duration-500 ease-out`}
     >
-      <h1 className='text-lg text-white'>
+      <ToastContainer />
+      <h1 className={`${situation === '' && 'hidden'} text-lg text-white`}>
         {situation} / 남은 시간 / {timeLeft}
       </h1>
       <div

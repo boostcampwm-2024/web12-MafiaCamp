@@ -9,6 +9,15 @@
 //   INTERMISSION: 5,
 // } as const;
 
+export type Situation =
+  | 'INTERMISSION'
+  | 'DISCUSSION'
+  | 'ARGUMENT'
+  | 'VOTE'
+  | 'MAFIA'
+  | 'DOCTOR'
+  | 'POLICE';
+
 export const SITUATION = {
   DISCUSSION: 150,
   ARGUMENT: 90,

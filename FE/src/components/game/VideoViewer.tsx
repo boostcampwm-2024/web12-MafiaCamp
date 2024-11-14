@@ -12,6 +12,7 @@ interface VideoViewerProps {
   isGameStarted: boolean;
   participants: string[];
   playerRole: Role | null;
+  otherMafiaList: string[] | null;
   gamePublisher: GamePublisher | null;
   gameSubscribers: GameSubscriber[];
 }
@@ -20,6 +21,7 @@ const VideoViewer = ({
   isGameStarted,
   participants,
   playerRole,
+  otherMafiaList,
   gamePublisher,
   gameSubscribers,
 }: VideoViewerProps) => {
@@ -65,7 +67,15 @@ const VideoViewer = ({
                   '%/%',
                 )[0]
               }
-              role={null}
+              role={
+                otherMafiaList?.includes(
+                  gameSubscriber.participant.stream.connection.data.split(
+                    '%/%',
+                  )[0],
+                )
+                  ? 'MAFIA'
+                  : null
+              }
               gameParticipant={gameSubscriber}
             />
           ))}

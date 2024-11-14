@@ -13,6 +13,8 @@ interface GameViewerProps {
 }
 
 const GameViewer = ({ roomId }: GameViewerProps) => {
+  // TODO: 하단 코드 리팩토링 필요.
+
   const { socket } = useSocketStore();
   const {
     isGameStarted,
@@ -24,6 +26,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
 
   const [participants, setParticipants] = useState<string[]>([]);
   const [role, setRole] = useState<Role | null>(null);
+  const [otherMafiaList, setOtherMafiaList] = useState<string[] | null>(null);
 
   useEffect(() => {
     socket?.on('participants', (participants: string[]) => {
@@ -32,10 +35,17 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
 
     socket?.on(
       'player-role',
-      // TODO
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      ({ role, another }: { role: Role | null; another: string[][] }) => {
+      ({
+        role,
+        another,
+      }: {
+        role: Role | null;
+        another: string[][] | null;
+      }) => {
         setRole(role);
+        if (another !== null) {
+          setOtherMafiaList(another.map((value) => value[0]));
+        }
       },
     );
 
@@ -54,6 +64,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
         isGameStarted={isGameStarted}
         participants={participants}
         playerRole={role}
+        otherMafiaList={otherMafiaList}
         gamePublisher={gamePublisher}
         gameSubscribers={gameSubscribers}
       />
