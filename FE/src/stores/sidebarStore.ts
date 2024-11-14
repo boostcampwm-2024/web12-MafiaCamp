@@ -7,7 +7,7 @@ interface SidebarState {
 }
 
 // 액션 인터페이스 정의
-interface SidebarActions {
+interface SidebarAction {
   initialize: () => void;
   open: () => void;
   close: () => void;
@@ -18,7 +18,7 @@ const initialState: SidebarState = {
   isOpen: true,
 };
 
-export type SidebarStoreType = SidebarState & SidebarActions;
+export type SidebarStoreType = SidebarState & SidebarAction;
 
 const sidebarStore: StateCreator<SidebarStoreType> = (set) => ({
   ...initialState,

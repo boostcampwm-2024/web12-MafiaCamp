@@ -3,21 +3,22 @@
 import { useSidebarStore } from '@/stores/sidebarStore';
 import VideoItem from './VideoItem';
 import { useDragScroll } from '@/hooks/useDragScroll';
-import { Publisher, Subscriber } from 'openvidu-browser';
 import { useSocketStore } from '@/stores/socketStore';
+import { GamePublisher } from '@/types/gamePublisher';
+import { GameSubscriber } from '@/types/gameSubscriber';
 
 interface VideoViewerProps {
   isGameStarted: boolean;
   participants: string[];
-  publisher: Publisher | null;
-  subscribers: Subscriber[];
+  gamePublisher: GamePublisher | null;
+  gameSubscribers: GameSubscriber[];
 }
 
 const VideoViewer = ({
   isGameStarted,
   participants,
-  publisher,
-  subscribers,
+  gamePublisher,
+  gameSubscribers,
 }: VideoViewerProps) => {
   const { isOpen } = useSidebarStore();
   const { nickname } = useSocketStore();
@@ -46,14 +47,18 @@ const VideoViewer = ({
       {/* TODO: key 값으로 index 사용하지 않기 */}
       {isGameStarted ? (
         <div
-          className={`${subscribers.length <= 1 ? 'grid-rows-1' : 'grid-rows-2'} ${subscribers.length <= 3 ? 'grid-cols-2' : subscribers.length <= 5 ? 'grid-cols-3' : 'grid-cols-4'} grid h-full min-w-[67.5rem] gap-6`}
+          className={`${gameSubscribers.length <= 1 ? 'grid-rows-1' : 'grid-rows-2'} ${gameSubscribers.length <= 3 ? 'grid-cols-2' : gameSubscribers.length <= 5 ? 'grid-cols-3' : 'grid-cols-4'} grid h-full min-w-[67.5rem] gap-6`}
         >
-          <VideoItem nickname={nickname} streamManager={publisher} />
-          {subscribers.map((subscriber, index) => (
+          <VideoItem nickname={nickname} gameParticipant={gamePublisher} />
+          {gameSubscribers.map((gameSubscriber, index) => (
             <VideoItem
               key={index}
-              nickname={subscriber.stream.connection.data.split('%/%')[0]}
-              streamManager={subscriber}
+              nickname={
+                gameSubscriber.participant.stream.connection.data.split(
+                  '%/%',
+                )[0]
+              }
+              gameParticipant={gameSubscriber}
             />
           ))}
         </div>
@@ -65,7 +70,7 @@ const VideoViewer = ({
             <VideoItem
               key={index}
               nickname={participant}
-              streamManager={null}
+              gameParticipant={null}
             />
           ))}
         </div>
