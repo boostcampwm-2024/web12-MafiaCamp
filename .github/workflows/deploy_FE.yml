@@ -51,7 +51,7 @@ jobs:
           proxy_password: ${{ secrets.PROXY_PASSWORD }}
           proxy_port: ${{ secrets.PROXY_PORT }}
           source: "./FE/.next, ./FE/package.json, ./FE/package-lock.json, ./FE/public"
-          target: "/mafiacamp/mafiacamp-fe/FE"
+          target: "~/mafiacamp/mafiacamp-fe/FE"
           overwrite: true
 
       # ssh 원격 접속을 통해 빌드 파일 실행하기
