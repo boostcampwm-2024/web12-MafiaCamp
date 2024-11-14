@@ -2,7 +2,7 @@ name: Back-end Deployment
 
 on:
   push:
-    branches: ["BE_develop"]
+    branches: [ "BE_develop" ]
 
 jobs:
   build-and-deploy:
@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '16'  # NestJS에 맞는 Node.js 버전 설정
-          
+
       # 의존성 설치
       - name: Install dependencies
         run: npm install --prefix BE
@@ -31,8 +31,8 @@ jobs:
         run: npm run build:check --prefix BE
 
       # 테스트 실행 및 커버리지 확인
-#      - name: Run Tests and Check Coverage
-#        run: npm run test:cov --prefix BE
+      #      - name: Run Tests and Check Coverage
+      #        run: npm run test:cov --prefix BE
 
       # 애플리케이션 빌드
       - name: Build project
@@ -51,7 +51,8 @@ jobs:
           proxy_password: ${{ secrets.PROXY_PASSWORD }}
           proxy_port: ${{ secrets.PROXY_PORT }}
           source: "./BE/dist"
-          target: "/mafiacamp/mafiacamp-be/BE"
+          target: "~/mafiacamp/mafiacamp-be/BE"
+          overwrite: true
 
       # ssh 원격 접속을 통해 빌드 파일 실행하기
       - name: Executing remote ssh commands using password
