@@ -9,6 +9,7 @@ import { useDragScroll } from '@/hooks/useDragScroll';
 import { useSidebarStore } from '@/stores/sidebarStore';
 import { useSocketStore } from '@/stores/socketStore';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { FaMicrophone, FaMicrophoneSlash } from 'react-icons/fa';
 
 interface BottombarProps {
@@ -38,11 +39,30 @@ const Bottombar = ({
     onTouchEnd,
   } = useDragScroll();
 
+  // TODO: 수정 필요
+  // const [situation, setSituation] = useState('INTERMISSION');
+  const [timeLeft, setTimeLeft] = useState(0);
+
+  useEffect(() => {
+    socket?.on(
+      'countdown',
+      ({ situation, timeLeft }: { situation: string; timeLeft: number }) => {
+        // setSituation(situation);
+        console.log(situation);
+        setTimeLeft(timeLeft);
+      },
+    );
+
+    return () => {
+      socket?.off('countdown');
+    };
+  }, [socket]);
+
   return (
     <div
       className={`${isOpen ? 'right-80' : 'right-0'} absolute bottom-0 left-0 flex h-16 flex-row items-center gap-4 text-nowrap bg-slate-600/50 pl-6 text-sm text-slate-200 transition-all duration-500 ease-out`}
     >
-      <h1 className='text-lg text-white'>남은 시간 / 01:15</h1>
+      <h1 className='text-lg text-white'>남은 시간 / {timeLeft}</h1>
       <div
         className='flex w-full flex-row items-center justify-between gap-4 overflow-x-auto p-1 pr-6'
         ref={listRef}
