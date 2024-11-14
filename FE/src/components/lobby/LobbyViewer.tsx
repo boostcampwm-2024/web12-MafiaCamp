@@ -9,7 +9,7 @@ import NicknameModal from './NicknameModal';
 import { useRouter } from 'next/navigation';
 
 const LobbyViewer = () => {
-  const { nickname, initialize, setState } = useSocketStore();
+  const { nickname, setState } = useSocketStore();
   const [hasNickname, setHasNickname] = useState(nickname !== '');
   const router = useRouter();
 
@@ -27,11 +27,6 @@ const LobbyViewer = () => {
 
       setState({ socket });
       socket.emit('set-nickname', { nickname });
-
-      return () => {
-        initialize();
-        socket.off('connect_error');
-      };
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasNickname]);

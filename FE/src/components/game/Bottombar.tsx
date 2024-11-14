@@ -60,7 +60,7 @@ const Bottombar = ({
             onClick={() => socket?.emit('start-game', { roomId })}
           >
             <PlayIcon className='fill-slate-200' />
-            <p>게임 시작</p>
+            게임 시작
           </button>
           <button
             className={`${audioEnabled === undefined && 'hidden'} flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105`}
@@ -71,7 +71,7 @@ const Bottombar = ({
             ) : (
               <FaMicrophoneSlash className='scale-150 cursor-pointer text-slate-200 hover:text-white' />
             )}
-            <p>오디오</p>
+            오디오
           </button>
           <button
             className={`${videoEnabled === undefined && 'hidden'} flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105`}
@@ -82,7 +82,7 @@ const Bottombar = ({
             ) : (
               <VideoCameraSlashIcon className='scale-90 cursor-pointer fill-slate-200 hover:fill-white' />
             )}
-            <p>카메라</p>
+            카메라
           </button>
           <button
             className='flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105'
