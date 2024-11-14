@@ -41,6 +41,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const client = new EventClient(socket, this.eventManager);
     client.subscribe(Event.ROOM_DATA_CHANGED);
     this.connectedClients.set(socket, client);
+    this.publishRoomDataChangedEvent();
   }
 
   handleDisconnect(socket: Socket) {
