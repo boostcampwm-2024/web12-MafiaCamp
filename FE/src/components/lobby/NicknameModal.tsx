@@ -39,11 +39,15 @@ const NicknameModal = ({ setHasNickname }: NicknameModalProps) => {
         </div>
         <div className='flex flex-col gap-12 rounded-2xl bg-slate-100 p-6 text-slate-800'>
           <div className='flex flex-col gap-3'>
-            <h3 className='text-lg'>닉네임</h3>
+            <label className='text-lg' htmlFor='nickname'>
+              닉네임
+            </label>
             <input
               className={`${nickname.length === 0 ? 'ring-red-500' : 'ring-slate-200 hover:ring-slate-400 focus:ring-slate-400'} rounded-2xl px-4 py-3.5 text-sm outline-none ring-1`}
+              id='nickname'
               type='text'
               placeholder='닉네임을 입력해 주세요. (최대 20자)'
+              autoComplete='off'
               maxLength={20}
               onChange={(e) => {
                 setState({ nickname: e.target.value });
