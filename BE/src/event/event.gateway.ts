@@ -15,8 +15,8 @@ import { WebsocketLoggerInterceptor } from 'src/common/logger/websocket.logger.i
 import { EventClient } from './event-client.model';
 import { EventManager } from './event-manager';
 import { Event } from './event.const';
-import { GameService } from 'src/game/usecase/start-game/game.service';
 import { START_GAME_USECASE } from 'src/game/usecase/start-game/start-game.usecase';
+import { StartGameService } from 'src/game/usecase/start-game/start-game.service';
 
 // @UseInterceptors(WebsocketLoggerInterceptor)
 @WebSocketGateway({
@@ -33,7 +33,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly eventManager: EventManager,
     private readonly gameRoomService: GameRoomService,
     @Inject(START_GAME_USECASE)
-    private readonly gameService: GameService,
+    private readonly startGameService: StartGameService,
   ) {}
 
   handleConnection(socket: Socket) {
@@ -115,7 +115,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
         data: { success: false }
       };
     }
-    this.gameService.startGame(room);
+    this.startGameService.start(room);
   }
 
   private publishRoomDataChangedEvent() {

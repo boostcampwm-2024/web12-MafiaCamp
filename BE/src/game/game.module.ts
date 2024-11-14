@@ -20,11 +20,11 @@ import { DiscussionState } from './fsm/states/discussion.state';
 import { MafiaState } from './fsm/states/mafia.state';
 import { VoteState } from './fsm/states/vote.state';
 import { START_GAME_USECASE } from './usecase/start-game/start-game.usecase';
-import { GameService } from './usecase/start-game/game.service';
 import { DoctorState } from './fsm/states/doctor.state';
 import { PoliceState } from './fsm/states/police.state';
 import { VideoServerModule } from 'src/video-server/video-server.module';
 import { SetUpState } from './fsm/states/set-up.state';
+import { StartGameService } from './usecase/start-game/start-game.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([GameHistoryEntity]), VideoServerModule],
@@ -59,7 +59,7 @@ import { SetUpState } from './fsm/states/set-up.state';
     },
     {
       provide: START_GAME_USECASE,
-      useClass: GameService,
+      useClass: StartGameService,
     },
     ArgumentState, DiscussionState, DoctorState, MafiaState, PoliceState, SetUpState, VoteState
   ],
