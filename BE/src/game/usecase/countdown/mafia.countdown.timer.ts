@@ -10,10 +10,10 @@ import { MutexMap } from '../../../common/utils/mutex-map';
 @Injectable()
 export class MafiaCountdownTimer implements CountdownTimer {
 
-  private readonly stopSignals= new MutexMap<GameRoom, Subject<any>>();
-  private readonly pauses= new MutexMap<GameRoom, boolean>();
+  private readonly stopSignals = new MutexMap<GameRoom, Subject<any>>();
+  private readonly pauses = new MutexMap<GameRoom, boolean>();
 
-  async start(room: GameRoom, situation: string): Promise<Promise<void> | void> {
+  async start(room: GameRoom, situation: string): Promise<void> {
     if (await this.stopSignals.has(room)) {
       throw new DuplicateTimerException();
     }
@@ -23,7 +23,7 @@ export class MafiaCountdownTimer implements CountdownTimer {
 
     let timeLeft: number = TIMEOUT_SITUATION[situation];
 
-    return new Promise((resolve) => {
+    await new Promise((resolve) => {
       interval(1000).pipe(
         takeUntil(this.stopSignals.get(room)),
         takeWhile(() => timeLeft > 0 && !this.pauses.get(room)),
@@ -35,12 +35,12 @@ export class MafiaCountdownTimer implements CountdownTimer {
           });
           timeLeft--;
         },
-        complete: () => {
+        complete: async () => {
           room.sendAll('countdown-exit', {
             situation: situation,
             timeLeft: timeLeft,
           });
-          this.stop(room);
+          await this.stop(room);
           resolve();
         },
       });
