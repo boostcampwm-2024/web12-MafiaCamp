@@ -14,12 +14,6 @@ interface PlayerInfo {
   status: USER_STATUS;
 }
 
-/*
-무효표도 넣기
-무효표가 다수일 때 어떻게 해야할지?
-죽은 유저는 하지 못하게 막아야 함
-죽은 유저에게랑 살아있는 유저에게 보이는 투표 화면은 달라야 함
- */
 @Injectable()
 export class TotalGameManager implements GameManager {
   private readonly games = new MutexMap<GameRoom, MutexMap<string, PlayerInfo>>();
@@ -50,11 +44,12 @@ export class TotalGameManager implements GameManager {
     playerInfo.status = USER_STATUS.DEAD;
     await gameInfo.set(player, playerInfo);
 
-    console.log('투표로 죽은 해당 유저 죽은 사실 게임 방 유저들에게 소켓으로 보낼 예정');
+    gameRoom.sendAll('vote-kill-user', player);
   }
 
   async registerBallotBox(gameRoom: GameRoom): Promise<void> {
     const ballotBox = await this.ballotBoxs.get(gameRoom);
+    const players: string[] = ['INVALIDITY'];
     if (!ballotBox) {
       const gameInfo = await this.games.get(gameRoom);
       if (!gameInfo) {
@@ -66,6 +61,7 @@ export class TotalGameManager implements GameManager {
       entries.map(async ([client, playerInfo]) => {
         if (playerInfo.status === USER_STATUS.ALIVE) {
           await newBallotBox.set(client, []);
+          players.push(client);
         }
       });
 
@@ -74,11 +70,11 @@ export class TotalGameManager implements GameManager {
       await this.ballotBoxs.set(gameRoom, newBallotBox);
     }
 
-    console.log('해당 방 유저들에게 투표 대상자를 소켓으로 보낼 예정');
+    gameRoom.sendAll('send-vote-candidates', players);
   }
 
   /*
-    무효표인 경우 to에 null로 보내면 됩니다.
+    무효표인 경우 to에 INVALIDITY로 보내면 됩니다.
    */
   async cancelVote(gameRoom: GameRoom, from: string, to: string): Promise<void> {
     await this.checkVoteAuthority(gameRoom, from);
@@ -88,8 +84,17 @@ export class TotalGameManager implements GameManager {
     if (voteFlag) {
       await ballotBox.set(to, toVotes.filter(voteId => voteId !== from));
     }
+    await this.sendVoteCurrentState(ballotBox, gameRoom);
+  }
 
-    console.log('해당 방 유저들에게 현재 투표 상황 소켓으로 보낼 예정');
+  private async sendVoteCurrentState(ballotBox: MutexMap<string, string[]>, gameRoom: GameRoom) {
+    const entries = await ballotBox.entries();
+    const voteCountMap = new MutexMap<string, number>();
+    entries.map(async ([client, votedUser]) => {
+      await voteCountMap.set(client, votedUser.length);
+    });
+
+    gameRoom.sendAll('vote-current-state', voteCountMap);
   }
 
   private async checkVoteAuthority(gameRoom: GameRoom, from: string): Promise<void> {
@@ -116,7 +121,7 @@ export class TotalGameManager implements GameManager {
       toVotes.push(from);
     }
 
-    console.log('해당 방 유저들에게 현재 투표 상황 소켓으로 보낼 예정');
+    await this.sendVoteCurrentState(ballotBox,gameRoom);
   }
 
   private async checkVote(ballotBox: MutexMap<string, string[]>, fromInfo: string): Promise<boolean> {
@@ -149,16 +154,15 @@ export class TotalGameManager implements GameManager {
           await newBalletBox.set(votedUser, []);
         }
       }
-      await newBalletBox.set(null, []);
+      await newBalletBox.set('INVALIDITY', []);
       await this.ballotBoxs.set(gameRoom, newBalletBox);
-      console.log('해당 방 유저들에게 현재 투표 결과 소켓으로 보낼 예정');
-      gameRoom.sendAll('primary-game-manager-result', voteResult);
     } else {
       /*
-    무효표가 1등인 경우
-     */
-      console.log('해당 방 유저들에게 무표효 1등 결과 소켓으로 보낼 예정');
+      무효표가 1등인 경우
+      밤으로 바로 이동하게 만들어야 함
+       */
     }
+    gameRoom.sendAll('primary-vote-result', voteResult);
   }
 
   private async findMostVotedUser(ballotBox: MutexMap<string, string[]>, voteResult: MutexMap<string, number>): Promise<string[]> {
@@ -202,6 +206,6 @@ export class TotalGameManager implements GameManager {
       await this.killUser(gameRoom, mostVotedUser[0]);
     }
     await this.ballotBoxs.delete(gameRoom);
-    console.log('웹 소켓을 활용하여 해당 방 유저들에게 결과를 보낼 예정');
+    gameRoom.sendAll('final-vote-result', voteResult);
   }
 }
