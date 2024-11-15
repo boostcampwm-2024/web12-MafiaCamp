@@ -5,25 +5,31 @@ import {
   CountdownTimeoutUsecase,
 } from 'src/game/usecase/countdown/countdown.timeout.usecase';
 import { GameState, TransitionHandler } from './state';
-import { PoliceState } from './police.state';
 import { GameContext } from '../game-context';
+import { VOTE_MAFIA_USECASE, VoteMafiaUsecase } from '../../usecase/game-manager/vote.mafia.usecase';
+import { MafiaState } from './mafia.state';
 
 @Injectable()
-export class DoctorState extends GameState {
+export class FinalVoteState extends GameState {
   constructor(
     @Inject(COUNTDOWN_TIMEOUT_USECASE)
     private readonly countdownTimeoutUsecase: CountdownTimeoutUsecase,
-    @Inject(forwardRef(() => PoliceState))
-    private readonly policeState: PoliceState,
+    @Inject(forwardRef(() => MafiaState))
+    private readonly mafiaState: MafiaState,
+    @Inject(VOTE_MAFIA_USECASE)
+    private readonly voteMafiaUsecase: VoteMafiaUsecase,
   ) {
     super();
   }
 
   async handle(context: GameContext, next: TransitionHandler) {
     const room = context.room;
+    await this.voteMafiaUsecase.registerBallotBox(room);
     await this.countdownTimeoutUsecase.countdownStart(
-      new StartCountdownRequest(room, 'ARGUMENT'),
+      new StartCountdownRequest(room, 'VOTE'),
     );
-    next(this.policeState);
+
+    await this.voteMafiaUsecase.finalVoteResult(room);
+    next(this.mafiaState);
   }
 }

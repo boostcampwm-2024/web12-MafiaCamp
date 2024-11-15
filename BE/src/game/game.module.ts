@@ -18,13 +18,14 @@ import { VoteMafiaService } from './usecase/game-manager/vote.mafia.service';
 import { ArgumentState } from './fsm/states/argument.state';
 import { DiscussionState } from './fsm/states/discussion.state';
 import { MafiaState } from './fsm/states/mafia.state';
-import { VoteState } from './fsm/states/vote.state';
+import { PrimaryVoteState } from './fsm/states/primary-vote.state';
 import { START_GAME_USECASE } from './usecase/start-game/start-game.usecase';
 import { DoctorState } from './fsm/states/doctor.state';
 import { PoliceState } from './fsm/states/police.state';
 import { VideoServerModule } from 'src/video-server/video-server.module';
 import { SetUpState } from './fsm/states/set-up.state';
 import { StartGameService } from './usecase/start-game/start-game.service';
+import { FinalVoteState } from './fsm/states/final-vote.state';
 
 @Module({
   imports: [TypeOrmModule.forFeature([GameHistoryEntity]), VideoServerModule],
@@ -61,7 +62,7 @@ import { StartGameService } from './usecase/start-game/start-game.service';
       provide: START_GAME_USECASE,
       useClass: StartGameService,
     },
-    ArgumentState, DiscussionState, DoctorState, MafiaState, PoliceState, SetUpState, VoteState
+    ArgumentState, DiscussionState, DoctorState, MafiaState, PoliceState, SetUpState, PrimaryVoteState, FinalVoteState
   ],
   exports: [
     START_GAME_USECASE, ALLOCATE_USER_ROLE_USECASE, COUNTDOWN_TIMEOUT_USECASE, VOTE_MAFIA_USECASE,

@@ -8,6 +8,7 @@ import { NotFoundGameRoomException } from '../../../common/error/not.found.game-
 import { NotFoundBallotBoxException } from '../../../common/error/not.found.ballot-box.exception';
 import { UnauthorizedUserBallotException } from '../../../common/error/unauthorized.user.ballot.exception';
 import { MutexMap } from '../../../common/utils/mutex-map';
+import { VOTE_STATE } from '../../vote-state';
 
 interface PlayerInfo {
   role: MAFIA_ROLE;
@@ -27,7 +28,7 @@ export class TotalGameManager implements GameManager {
     const playerInfoEntries = entries.map(([client, role]) => [
       client.nickname,
       { role, status: USER_STATUS.ALIVE },
-    ]) as [GameClient, PlayerInfo][];
+    ]) as [string, PlayerInfo][];
     await gameInfo.setMany(playerInfoEntries);
 
     await this.games.set(gameRoom, gameInfo);
@@ -49,7 +50,7 @@ export class TotalGameManager implements GameManager {
 
   async registerBallotBox(gameRoom: GameRoom): Promise<void> {
     const ballotBox = await this.ballotBoxs.get(gameRoom);
-    const players: string[] = ['INVALIDITY'];
+    const candidates: string[] = ['INVALIDITY'];
     if (!ballotBox) {
       const gameInfo = await this.games.get(gameRoom);
       if (!gameInfo) {
@@ -61,7 +62,7 @@ export class TotalGameManager implements GameManager {
       entries.map(async ([client, playerInfo]) => {
         if (playerInfo.status === USER_STATUS.ALIVE) {
           await newBallotBox.set(client, []);
-          players.push(client);
+          candidates.push(client);
         }
       });
 
@@ -70,7 +71,7 @@ export class TotalGameManager implements GameManager {
       await this.ballotBoxs.set(gameRoom, newBallotBox);
     }
 
-    gameRoom.sendAll('send-vote-candidates', players);
+    gameRoom.sendAll('send-vote-candidates', candidates);
   }
 
   /*
@@ -121,7 +122,7 @@ export class TotalGameManager implements GameManager {
       toVotes.push(from);
     }
 
-    await this.sendVoteCurrentState(ballotBox,gameRoom);
+    await this.sendVoteCurrentState(ballotBox, gameRoom);
   }
 
   private async checkVote(ballotBox: MutexMap<string, string[]>, fromInfo: string): Promise<boolean> {
@@ -134,7 +135,7 @@ export class TotalGameManager implements GameManager {
     return voteFlag;
   }
 
-  async primaryVoteResult(gameRoom: GameRoom): Promise<void> {
+  async primaryVoteResult(gameRoom: GameRoom): Promise<VOTE_STATE> {
     const ballotBox = await this.ballotBoxs.get(gameRoom);
     if (!ballotBox) {
       throw new NotFoundBallotBoxException();
@@ -156,13 +157,11 @@ export class TotalGameManager implements GameManager {
       }
       await newBalletBox.set('INVALIDITY', []);
       await this.ballotBoxs.set(gameRoom, newBalletBox);
-    } else {
-      /*
-      무효표가 1등인 경우
-      밤으로 바로 이동하게 만들어야 함
-       */
+      gameRoom.sendAll('primary-vote-result', voteResult);
+      return VOTE_STATE.PRIMARY;
     }
     gameRoom.sendAll('primary-vote-result', voteResult);
+    return VOTE_STATE.INVALIDITY;
   }
 
   private async findMostVotedUser(ballotBox: MutexMap<string, string[]>, voteResult: MutexMap<string, number>): Promise<string[]> {
@@ -182,15 +181,15 @@ export class TotalGameManager implements GameManager {
 
   private async voteForYourself(ballotBox: MutexMap<string, string[]>) {
     const entries = await ballotBox.entries();
-    entries.map(async ([client,votedUsers])=>{
+    entries.map(async ([client, votedUsers]) => {
       const voteFlag: boolean = await this.checkVote(ballotBox, client);
       if (!voteFlag) {
         votedUsers.push(client);
       }
-    })
+    });
   }
 
-  async finalVoteResult(gameRoom: GameRoom): Promise<void> {
+  async finalVoteResult(gameRoom: GameRoom): Promise<VOTE_STATE> {
     const ballotBox = await this.ballotBoxs.get(gameRoom);
     if (!ballotBox) {
       throw new NotFoundBallotBoxException();
@@ -207,5 +206,6 @@ export class TotalGameManager implements GameManager {
     }
     await this.ballotBoxs.delete(gameRoom);
     gameRoom.sendAll('final-vote-result', voteResult);
+    return VOTE_STATE.FINAL;
   }
 }

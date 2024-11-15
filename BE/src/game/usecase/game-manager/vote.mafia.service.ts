@@ -2,6 +2,7 @@ import { VoteMafiaUsecase } from './vote.mafia.usecase';
 import { Inject, Injectable } from '@nestjs/common';
 import { GameRoom } from '../../../game-room/entity/game-room.model';
 import { GAME_MANAGER, GameManager } from './game-manager';
+import { VOTE_STATE } from '../../vote-state';
 
 @Injectable()
 export class VoteMafiaService implements VoteMafiaUsecase {
@@ -16,12 +17,12 @@ export class VoteMafiaService implements VoteMafiaUsecase {
     await this.gameManager.cancelVote(gameRoom, from, to);
   }
 
-  async finalVoteResult(gameRoom: GameRoom): Promise<void> {
-    await this.gameManager.finalVoteResult(gameRoom);
+  async finalVoteResult(gameRoom: GameRoom): Promise<VOTE_STATE> {
+    return await this.gameManager.finalVoteResult(gameRoom);
   }
 
-  async primaryVoteResult(gameRoom: GameRoom): Promise<void> {
-    await this.gameManager.primaryVoteResult(gameRoom);
+  async primaryVoteResult(gameRoom: GameRoom): Promise<VOTE_STATE> {
+    return await this.gameManager.primaryVoteResult(gameRoom);
   }
 
   async registerBallotBox(gameRoom: GameRoom): Promise<void> {
