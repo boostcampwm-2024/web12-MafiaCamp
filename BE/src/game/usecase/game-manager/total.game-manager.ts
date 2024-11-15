@@ -56,7 +56,7 @@ export class TotalGameManager implements GameManager {
       if (!gameInfo) {
         throw new NotFoundGameRoomException();
       }
-
+      console.log(gameInfo);
       const newBallotBox = new MutexMap<string, string[]>();
       const entries = await gameInfo.entries();
       entries.map(async ([client, playerInfo]) => {
@@ -69,6 +69,10 @@ export class TotalGameManager implements GameManager {
       // 무효표 추가
       await newBallotBox.set('INVALIDITY', []);
       await this.ballotBoxs.set(gameRoom, newBallotBox);
+    }else{
+      await ballotBox.forEach((votedUsers,client)=>{
+        candidates.push(client);
+      })
     }
 
     gameRoom.sendAll('send-vote-candidates', candidates);
