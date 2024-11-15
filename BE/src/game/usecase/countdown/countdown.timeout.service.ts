@@ -17,8 +17,8 @@ export class CountdownTimeoutService implements CountdownTimeoutUsecase {
     await this.countdownTimer.start(startCountdownRequest.room, startCountdownRequest.situation);
   }
 
-  countdownStop(stopCountdownRequest: StopCountdownRequest): void {
-    this.countdownTimer.stop(stopCountdownRequest.room);
+  async countdownStop(stopCountdownRequest: StopCountdownRequest): Promise<void> {
+    await this.countdownTimer.stop(stopCountdownRequest.room);
   }
 
 }

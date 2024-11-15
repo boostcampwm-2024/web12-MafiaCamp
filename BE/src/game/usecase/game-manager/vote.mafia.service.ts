@@ -13,24 +13,24 @@ export class VoteMafiaService implements VoteMafiaUsecase {
   ) {
   }
 
-  cancelVote(gameRoom: GameRoom, from: GameClient, to: GameClient): void {
-    this.gameManager.cancelVote(gameRoom, from, to);
+  async cancelVote(gameRoom: GameRoom, from: GameClient, to: GameClient): Promise<void> {
+    await this.gameManager.cancelVote(gameRoom, from, to);
   }
 
-  finalVoteResult(gameRoom: GameRoom): void {
-    this.gameManager.finalVoteResult(gameRoom);
+  async finalVoteResult(gameRoom: GameRoom): Promise<void> {
+    await this.gameManager.finalVoteResult(gameRoom);
   }
 
-  primaryVoteResult(gameRoom: GameRoom): void {
-    this.gameManager.primaryVoteResult(gameRoom);
+  async primaryVoteResult(gameRoom: GameRoom): Promise<void> {
+    await this.gameManager.primaryVoteResult(gameRoom);
   }
 
-  registerBallotBox(gameRoom: GameRoom): void {
-    this.gameManager.registerBallotBox(gameRoom);
+  async registerBallotBox(gameRoom: GameRoom): Promise<void> {
+    await this.gameManager.registerBallotBox(gameRoom);
   }
 
-  vote(gameRoom: GameRoom, from: GameClient, to: GameClient): void {
-    this.gameManager.vote(gameRoom, from, to);
+  async vote(gameRoom: GameRoom, from: GameClient, to: GameClient): Promise<void> {
+    await this.gameManager.vote(gameRoom, from, to);
   }
 
 }

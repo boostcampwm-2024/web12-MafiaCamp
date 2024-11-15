@@ -5,20 +5,21 @@ import { interval, Subject, takeUntil, takeWhile } from 'rxjs';
 import { DuplicateTimerException } from '../../../common/error/duplicate.timer.exception';
 import { NotFoundTimerException } from '../../../common/error/not.found.timer.exception';
 import { GameRoom } from '../../../game-room/entity/game-room.model';
+import { MutexMap } from '../../../common/utils/mutex-map';
 
 @Injectable()
 export class MafiaCountdownTimer implements CountdownTimer {
 
-  private readonly stopSignals= new Map<GameRoom, Subject<any>>();
-  private readonly pauses= new Map<GameRoom, boolean>();
+  private readonly stopSignals= new MutexMap<GameRoom, Subject<any>>();
+  private readonly pauses= new MutexMap<GameRoom, boolean>();
 
-  start(room: GameRoom, situation: string): Promise<void> {
-    if (this.stopSignals.has(room)) {
+  async start(room: GameRoom, situation: string): Promise<Promise<void> | void> {
+    if (await this.stopSignals.has(room)) {
       throw new DuplicateTimerException();
     }
 
-    this.stopSignals.set(room, new Subject());
-    this.pauses.set(room, false);
+    await this.stopSignals.set(room, new Subject());
+    await this.pauses.set(room, false);
 
     let timeLeft: number = TIMEOUT_SITUATION[situation];
 
@@ -46,25 +47,25 @@ export class MafiaCountdownTimer implements CountdownTimer {
     });
   }
 
-  private pause(room: GameRoom): void {
-    this.pauses.set(room, true);
+  private async pause(room: GameRoom): Promise<void> {
+    await this.pauses.set(room, true);
   }
 
-  private cleanup(room: GameRoom): void {
-    const signal = this.stopSignals.get(room);
+  private async cleanup(room: GameRoom): Promise<void> {
+    const signal = await this.stopSignals.get(room);
     if (!signal) {
       // 기존에는 signal 유무와 상관없이 항상 Exception이 터지는 코드라서 수정하였습니다.
       throw new NotFoundTimerException();
     }
     signal.next(null);
     signal.complete();
-    this.stopSignals.delete(room);
-    this.pauses.delete(room);
+    await this.stopSignals.delete(room);
+    await this.pauses.delete(room);
   }
 
-  stop(room: GameRoom): void {
-    this.pause(room);
-    this.cleanup(room);
+  async stop(room: GameRoom): Promise<void> {
+    await this.pause(room);
+    await this.cleanup(room);
   }
 
 }

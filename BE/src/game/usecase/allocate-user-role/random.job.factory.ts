@@ -5,6 +5,7 @@ import { GameInvalidPlayerCountException } from '../../../common/error/game.inva
 import { RoleCountNegativeException } from '../../../common/error/role.count.negative.exception';
 import { GameRoom } from '../../../game-room/entity/game-room.model';
 import { GameClient } from '../../../game-room/entity/game-client.model';
+import { MutexMap } from '../../../common/utils/mutex-map';
 
 @Injectable()
 export class RandomJobFactory implements JobFactory {
@@ -13,15 +14,15 @@ export class RandomJobFactory implements JobFactory {
     유저가 7명일 때, 마피아 2, 경찰 1, 의사 1, 시민 3
     유저가 8명일 때, 마피아 3, 경찰 1, 의사 1, 시민 3
    */
-  allocateGameRoles(gameRoom: GameRoom): Map<GameClient, MAFIA_ROLE> {
+  async allocateGameRoles(gameRoom: GameRoom): Promise<MutexMap<GameClient, MAFIA_ROLE>> {
     const userCount = gameRoom.clients.length;
-    return this.allocate(userCount, gameRoom.clients);
+    return await this.allocate(userCount, gameRoom.clients);
   }
 
-  private allocate(
+  private async allocate(
     userCount: number,
     players: GameClient[],
-  ): Map<GameClient, MAFIA_ROLE> {
+  ): Promise<MutexMap<GameClient, MAFIA_ROLE>> {
     let possibleRoles: Array<MAFIA_ROLE>;
     switch (userCount) {
       case 6:
@@ -36,9 +37,10 @@ export class RandomJobFactory implements JobFactory {
       default:
         throw new GameInvalidPlayerCountException();
     }
-    const userRoles = new Map<GameClient, MAFIA_ROLE>();
+    const userRoles = new MutexMap<GameClient, MAFIA_ROLE>();
     const mafiaUsers: [GameClient, MAFIA_ROLE][] = [];
-    this.shuffle(possibleRoles).forEach((role, idx) => {
+    for (const role of this.shuffle(possibleRoles)) {
+      const idx = this.shuffle(possibleRoles).indexOf(role);
       if (role === MAFIA_ROLE.MAFIA) {
         mafiaUsers.push([players[idx], role]);
       } else {
@@ -47,12 +49,17 @@ export class RandomJobFactory implements JobFactory {
           'another': null,
         });
       }
-      userRoles.set(players[idx], role);
-    });
+      await userRoles.set(players[idx], role);
+    }
 
+    this.sendRolesToUsers(mafiaUsers);
+    return userRoles;
+  }
+
+  private sendRolesToUsers(mafiaUsers: [GameClient, MAFIA_ROLE][]) {
     mafiaUsers.forEach(([currentPlayer, currentRole]) => {
       const otherMafias = mafiaUsers
-        .filter((player:[GameClient,MAFIA_ROLE]) => player[0] !== currentPlayer)
+        .filter((player: [GameClient, MAFIA_ROLE]) => player[0] !== currentPlayer)
         .map(([player, role]) => [player.nickname, role]);
 
       currentPlayer.send('player-role', {
@@ -60,7 +67,6 @@ export class RandomJobFactory implements JobFactory {
         'another': otherMafias,
       });
     });
-    return userRoles;
   }
 
   private shuffle(possibleRoles: Array<MAFIA_ROLE>): Array<MAFIA_ROLE> {
