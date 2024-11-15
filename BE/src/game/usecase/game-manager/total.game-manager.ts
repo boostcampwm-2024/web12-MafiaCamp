@@ -21,15 +21,16 @@ export class TotalGameManager implements GameManager {
   private readonly ballotBoxs = new Map<GameRoom, MutexMap<string, string[]>>();
 
   async register(gameRoom: GameRoom, players: MutexMap<GameClient, MAFIA_ROLE>): Promise<void> {
+    const playerEntries = await players.entries();
+
     const gameInfo = new MutexMap<string, PlayerInfo>();
 
-    const entries = await players.entries();
-    const playerInfoEntries = entries.map(([client, role]) => [
+    const playerInfoEntries = playerEntries.map(([client, role]) => [
       client.nickname,
       { role, status: USER_STATUS.ALIVE },
     ]) as [string, PlayerInfo][];
+
     await gameInfo.setMany(playerInfoEntries);
-    console.log(gameInfo);
     this.games.set(gameRoom, gameInfo);
   }
 
