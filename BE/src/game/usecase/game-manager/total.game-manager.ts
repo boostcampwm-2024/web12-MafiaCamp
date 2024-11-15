@@ -17,8 +17,8 @@ interface PlayerInfo {
 
 @Injectable()
 export class TotalGameManager implements GameManager {
-  private readonly games = new MutexMap<GameRoom, MutexMap<string, PlayerInfo>>();
-  private readonly ballotBoxs = new MutexMap<GameRoom, MutexMap<string, string[]>>();
+  private readonly games = new Map<GameRoom, MutexMap<string, PlayerInfo>>();
+  private readonly ballotBoxs = new Map<GameRoom, MutexMap<string, string[]>>();
 
   async register(gameRoom: GameRoom, players: MutexMap<GameClient, MAFIA_ROLE>): Promise<void> {
     const gameInfo = new MutexMap<string, PlayerInfo>();
@@ -49,14 +49,13 @@ export class TotalGameManager implements GameManager {
   }
 
   async registerBallotBox(gameRoom: GameRoom): Promise<void> {
-    const ballotBox = await this.ballotBoxs.get(gameRoom);
+    const ballotBox = this.ballotBoxs.get(gameRoom);
     const candidates: string[] = ['INVALIDITY'];
     if (!ballotBox) {
-      const gameInfo = await this.games.get(gameRoom);
+      const gameInfo = this.games.get(gameRoom);
       if (!gameInfo) {
         throw new NotFoundGameRoomException();
       }
-      console.log(gameInfo);
       const newBallotBox = new MutexMap<string, string[]>();
       const entries = await gameInfo.entries();
       entries.map(async ([client, playerInfo]) => {
@@ -68,7 +67,7 @@ export class TotalGameManager implements GameManager {
 
       // 무효표 추가
       await newBallotBox.set('INVALIDITY', []);
-      await this.ballotBoxs.set(gameRoom, newBallotBox);
+      this.ballotBoxs.set(gameRoom, newBallotBox);
     }else{
       await ballotBox.forEach((votedUsers,client)=>{
         candidates.push(client);
@@ -83,7 +82,7 @@ export class TotalGameManager implements GameManager {
    */
   async cancelVote(gameRoom: GameRoom, from: string, to: string): Promise<void> {
     await this.checkVoteAuthority(gameRoom, from);
-    const ballotBox = await this.ballotBoxs.get(gameRoom);
+    const ballotBox = this.ballotBoxs.get(gameRoom);
     const toVotes = await ballotBox.get(to);
     const voteFlag = await this.checkVote(ballotBox, from);
     if (voteFlag) {
@@ -103,7 +102,7 @@ export class TotalGameManager implements GameManager {
   }
 
   private async checkVoteAuthority(gameRoom: GameRoom, from: string): Promise<void> {
-    const game = await this.games.get(gameRoom);
+    const game = this.games.get(gameRoom);
     if (!game) {
       throw new NotFoundBallotBoxException();
     }
@@ -119,7 +118,7 @@ export class TotalGameManager implements GameManager {
      */
   async vote(gameRoom: GameRoom, from: string, to: string): Promise<void> {
     await this.checkVoteAuthority(gameRoom, from);
-    const ballotBox = await this.ballotBoxs.get(gameRoom);
+    const ballotBox = this.ballotBoxs.get(gameRoom);
     const toVotes = await ballotBox.get(to);
     const voteFlag = await this.checkVote(ballotBox, from);
     if (!voteFlag) {
@@ -140,7 +139,7 @@ export class TotalGameManager implements GameManager {
   }
 
   async primaryVoteResult(gameRoom: GameRoom): Promise<VOTE_STATE> {
-    const ballotBox = await this.ballotBoxs.get(gameRoom);
+    const ballotBox = this.ballotBoxs.get(gameRoom);
     if (!ballotBox) {
       throw new NotFoundBallotBoxException();
     }
@@ -160,7 +159,7 @@ export class TotalGameManager implements GameManager {
         }
       }
       await newBalletBox.set('INVALIDITY', []);
-      await this.ballotBoxs.set(gameRoom, newBalletBox);
+      this.ballotBoxs.set(gameRoom, newBalletBox);
       gameRoom.sendAll('primary-vote-result', voteResult);
       return VOTE_STATE.PRIMARY;
     }
@@ -194,7 +193,7 @@ export class TotalGameManager implements GameManager {
   }
 
   async finalVoteResult(gameRoom: GameRoom): Promise<VOTE_STATE> {
-    const ballotBox = await this.ballotBoxs.get(gameRoom);
+    const ballotBox = this.ballotBoxs.get(gameRoom);
     if (!ballotBox) {
       throw new NotFoundBallotBoxException();
     }
@@ -208,7 +207,7 @@ export class TotalGameManager implements GameManager {
     if (mostVotedUser.length === 1 && mostVotedUser[0] !== null) {
       await this.killUser(gameRoom, mostVotedUser[0]);
     }
-    await this.ballotBoxs.delete(gameRoom);
+    this.ballotBoxs.delete(gameRoom);
     gameRoom.sendAll('final-vote-result', voteResult);
     return VOTE_STATE.FINAL;
   }
