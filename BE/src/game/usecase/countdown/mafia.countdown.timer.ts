@@ -23,7 +23,7 @@ export class MafiaCountdownTimer implements CountdownTimer {
 
     let timeLeft: number = TIMEOUT_SITUATION[situation];
 
-    await new Promise((resolve) => {
+    await new Promise<void>((resolve) => {
       interval(1000).pipe(
         takeUntil(this.stopSignals.get(room)),
         takeWhile(() => timeLeft > 0 && !this.pauses.get(room)),
