@@ -33,6 +33,6 @@ export class AllocateUserRoleService implements AllocateUserRoleUsecase {
     const gameHistoryEntity = new GameHistoryEntity();
     await this.gameHistoryRepository.save(gameHistoryEntity);
     const userRoles: MutexMap<GameClient, MAFIA_ROLE> = await this.jobFactory.allocateGameRoles(jobRequest.gameRoom);
-    this.gameManager.register(jobRequest.gameRoom, userRoles);
+    await this.gameManager.register(jobRequest.gameRoom, userRoles);
   }
 }

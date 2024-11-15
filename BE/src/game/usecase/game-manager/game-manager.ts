@@ -7,15 +7,15 @@ export const GAME_MANAGER = Symbol('GAME_MANAGER');
 
 export interface GameManager {
 
-  register(gameRoom: GameRoom, players: MutexMap<GameClient, MAFIA_ROLE>): void;
+  register(gameRoom: GameRoom, players: MutexMap<GameClient, MAFIA_ROLE>): Promise<void>;
 
-  registerBallotBox(gameRoom: GameRoom): void;
+  registerBallotBox(gameRoom: GameRoom): Promise<void>;
 
-  vote(gameRoom: GameRoom, from: GameClient, to: GameClient): void;
+  vote(gameRoom: GameRoom, from: string, to: string): Promise<void>;
 
-  cancelVote(gameRoom: GameRoom, from: GameClient, to: GameClient): void;
+  cancelVote(gameRoom: GameRoom, from: string, to: string): Promise<void>;
 
-  primaryVoteResult(gameRoom: GameRoom): void;
+  primaryVoteResult(gameRoom: GameRoom): Promise<void>;
 
-  finalVoteResult(gameRoom: GameRoom): void;
+  finalVoteResult(gameRoom: GameRoom): Promise<void>;
 }

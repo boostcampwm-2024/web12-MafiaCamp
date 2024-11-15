@@ -22,16 +22,16 @@ interface PlayerInfo {
  */
 @Injectable()
 export class TotalGameManager implements GameManager {
-  private readonly games = new MutexMap<GameRoom, MutexMap<GameClient, PlayerInfo>>();
-  private readonly ballotBoxs = new MutexMap<GameRoom, MutexMap<GameClient, string[]>>();
+  private readonly games = new MutexMap<GameRoom, MutexMap<string, PlayerInfo>>();
+  private readonly ballotBoxs = new MutexMap<GameRoom, MutexMap<string, string[]>>();
 
   async register(gameRoom: GameRoom, players: MutexMap<GameClient, MAFIA_ROLE>): Promise<void> {
-    const gameInfo = new MutexMap<GameClient, PlayerInfo>();
+    const gameInfo = new MutexMap<string, PlayerInfo>();
 
 
     const entries = await players.entries();
     const playerInfoEntries = entries.map(([client, role]) => [
-      client,
+      client.nickname,
       { role, status: USER_STATUS.ALIVE },
     ]) as [GameClient, PlayerInfo][];
     await gameInfo.setMany(playerInfoEntries);
@@ -39,7 +39,7 @@ export class TotalGameManager implements GameManager {
     await this.games.set(gameRoom, gameInfo);
   }
 
-  private async killUser(gameRoom: GameRoom, player: GameClient): Promise<void> {
+  private async killUser(gameRoom: GameRoom, player: string): Promise<void> {
     const gameInfo = await this.games.get(gameRoom);
     if (!gameInfo) {
       throw new NotFoundGameRoomException();
@@ -61,7 +61,7 @@ export class TotalGameManager implements GameManager {
         throw new NotFoundGameRoomException();
       }
 
-      const newBallotBox = new MutexMap<GameClient, string[]>();
+      const newBallotBox = new MutexMap<string, string[]>();
       const entries = await gameInfo.entries();
       entries.map(async ([client, playerInfo]) => {
         if (playerInfo.status === USER_STATUS.ALIVE) {
@@ -70,7 +70,7 @@ export class TotalGameManager implements GameManager {
       });
 
       // 무효표 추가
-      await newBallotBox.set(null, []);
+      await newBallotBox.set('INVALIDITY', []);
       await this.ballotBoxs.set(gameRoom, newBallotBox);
     }
 
@@ -80,20 +80,19 @@ export class TotalGameManager implements GameManager {
   /*
     무효표인 경우 to에 null로 보내면 됩니다.
    */
-  async cancelVote(gameRoom: GameRoom, from: GameClient, to: GameClient): Promise<void> {
+  async cancelVote(gameRoom: GameRoom, from: string, to: string): Promise<void> {
     await this.checkVoteAuthority(gameRoom, from);
     const ballotBox = await this.ballotBoxs.get(gameRoom);
     const toVotes = await ballotBox.get(to);
-    const fromSocketId = from.client.socket.id;
-    const voteFlag = await this.checkVote(ballotBox, fromSocketId);
+    const voteFlag = await this.checkVote(ballotBox, from);
     if (voteFlag) {
-      await ballotBox.set(to, toVotes.filter(voteId => voteId !== fromSocketId));
+      await ballotBox.set(to, toVotes.filter(voteId => voteId !== from));
     }
 
     console.log('해당 방 유저들에게 현재 투표 상황 소켓으로 보낼 예정');
   }
 
-  private async checkVoteAuthority(gameRoom: GameRoom, from: GameClient): Promise<void> {
+  private async checkVoteAuthority(gameRoom: GameRoom, from: string): Promise<void> {
     const game = await this.games.get(gameRoom);
     if (!game) {
       throw new NotFoundBallotBoxException();
@@ -108,23 +107,22 @@ export class TotalGameManager implements GameManager {
   /*
       무효표인 경우 to에 null로 보내면 됩니다.
      */
-  async vote(gameRoom: GameRoom, from: GameClient, to: GameClient): Promise<void> {
+  async vote(gameRoom: GameRoom, from: string, to: string): Promise<void> {
     await this.checkVoteAuthority(gameRoom, from);
     const ballotBox = await this.ballotBoxs.get(gameRoom);
     const toVotes = await ballotBox.get(to);
-    const fromSocketId = from.client.socket.id;
-    const voteFlag = await this.checkVote(ballotBox, fromSocketId);
+    const voteFlag = await this.checkVote(ballotBox, from);
     if (!voteFlag) {
-      toVotes.push(fromSocketId);
+      toVotes.push(from);
     }
 
     console.log('해당 방 유저들에게 현재 투표 상황 소켓으로 보낼 예정');
   }
 
-  private async checkVote(ballotBox: MutexMap<GameClient, string[]>, fromSocketId: string): Promise<boolean> {
+  private async checkVote(ballotBox: MutexMap<string, string[]>, fromInfo: string): Promise<boolean> {
     let voteFlag = false;
     await ballotBox.forEach((votedUser) => {
-      if (votedUser.some(voteId => voteId === fromSocketId)) {
+      if (votedUser.some(voteId => voteId === fromInfo)) {
         voteFlag = true;
       }
     });
@@ -139,7 +137,7 @@ export class TotalGameManager implements GameManager {
     await this.voteForYourself(ballotBox);
 
     const voteResult = new MutexMap<string, number>();
-    const newBalletBox = new MutexMap<GameClient, string[]>();
+    const newBalletBox = new MutexMap<string, string[]>();
     const maxVotedUsers = await this.findMostVotedUser(ballotBox, voteResult);
 
     if ((maxVotedUsers.length === 1 && maxVotedUsers[0] !== null) || (maxVotedUsers.length > 1)) {
@@ -163,28 +161,27 @@ export class TotalGameManager implements GameManager {
     }
   }
 
-  private async findMostVotedUser(ballotBox: MutexMap<GameClient, string[]>, voteResult: MutexMap<string, number>): Promise<GameClient[]> {
-    let maxVotedUsers: GameClient[] = [];
+  private async findMostVotedUser(ballotBox: MutexMap<string, string[]>, voteResult: MutexMap<string, number>): Promise<string[]> {
+    let maxVotedUsers: string[] = [];
     let maxCnt = -1;
-    await ballotBox.forEach((votedUsers, gameClient) => {
-      voteResult[gameClient.client.socket.id] = votedUsers.length;
+    await ballotBox.forEach((votedUsers, client) => {
+      voteResult[client] = votedUsers.length;
       if (maxCnt < votedUsers.length) {
-        maxVotedUsers = [gameClient];
+        maxVotedUsers = [client];
         maxCnt = votedUsers.length;
       } else if (maxCnt === votedUsers.length) {
-        maxVotedUsers.push(gameClient);
+        maxVotedUsers.push(client);
       }
     });
     return maxVotedUsers;
   }
 
-  private async voteForYourself(ballotBox: MutexMap<GameClient, string[]>) {
+  private async voteForYourself(ballotBox: MutexMap<string, string[]>) {
     const entries = await ballotBox.entries();
     entries.map(async ([client,votedUsers])=>{
-      const userId: string = client.client.socket.id;
-      const voteFlag: boolean = await this.checkVote(ballotBox, userId);
+      const voteFlag: boolean = await this.checkVote(ballotBox, client);
       if (!voteFlag) {
-        votedUsers.push(userId);
+        votedUsers.push(client);
       }
     })
   }
