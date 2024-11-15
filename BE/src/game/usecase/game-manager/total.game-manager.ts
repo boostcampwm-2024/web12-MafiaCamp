@@ -30,7 +30,7 @@ export class TotalGameManager implements GameManager {
       { role, status: USER_STATUS.ALIVE },
     ]) as [string, PlayerInfo][];
     await gameInfo.setMany(playerInfoEntries);
-
+    console.log(gameInfo);
     await this.games.set(gameRoom, gameInfo);
   }
 
@@ -64,7 +64,7 @@ export class TotalGameManager implements GameManager {
           candidates.push(client);
         }
       });
-
+      console.log(ballotBox);
       // 무효표 추가
       await newBallotBox.set('INVALIDITY', []);
       this.ballotBoxs.set(gameRoom, newBallotBox);
