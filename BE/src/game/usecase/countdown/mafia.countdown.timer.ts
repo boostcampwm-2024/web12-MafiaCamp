@@ -22,13 +22,15 @@ export class MafiaCountdownTimer implements CountdownTimer {
     await this.pauses.set(room, false);
 
     let timeLeft: number = TIMEOUT_SITUATION[situation];
-
-    await new Promise<void>((resolve) => {
+    const currentSignal = await this.stopSignals.get(room);
+    let paused = await this.pauses.get(room);
+    return new Promise<void>((resolve) => {
       interval(1000).pipe(
-        takeUntil(this.stopSignals.get(room)),
-        takeWhile(() => timeLeft > 0 && !this.pauses.get(room)),
+        takeUntil(currentSignal),
+        takeWhile(() => timeLeft > 0 && !paused),
       ).subscribe({
-        next: () => {
+        next: async () => {
+          paused = await this.pauses.get(room);
           room.sendAll('countdown', {
             situation: situation,
             timeLeft: timeLeft,
