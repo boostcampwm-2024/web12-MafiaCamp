@@ -23,7 +23,6 @@ export class TotalGameManager implements GameManager {
   async register(gameRoom: GameRoom, players: MutexMap<GameClient, MAFIA_ROLE>): Promise<void> {
     const gameInfo = new MutexMap<string, PlayerInfo>();
 
-
     const entries = await players.entries();
     const playerInfoEntries = entries.map(([client, role]) => [
       client.nickname,
@@ -31,11 +30,11 @@ export class TotalGameManager implements GameManager {
     ]) as [string, PlayerInfo][];
     await gameInfo.setMany(playerInfoEntries);
     console.log(gameInfo);
-    await this.games.set(gameRoom, gameInfo);
+    this.games.set(gameRoom, gameInfo);
   }
 
   private async killUser(gameRoom: GameRoom, player: string): Promise<void> {
-    const gameInfo = await this.games.get(gameRoom);
+    const gameInfo = this.games.get(gameRoom);
     if (!gameInfo) {
       throw new NotFoundGameRoomException();
     }
@@ -64,9 +63,9 @@ export class TotalGameManager implements GameManager {
           candidates.push(client);
         }
       });
-      console.log(ballotBox);
       // 무효표 추가
       await newBallotBox.set('INVALIDITY', []);
+      console.log(newBallotBox);
       this.ballotBoxs.set(gameRoom, newBallotBox);
     }else{
       await ballotBox.forEach((votedUsers,client)=>{
