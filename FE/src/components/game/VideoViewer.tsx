@@ -7,10 +7,11 @@ import { useSocketStore } from '@/stores/socketStore';
 import { GamePublisher } from '@/types/gamePublisher';
 import { GameSubscriber } from '@/types/gameSubscriber';
 import { Role } from '@/constants/role';
+import { Participant } from '@/types/participant';
 
 interface VideoViewerProps {
   isGameStarted: boolean;
-  participants: string[];
+  participantList: Participant[];
   playerRole: Role | null;
   otherMafiaList: string[] | null;
   gamePublisher: GamePublisher | null;
@@ -19,7 +20,7 @@ interface VideoViewerProps {
 
 const VideoViewer = ({
   isGameStarted,
-  participants,
+  participantList,
   playerRole,
   otherMafiaList,
   gamePublisher,
@@ -82,12 +83,12 @@ const VideoViewer = ({
         </div>
       ) : (
         <div
-          className={`${participants.length <= 2 ? 'grid-rows-1' : 'grid-rows-2'} ${participants.length <= 4 ? 'grid-cols-2' : participants.length <= 6 ? 'grid-cols-3' : 'grid-cols-4'} grid h-full min-w-[67.5rem] gap-6`}
+          className={`${participantList.length <= 2 ? 'grid-rows-1' : 'grid-rows-2'} ${participantList.length <= 4 ? 'grid-cols-2' : participantList.length <= 6 ? 'grid-cols-3' : 'grid-cols-4'} grid h-full min-w-[67.5rem] gap-6`}
         >
-          {participants.map((participant, index) => (
+          {participantList.map((participant, index) => (
             <VideoItem
               key={index}
-              nickname={participant}
+              nickname={participant.nickname}
               role={null}
               gameParticipant={null}
             />
