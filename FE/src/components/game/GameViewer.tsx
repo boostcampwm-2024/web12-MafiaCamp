@@ -18,7 +18,6 @@ interface GameViewerProps {
 
 const GameViewer = ({ roomId }: GameViewerProps) => {
   // TODO: 하단 코드 리팩토링 필요.
-
   const { socket } = useSocketStore();
   const {
     isGameStarted,
@@ -37,7 +36,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
   const notifyInfo = (message: string) =>
     toast.info(message, {
       position: 'top-center',
-      autoClose: 5000,
+      autoClose: 3000,
       closeButton: false,
       hideProgressBar: false,
       closeOnClick: false,
@@ -47,6 +46,11 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       theme: 'light',
       transition: Bounce,
     });
+
+  useEffect(() => {
+    // 방 입장
+    socket?.emit('enter-room', { roomId: roomId });
+  }, [roomId, socket]);
 
   useEffect(() => {
     // 게임 참가
@@ -63,21 +67,22 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     // 카운트 다운
     socket?.on(
       'countdown',
-      ({ situation, timeLeft }: { situation: Situation; timeLeft: number }) => {
-        if (situation === 'INTERMISSION' && timeLeft === 5) {
+      (data: { situation: Situation; timeLeft: number }) => {
+        if (data.situation === 'INTERMISSION' && data.timeLeft === 5) {
           notifyInfo('잠시 후 게임이 시작됩니다.');
         }
 
-        setSituation(situation);
-        setTimeLeft(timeLeft);
+        setSituation(data.situation);
+        setTimeLeft(data.timeLeft);
       },
     );
 
     // 특정 단계 카운트 다운 종료
     socket?.on(
       'countdown-exit',
-      ({ situation, timeLeft }: { situation: Situation; timeLeft: number }) => {
-        switch (situation) {
+      (data: { situation: Situation; timeLeft: number }) => {
+        // TODO: 수정 필요
+        switch (data.situation) {
           case 'INTERMISSION':
           case 'POLICE':
             notifyInfo(
@@ -111,8 +116,8 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
             throw new Error('Unknown Situation');
         }
 
-        setSituation(situation);
-        setTimeLeft(timeLeft);
+        setSituation(data.situation);
+        setTimeLeft(data.timeLeft);
       },
     );
 
@@ -161,9 +166,6 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       console.log(data);
     });
 
-    // 방 입장
-    socket?.emit('enter-room', { roomId: roomId });
-
     return () => {
       socket?.off('player-role');
       socket?.off('countdown');
@@ -172,17 +174,18 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       socket?.off('primary-vote-result');
       socket?.off('final-vote-result');
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [participantList, roomId, socket]);
 
   return (
     <div className='absolute left-0 top-0 h-screen w-screen overflow-x-hidden'>
-      <ToastContainer />
+      <ToastContainer style={{ width: '40rem' }} />
       <VideoViewer
+        roomId={roomId}
         isGameStarted={isGameStarted}
         participantList={participantList}
         playerRole={role}
         otherMafiaList={otherMafiaList}
+        situation={situation}
         gamePublisher={gamePublisher}
         gameSubscribers={gameSubscribers}
       />

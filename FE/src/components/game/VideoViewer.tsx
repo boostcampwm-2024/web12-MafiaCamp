@@ -8,21 +8,26 @@ import { GamePublisher } from '@/types/gamePublisher';
 import { GameSubscriber } from '@/types/gameSubscriber';
 import { Role } from '@/constants/role';
 import { Participant } from '@/types/participant';
+import { Situation } from '@/constants/situation';
 
 interface VideoViewerProps {
+  roomId: string;
   isGameStarted: boolean;
   participantList: Participant[];
   playerRole: Role | null;
   otherMafiaList: string[] | null;
+  situation: Situation | null;
   gamePublisher: GamePublisher | null;
   gameSubscribers: GameSubscriber[];
 }
 
 const VideoViewer = ({
+  roomId,
   isGameStarted,
   participantList,
   playerRole,
   otherMafiaList,
+  situation,
   gamePublisher,
   gameSubscribers,
 }: VideoViewerProps) => {
@@ -50,20 +55,26 @@ const VideoViewer = ({
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
+      {situation === 'VOTE' && (
+        <div className='pointer-events-none absolute bottom-0 left-0 z-10 h-full w-full bg-slate-800/75' />
+      )}
       {/* TODO: key 값으로 index 사용하지 않기 */}
       {isGameStarted ? (
         <div
           className={`${gameSubscribers.length <= 1 ? 'grid-rows-1' : 'grid-rows-2'} ${gameSubscribers.length <= 3 ? 'grid-cols-2' : gameSubscribers.length <= 5 ? 'grid-cols-3' : 'grid-cols-4'} grid h-full min-w-[67.5rem] gap-6`}
         >
           <VideoItem
-            nickname={nickname}
+            roomId={roomId}
+            playerNickname={nickname}
             role={playerRole}
             gameParticipant={gamePublisher}
+            situation={situation}
           />
           {gameSubscribers.map((gameSubscriber, index) => (
             <VideoItem
               key={index}
-              nickname={
+              roomId={roomId}
+              playerNickname={
                 gameSubscriber.participant.stream.connection.data.split(
                   '%/%',
                 )[0]
@@ -78,6 +89,7 @@ const VideoViewer = ({
                   : null
               }
               gameParticipant={gameSubscriber}
+              situation={situation}
             />
           ))}
         </div>
@@ -88,9 +100,11 @@ const VideoViewer = ({
           {participantList.map((participant, index) => (
             <VideoItem
               key={index}
-              nickname={participant.nickname}
+              roomId={roomId}
+              playerNickname={participant.nickname}
               role={null}
               gameParticipant={null}
+              situation={situation}
             />
           ))}
         </div>
