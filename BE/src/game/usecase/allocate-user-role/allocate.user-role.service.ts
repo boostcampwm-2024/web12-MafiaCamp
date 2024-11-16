@@ -8,7 +8,6 @@ import { Transactional } from 'typeorm-transactional';
 import { JOB_FACTORY, JobFactory } from './job.factory';
 import { GAME_HISTORY_REPOSITORY, GameHistoryRepository } from '../../repository/game-history.repository';
 import { GAME_MANAGER, GameManager } from '../game-manager/game-manager';
-import { MutexMap } from '../../../common/utils/mutex-map';
 
 @Injectable()
 export class AllocateUserRoleService implements AllocateUserRoleUsecase {
@@ -32,7 +31,7 @@ export class AllocateUserRoleService implements AllocateUserRoleUsecase {
   async allocate(jobRequest: AllocateJobRequest): Promise<void> {
     const gameHistoryEntity = new GameHistoryEntity();
     await this.gameHistoryRepository.save(gameHistoryEntity);
-    const userRoles: MutexMap<GameClient, MAFIA_ROLE> = await this.jobFactory.allocateGameRoles(jobRequest.gameRoom);
+    const userRoles: Map<GameClient, MAFIA_ROLE> = this.jobFactory.allocateGameRoles(jobRequest.gameRoom);
     await this.gameManager.register(jobRequest.gameRoom, userRoles);
   }
 }

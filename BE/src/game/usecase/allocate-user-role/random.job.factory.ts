@@ -5,7 +5,6 @@ import { GameInvalidPlayerCountException } from '../../../common/error/game.inva
 import { RoleCountNegativeException } from '../../../common/error/role.count.negative.exception';
 import { GameRoom } from '../../../game-room/entity/game-room.model';
 import { GameClient } from '../../../game-room/entity/game-client.model';
-import { MutexMap } from '../../../common/utils/mutex-map';
 
 @Injectable()
 export class RandomJobFactory implements JobFactory {
@@ -14,15 +13,15 @@ export class RandomJobFactory implements JobFactory {
     유저가 7명일 때, 마피아 2, 경찰 1, 의사 1, 시민 3
     유저가 8명일 때, 마피아 3, 경찰 1, 의사 1, 시민 3
    */
-  async allocateGameRoles(gameRoom: GameRoom): Promise<MutexMap<GameClient, MAFIA_ROLE>> {
+  allocateGameRoles(gameRoom: GameRoom): Map<GameClient, MAFIA_ROLE> {
     const userCount = gameRoom.clients.length;
-    return await this.allocate(userCount, gameRoom.clients);
+    return this.allocate(userCount, gameRoom.clients);
   }
 
-  private async allocate(
+  private allocate(
     userCount: number,
     players: GameClient[],
-  ): Promise<MutexMap<GameClient, MAFIA_ROLE>> {
+  ): Map<GameClient, MAFIA_ROLE> {
     let possibleRoles: Array<MAFIA_ROLE>;
     switch (userCount) {
       case 6:
@@ -37,7 +36,7 @@ export class RandomJobFactory implements JobFactory {
       default:
         throw new GameInvalidPlayerCountException();
     }
-    const userRoles = new MutexMap<GameClient, MAFIA_ROLE>();
+    const userRoles = new Map<GameClient, MAFIA_ROLE>();
     const mafiaUsers: [GameClient, MAFIA_ROLE][] = [];
     for (const role of this.shuffle(possibleRoles)) {
       const idx = this.shuffle(possibleRoles).indexOf(role);
@@ -49,7 +48,7 @@ export class RandomJobFactory implements JobFactory {
           'another': null,
         });
       }
-      await userRoles.set(players[idx], role);
+      userRoles.set(players[idx], role);
     }
 
     this.sendRolesToUsers(mafiaUsers);
