@@ -50,6 +50,7 @@ export class RandomJobFactory implements JobFactory {
       }
       userRoles.set(players[idx], role);
     }
+    console.log('userRoles', userRoles);
 
     this.sendRolesToUsers(mafiaUsers);
     return userRoles;
