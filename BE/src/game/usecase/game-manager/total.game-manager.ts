@@ -27,10 +27,7 @@ export class TotalGameManager implements GameManager {
       players.forEach((role, client) => {
         gameInfo.set(client.nickname, { role, status: USER_STATUS.ALIVE });
       });
-      console.log('players', players);
       await this.games.set(gameRoom, gameInfo);
-      console.log('gameInfo', gameInfo);
-
     }
   }
 
@@ -112,7 +109,7 @@ export class TotalGameManager implements GameManager {
   }
 
   /*
-      무효표인 경우 to에 null로 보내면 됩니다.
+      무효표인 경우 to에 INVALIDITY로 보내면 됩니다.
      */
   async vote(gameRoom: GameRoom, from: string, to: string): Promise<void> {
     await this.checkVoteAuthority(gameRoom, from);
@@ -181,7 +178,7 @@ export class TotalGameManager implements GameManager {
 
   private voteForYourself(ballotBox: Map<string, string[]>) {
     ballotBox.forEach((votedUsers, client) => {
-      if (!this.checkVote(ballotBox, client)) {
+      if (!this.checkVote(ballotBox, client) && client !== 'INVALIDITY') {
         votedUsers.push(client);
       }
     });
@@ -195,10 +192,6 @@ export class TotalGameManager implements GameManager {
     const voteResult = new Map<string, number>();
     const mostVotedUser = this.findMostVotedUser(ballotBox, voteResult);
 
-    /*
-    투표가능한 유저 수 구하고 찬성 개수 비교해서 죽일지 살릴지 비교
-    그리고 ballotBox 초기화
-     */
     if (mostVotedUser.length === 1 && mostVotedUser[0] !== null) {
       await this.killUser(gameRoom, mostVotedUser[0]);
     }
