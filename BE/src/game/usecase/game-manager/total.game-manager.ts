@@ -27,8 +27,10 @@ export class TotalGameManager implements GameManager {
       players.forEach((role, client) => {
         gameInfo.set(client.nickname, { role, status: USER_STATUS.ALIVE });
       });
-
+      console.log('players', players);
       await this.games.set(gameRoom, gameInfo);
+      console.log('gameInfo', gameInfo);
+
     }
   }
 
@@ -63,6 +65,8 @@ export class TotalGameManager implements GameManager {
       });
       // 무효표 추가
       newBallotBox.set('INVALIDITY', []);
+      console.log('newBallotBox', newBallotBox);
+      console.log('candidates', candidates);
       await this.ballotBoxs.set(gameRoom, newBallotBox);
     } else {
       ballotBox.forEach((votedUsers, client) => {
