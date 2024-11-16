@@ -37,9 +37,10 @@ export class RandomJobFactory implements JobFactory {
         throw new GameInvalidPlayerCountException();
     }
     const userRoles = new Map<GameClient, MAFIA_ROLE>();
+    const shuffledRoles = this.shuffle(possibleRoles);
     const mafiaUsers: [GameClient, MAFIA_ROLE][] = [];
-    for (const role of this.shuffle(possibleRoles)) {
-      const idx = this.shuffle(possibleRoles).indexOf(role);
+    for (const role of shuffledRoles) {
+      const idx = shuffledRoles.indexOf(role);
       if (role === MAFIA_ROLE.MAFIA) {
         mafiaUsers.push([players[idx], role]);
       } else {
