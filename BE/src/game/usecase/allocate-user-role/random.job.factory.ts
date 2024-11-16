@@ -37,10 +37,8 @@ export class RandomJobFactory implements JobFactory {
         throw new GameInvalidPlayerCountException();
     }
     const userRoles = new Map<GameClient, MAFIA_ROLE>();
-    const shuffledRoles = this.shuffle(possibleRoles);
     const mafiaUsers: [GameClient, MAFIA_ROLE][] = [];
-    for (const role of shuffledRoles) {
-      const idx = shuffledRoles.indexOf(role);
+    this.shuffle(possibleRoles).forEach((role, idx) => {
       if (role === MAFIA_ROLE.MAFIA) {
         mafiaUsers.push([players[idx], role]);
       } else {
@@ -50,14 +48,8 @@ export class RandomJobFactory implements JobFactory {
         });
       }
       userRoles.set(players[idx], role);
-    }
-    console.log('userRoles', userRoles);
+    });
 
-    this.sendRolesToUsers(mafiaUsers);
-    return userRoles;
-  }
-
-  private sendRolesToUsers(mafiaUsers: [GameClient, MAFIA_ROLE][]) {
     mafiaUsers.forEach(([currentPlayer, currentRole]) => {
       const otherMafias = mafiaUsers
         .filter((player: [GameClient, MAFIA_ROLE]) => player[0] !== currentPlayer)
@@ -68,6 +60,7 @@ export class RandomJobFactory implements JobFactory {
         'another': otherMafias,
       });
     });
+    return userRoles;
   }
 
   private shuffle(possibleRoles: Array<MAFIA_ROLE>): Array<MAFIA_ROLE> {
