@@ -6,7 +6,7 @@ import {
 } from 'src/game/usecase/countdown/countdown.timeout.usecase';
 import { GameState, TransitionHandler } from './state';
 import { GameContext } from '../game-context';
-import { VOTE_MAFIA_USECASE, VoteMafiaUsecase } from '../../usecase/game-manager/vote.mafia.usecase';
+import { VOTE_MAFIA_USECASE, VoteMafiaUsecase } from '../../usecase/vote-manager/vote.mafia.usecase';
 import { MafiaState } from './mafia.state';
 
 @Injectable()

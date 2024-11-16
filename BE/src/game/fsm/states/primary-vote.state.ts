@@ -7,7 +7,7 @@ import {
 import { ArgumentState } from './argument.state';
 import { GameState, TransitionHandler } from './state';
 import { GameContext } from '../game-context';
-import { VOTE_MAFIA_USECASE, VoteMafiaUsecase } from '../../usecase/game-manager/vote.mafia.usecase';
+import { VOTE_MAFIA_USECASE, VoteMafiaUsecase } from '../../usecase/vote-manager/vote.mafia.usecase';
 import { VOTE_STATE } from '../../vote-state';
 import { MafiaState } from './mafia.state';
 

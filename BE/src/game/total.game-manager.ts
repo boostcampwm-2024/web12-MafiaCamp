@@ -1,14 +1,15 @@
-import { VoteManager } from './vote-manager';
+import { VoteManager } from './usecase/vote-manager/vote-manager';
 import { Injectable } from '@nestjs/common';
-import { GameRoom } from '../../../game-room/entity/game-room.model';
-import { GameClient } from '../../../game-room/entity/game-client.model';
-import { MAFIA_ROLE } from '../../mafia-role';
-import { USER_STATUS } from '../../user-status';
-import { NotFoundGameRoomException } from '../../../common/error/not.found.game-room.exception';
-import { NotFoundBallotBoxException } from '../../../common/error/not.found.ballot-box.exception';
-import { UnauthorizedUserBallotException } from '../../../common/error/unauthorized.user.ballot.exception';
-import { MutexMap } from '../../../common/utils/mutex-map';
-import { VOTE_STATE } from '../../vote-state';
+import { GameRoom } from '../game-room/entity/game-room.model';
+import { GameClient } from '../game-room/entity/game-client.model';
+import { MAFIA_ROLE } from './mafia-role';
+import { USER_STATUS } from './user-status';
+import { NotFoundGameRoomException } from '../common/error/not.found.game-room.exception';
+import { NotFoundBallotBoxException } from '../common/error/not.found.ballot-box.exception';
+import { UnauthorizedUserBallotException } from '../common/error/unauthorized.user.ballot.exception';
+import { MutexMap } from '../common/utils/mutex-map';
+import { VOTE_STATE } from './vote-state';
+import { PoliceManager } from './usecase/role-playing/police-manager';
 
 interface PlayerInfo {
   role: MAFIA_ROLE;
@@ -16,9 +17,10 @@ interface PlayerInfo {
 }
 
 @Injectable()
-export class TotalGameManager implements VoteManager {
+export class TotalGameManager implements VoteManager, PoliceManager {
   private readonly games = new MutexMap<GameRoom, Map<string, PlayerInfo>>();
   private readonly ballotBoxs = new MutexMap<GameRoom, Map<string, string[]>>();
+  private readonly policeInvestigationMap = new MutexMap<GameRoom, boolean>();
 
   async register(gameRoom: GameRoom, players: Map<GameClient, MAFIA_ROLE>): Promise<void> {
     if (!await this.games.get(gameRoom)) {
@@ -147,11 +149,11 @@ export class TotalGameManager implements VoteManager {
       /*
       투표결과가 1등이 있는 경우 혹은 공동이 있는 경우
        */
-      maxVotedUsers.forEach((votedUser)=>{
+      maxVotedUsers.forEach((votedUser) => {
         if (votedUser !== null) {
           newBalletBox.set(votedUser, []);
         }
-      })
+      });
       newBalletBox.set('INVALIDITY', []);
       await this.ballotBoxs.set(gameRoom, newBalletBox);
       gameRoom.sendAll('primary-vote-result', voteResult);
@@ -198,5 +200,39 @@ export class TotalGameManager implements VoteManager {
     await this.ballotBoxs.delete(gameRoom);
     gameRoom.sendAll('final-vote-result', voteResult);
     return VOTE_STATE.FINAL;
+  }
+
+  async executePolice(gameRoom: GameRoom, police: string, criminal: string): Promise<void> {
+    const investigationFlag = await this.policeInvestigationMap.get(gameRoom);
+    let policeFlag = false;
+    let criminalFlag = false;
+    let criminalJob: MAFIA_ROLE;
+
+    const userInfos = await this.games.get(gameRoom);
+    userInfos.forEach((playerInfo, client) => {
+      if (police === client && playerInfo.role === MAFIA_ROLE.POLICE) {
+        policeFlag = true;
+      } else if (criminal === client) {
+        criminalFlag = true;
+        criminalJob = playerInfo.role;
+      }
+    });
+    if (!investigationFlag && policeFlag && criminalFlag) {
+      await this.policeInvestigationMap.set(gameRoom, true);
+      const policeClient = gameRoom.clients.find(
+        (client) => client.nickname === police
+      );
+      if (policeClient) {
+        policeClient.send('police-investigation-result', { criminal, criminalJob });
+      }
+    }
+  }
+
+  async finishPolice(gameRoom: GameRoom): Promise<void> {
+    await this.policeInvestigationMap.delete(gameRoom);
+  }
+
+  async initPolice(gameRoom: GameRoom): Promise<void> {
+    await this.policeInvestigationMap.set(gameRoom, false);
   }
 }
