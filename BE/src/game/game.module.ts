@@ -9,7 +9,7 @@ import { GameHistoryEntity } from './entity/game-history.entity';
 import { COUNTDOWN_TIMER } from './usecase/countdown/countdown.timer';
 import { MafiaCountdownTimer } from './usecase/countdown/mafia.countdown.timer';
 import { COUNTDOWN_TIMEOUT_USECASE } from './usecase/countdown/countdown.timeout.usecase';
-import { GAME_MANAGER } from './usecase/game-manager/game-manager';
+import { GAME_MANAGER, VOTE_MANAGER } from './usecase/game-manager/vote-manager';
 import { TotalGameManager } from './usecase/game-manager/total.game-manager';
 import { AllocateUserRoleService } from './usecase/allocate-user-role/allocate.user-role.service';
 import { CountdownTimeoutService } from './usecase/countdown/countdown.timeout.service';
@@ -51,7 +51,7 @@ import { FinalVoteState } from './fsm/states/final-vote.state';
       useClass: CountdownTimeoutService,
     },
     {
-      provide: GAME_MANAGER,
+      provide: VOTE_MANAGER,
       useClass: TotalGameManager,
     },
     {

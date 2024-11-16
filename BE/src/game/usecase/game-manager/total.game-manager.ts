@@ -1,4 +1,4 @@
-import { GameManager } from './game-manager';
+import { VoteManager } from './vote-manager';
 import { Injectable } from '@nestjs/common';
 import { GameRoom } from '../../../game-room/entity/game-room.model';
 import { GameClient } from '../../../game-room/entity/game-client.model';
@@ -16,7 +16,7 @@ interface PlayerInfo {
 }
 
 @Injectable()
-export class TotalGameManager implements GameManager {
+export class TotalGameManager implements VoteManager {
   private readonly games = new MutexMap<GameRoom, Map<string, PlayerInfo>>();
   private readonly ballotBoxs = new MutexMap<GameRoom, Map<string, string[]>>();
 

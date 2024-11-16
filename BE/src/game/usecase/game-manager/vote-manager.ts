@@ -3,9 +3,9 @@ import { GameClient } from '../../../game-room/entity/game-client.model';
 import { MAFIA_ROLE } from '../../mafia-role';
 import { VOTE_STATE } from '../../vote-state';
 
-export const GAME_MANAGER = Symbol('GAME_MANAGER');
+export const VOTE_MANAGER = Symbol('VOTE_MANAGER');
 
-export interface GameManager {
+export interface VoteManager {
 
   register(gameRoom: GameRoom, players: Map<GameClient, MAFIA_ROLE>): Promise<void>;
 
