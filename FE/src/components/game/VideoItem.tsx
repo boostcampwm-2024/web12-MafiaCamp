@@ -17,7 +17,7 @@ interface VideoItemProps {
   gameParticipant: GamePublisher | GameSubscriber | null;
   situation: Situation | null;
   target: string | null;
-  setTarget: (nickname: string) => void;
+  setTarget: (nickname: string | null) => void;
 }
 
 const VideoItem = ({
@@ -40,7 +40,7 @@ const VideoItem = ({
 
   return (
     <div
-      className={`${situation === 'VOTE' && 'cursor-pointer'} relative flex h-full w-full flex-col items-center rounded-3xl border border-slate-200 bg-slate-900 hover:z-10`}
+      className={`${situation === 'VOTE' && 'cursor-pointer'} ${target === playerNickname && 'z-10'} relative flex h-full w-full flex-col items-center rounded-3xl border border-slate-200 bg-slate-900`}
       onClick={() => {
         if (situation !== 'VOTE') {
           return;
@@ -52,6 +52,11 @@ const VideoItem = ({
             from: nickname,
             to: target,
           });
+        }
+
+        if (target === playerNickname) {
+          setTarget(null);
+          return;
         }
 
         socket?.emit('vote-candidate', {

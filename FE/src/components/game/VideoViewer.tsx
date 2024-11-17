@@ -19,7 +19,7 @@ interface VideoViewerProps {
   gamePublisher: GamePublisher | null;
   gameSubscribers: GameSubscriber[];
   target: string | null;
-  setTarget: (nickname: string) => void;
+  setTarget: (nickname: string | null) => void;
 }
 
 const VideoViewer = ({
