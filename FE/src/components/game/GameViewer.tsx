@@ -39,6 +39,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
   const [situation, setSituation] = useState<Situation | null>(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [target, setTarget] = useState<string | null>(null);
+  const [invalidityCount, setInvalidityCount] = useState(0);
 
   const notifyInfo = (message: string) =>
     toast.info(message, {
@@ -87,7 +88,6 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
         }
 
         if (data.situation === 'VOTE' && data.timeLeft === 15) {
-          initializeVotes();
           if (situation === 'DISCUSSION') {
             notifyInfo(
               '투표를 시작하겠습니다. 마피아라고 생각되는 플레이어를 선택해 주세요.',
@@ -143,8 +143,12 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     );
 
     // 투표 시작 시 투표 대상 후보자 설정
-    socket?.on('send-vote-candidates', (data: { candidates: string[] }) => {
-      for (const nickname in data.candidates) {
+    socket?.on('send-vote-candidates', (candidates: string[]) => {
+      initializeVotes();
+      setInvalidityCount(0);
+      setTarget(null);
+
+      for (const nickname in candidates) {
         if (nickname === gamePublisher?.nickname) {
           changePublisherCandidateStatus(true);
         } else {
@@ -156,7 +160,9 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     // 실시간 투표수 확인
     socket?.on('vote-current-state', (data: { [nickname: string]: number }) => {
       for (const [nickname, votes] of Object.entries(data)) {
-        if (nickname === gamePublisher?.nickname) {
+        if (nickname === 'INVALIDITY') {
+          setInvalidityCount(votes);
+        } else if (nickname === gamePublisher?.nickname) {
           changePublisherVotes(votes);
         } else {
           changeSubscriberVotes(nickname, votes);
@@ -168,8 +174,12 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     socket?.on(
       'primary-vote-result',
       (data: { [nickname: string]: number }) => {
+        setTarget(null);
+
         for (const [nickname, votes] of Object.entries(data)) {
-          if (nickname === gamePublisher?.nickname) {
+          if (nickname === 'INVALIDITY') {
+            setInvalidityCount(votes);
+          } else if (nickname === gamePublisher?.nickname) {
             changePublisherVotes(votes);
           } else {
             changeSubscriberVotes(nickname, votes);
@@ -180,8 +190,12 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
 
     // 최종 투표 결과
     socket?.on('final-vote-result', (data: { [nickname: string]: number }) => {
+      setTarget(null);
+
       for (const [nickname, votes] of Object.entries(data)) {
-        if (nickname === gamePublisher?.nickname) {
+        if (nickname === 'INVALIDITY') {
+          setInvalidityCount(votes);
+        } else if (nickname === gamePublisher?.nickname) {
           changePublisherVotes(votes);
         } else {
           changeSubscriberVotes(nickname, votes);
@@ -233,6 +247,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
         gamePublisher={gamePublisher}
         gameSubscribers={gameSubscribers}
         target={target}
+        invalidityCount={invalidityCount}
         setTarget={(nickname: string | null) => setTarget(nickname)}
       />
       <Bottombar

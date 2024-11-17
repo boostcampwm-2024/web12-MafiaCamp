@@ -19,6 +19,7 @@ interface VideoViewerProps {
   gamePublisher: GamePublisher | null;
   gameSubscribers: GameSubscriber[];
   target: string | null;
+  invalidityCount: number;
   setTarget: (nickname: string | null) => void;
 }
 
@@ -32,10 +33,11 @@ const VideoViewer = ({
   gamePublisher,
   gameSubscribers,
   target,
+  invalidityCount,
   setTarget,
 }: VideoViewerProps) => {
   const { isOpen } = useSidebarStore();
-  const { nickname } = useSocketStore();
+  const { nickname, socket } = useSocketStore();
   const {
     listRef,
     onDragStart,
@@ -58,10 +60,38 @@ const VideoViewer = ({
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
-      {situation === 'VOTE' ||
-        (situation === 'ARGUMENT' && (
-          <div className='pointer-events-none absolute bottom-0 left-0 z-10 h-full w-full bg-slate-800/75' />
-        ))}
+      {situation === 'VOTE' && (
+        <div className='pointer-events-none absolute bottom-0 left-0 z-10 h-full w-full bg-slate-800/75' />
+      )}
+      {situation === 'VOTE' && (
+        <button
+          className={`${target === 'INVALIDITY' ? 'border-2 bg-slate-600 text-white' : 'bg-white font-bold text-slate-800'} absolute right-0 top-0 z-20 h-[3.75rem] w-[11.25rem] rounded-2xl border border-slate-400 font-bold hover:bg-slate-600 hover:text-white`}
+          onClick={() => {
+            if (target !== null) {
+              socket?.emit('cancel-vote-candidate', {
+                roomId,
+                from: nickname,
+                to: target,
+              });
+            }
+
+            if (target === 'INVALIDITY') {
+              setTarget(null);
+              return;
+            }
+
+            socket?.emit('vote-candidate', {
+              roomId,
+              from: nickname,
+              to: 'INVALIDITY',
+            });
+
+            setTarget('INVALIDITY');
+          }}
+        >
+          {`기권 ${invalidityCount}`}
+        </button>
+      )}
       {/* TODO: key 값으로 index 사용하지 않기 + 코드 리팩토링 */}
       {isGameStarted ? (
         <div
