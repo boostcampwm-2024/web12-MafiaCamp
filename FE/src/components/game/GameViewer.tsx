@@ -36,6 +36,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
   const [otherMafiaList, setOtherMafiaList] = useState<string[] | null>(null);
   const [situation, setSituation] = useState<Situation | null>(null);
   const [timeLeft, setTimeLeft] = useState(0);
+  const [target, setTarget] = useState<string | null>(null);
 
   const notifyInfo = (message: string) =>
     toast.info(message, {
@@ -89,11 +90,13 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
             );
             break;
           case 'DISCUSSION':
+            setTarget(null);
             notifyInfo(
               '투표를 시작하겠습니다. 마피아라고 생각되는 플레이어를 선택해 주세요.',
             );
             break;
           case 'ARGUMENT':
+            setTarget(null);
             notifyInfo(
               '최종 투표를 시작하겠습니다. 해당 플레이어를 죽일지, 아니면 살릴지 결정해 주세요.',
             );
@@ -213,6 +216,8 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
         situation={situation}
         gamePublisher={gamePublisher}
         gameSubscribers={gameSubscribers}
+        target={target}
+        setTarget={(nickname: string) => setTarget(nickname)}
       />
       <Bottombar
         roomId={roomId}

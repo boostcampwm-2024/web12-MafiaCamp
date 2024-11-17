@@ -18,6 +18,8 @@ interface VideoViewerProps {
   situation: Situation | null;
   gamePublisher: GamePublisher | null;
   gameSubscribers: GameSubscriber[];
+  target: string | null;
+  setTarget: (nickname: string) => void;
 }
 
 const VideoViewer = ({
@@ -29,6 +31,8 @@ const VideoViewer = ({
   situation,
   gamePublisher,
   gameSubscribers,
+  target,
+  setTarget,
 }: VideoViewerProps) => {
   const { isOpen } = useSidebarStore();
   const { nickname } = useSocketStore();
@@ -57,7 +61,7 @@ const VideoViewer = ({
       {situation === 'VOTE' && (
         <div className='pointer-events-none absolute bottom-0 left-0 z-10 h-full w-full bg-slate-800/75' />
       )}
-      {/* TODO: key 값으로 index 사용하지 않기 */}
+      {/* TODO: key 값으로 index 사용하지 않기 + 코드 리팩토링 */}
       {isGameStarted ? (
         <div
           className={`${gameSubscribers.length <= 1 ? 'grid-rows-1' : 'grid-rows-2'} ${gameSubscribers.length <= 3 ? 'grid-cols-2' : gameSubscribers.length <= 5 ? 'grid-cols-3' : 'grid-cols-4'} grid h-full min-w-[67.5rem] gap-6`}
@@ -69,6 +73,8 @@ const VideoViewer = ({
               role={playerRole}
               gameParticipant={gamePublisher}
               situation={situation}
+              target={target}
+              setTarget={setTarget}
             />
           )}
           {gameSubscribers.map((gameSubscriber, index) => (
@@ -83,6 +89,8 @@ const VideoViewer = ({
               }
               gameParticipant={gameSubscriber}
               situation={situation}
+              target={target}
+              setTarget={setTarget}
             />
           ))}
         </div>
@@ -98,6 +106,8 @@ const VideoViewer = ({
               role={null}
               gameParticipant={null}
               situation={situation}
+              target={target}
+              setTarget={setTarget}
             />
           ))}
         </div>

@@ -16,6 +16,8 @@ interface VideoItemProps {
   role: Role | null;
   gameParticipant: GamePublisher | GameSubscriber | null;
   situation: Situation | null;
+  target: string | null;
+  setTarget: (nickname: string) => void;
 }
 
 const VideoItem = ({
@@ -24,6 +26,8 @@ const VideoItem = ({
   role,
   gameParticipant,
   situation,
+  target,
+  setTarget,
 }: VideoItemProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const { nickname, socket } = useSocketStore();
@@ -36,15 +40,27 @@ const VideoItem = ({
 
   return (
     <div
-      className='relative flex h-full w-full flex-col items-center rounded-3xl border border-slate-200 bg-slate-900 hover:z-10'
+      className={`${situation === 'VOTE' && 'cursor-pointer'} relative flex h-full w-full flex-col items-center rounded-3xl border border-slate-200 bg-slate-900 hover:z-10`}
       onClick={() => {
-        if (situation === 'VOTE') {
-          socket?.emit('vote-candidate', {
+        if (situation !== 'VOTE') {
+          return;
+        }
+
+        if (target !== null) {
+          socket?.emit('cancel-vote-candidate', {
             roomId,
             from: nickname,
-            to: playerNickname,
+            to: target,
           });
         }
+
+        socket?.emit('vote-candidate', {
+          roomId,
+          from: nickname,
+          to: playerNickname,
+        });
+
+        setTarget(playerNickname);
       }}
     >
       <div
