@@ -58,9 +58,10 @@ const VideoViewer = ({
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
-      {situation === 'VOTE' && (
-        <div className='pointer-events-none absolute bottom-0 left-0 z-10 h-full w-full bg-slate-800/75' />
-      )}
+      {situation === 'VOTE' ||
+        (situation === 'ARGUMENT' && (
+          <div className='pointer-events-none absolute bottom-0 left-0 z-10 h-full w-full bg-slate-800/75' />
+        ))}
       {/* TODO: key 값으로 index 사용하지 않기 + 코드 리팩토링 */}
       {isGameStarted ? (
         <div

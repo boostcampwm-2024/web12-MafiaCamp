@@ -40,9 +40,9 @@ const VideoItem = ({
 
   return (
     <div
-      className={`${situation === 'VOTE' && 'cursor-pointer'} ${target === playerNickname && 'z-10'} relative flex h-full w-full flex-col items-center rounded-3xl border border-slate-200 bg-slate-900`}
+      className={`${situation === 'VOTE' && gameParticipant?.isCandidate && 'cursor-pointer'} ${target === playerNickname && 'z-10'} relative flex h-full w-full flex-col items-center rounded-3xl border border-slate-200 bg-slate-900`}
       onClick={() => {
-        if (situation !== 'VOTE') {
+        if (situation !== 'VOTE' || !gameParticipant?.isCandidate) {
           return;
         }
 

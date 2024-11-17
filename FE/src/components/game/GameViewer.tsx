@@ -27,8 +27,10 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     toggleVideo,
     changePublisherVotes,
     changeSubscriberVotes,
+    changePublisherCandidateStatus,
+    changeSubscriberCandidateStatus,
     eliminatePublisher,
-    eliminateSubscriber,
+    initializeVotes,
   } = useOpenVidu();
 
   const [participantList, setParticipantList] = useState<string[]>([]);
@@ -40,7 +42,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
 
   const notifyInfo = (message: string) =>
     toast.info(message, {
-      toastId: 'toastInfo',
+      toastId: message,
       position: 'top-center',
       autoClose: 3000,
       closeButton: false,
@@ -85,6 +87,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
         }
 
         if (data.situation === 'VOTE' && data.timeLeft === 15) {
+          initializeVotes();
           if (situation === 'DISCUSSION') {
             notifyInfo(
               '투표를 시작하겠습니다. 마피아라고 생각되는 플레이어를 선택해 주세요.',
@@ -139,8 +142,16 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       },
     );
 
-    // TODO: 투표 처음 시작시 투표대상 후보자 전송
-    // socket?.on('send-vote-candidates', (data: { candidates: string[] }) => {});
+    // 투표 시작 시 투표 대상 후보자 설정
+    socket?.on('send-vote-candidates', (data: { candidates: string[] }) => {
+      for (const nickname in data.candidates) {
+        if (nickname === gamePublisher?.nickname) {
+          changePublisherCandidateStatus(true);
+        } else {
+          changeSubscriberCandidateStatus(nickname, true);
+        }
+      }
+    });
 
     // 실시간 투표수 확인
     socket?.on('vote-current-state', (data: { [nickname: string]: number }) => {
@@ -182,9 +193,9 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     socket?.on('vote-kill-user', (nickname: string) => {
       if (nickname === gamePublisher?.nickname) {
         eliminatePublisher();
-      } else {
-        eliminateSubscriber(nickname);
       }
+
+      notifyInfo(`${nickname} 님이 사망하였습니다.`);
     });
 
     return () => {
@@ -198,11 +209,13 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       socket?.off('vote-kill-user');
     };
   }, [
+    changePublisherCandidateStatus,
     changePublisherVotes,
+    changeSubscriberCandidateStatus,
     changeSubscriberVotes,
     eliminatePublisher,
-    eliminateSubscriber,
     gamePublisher?.nickname,
+    initializeVotes,
     situation,
     socket,
   ]);

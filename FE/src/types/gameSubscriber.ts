@@ -6,5 +6,5 @@ export interface GameSubscriber {
   audioEnabled: boolean;
   videoEnabled: boolean;
   votes: number;
-  isAlive: boolean;
+  isCandidate: boolean;
 }
