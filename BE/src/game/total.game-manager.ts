@@ -64,8 +64,6 @@ export class TotalGameManager implements VoteManager, PoliceManager {
       });
       // 무효표 추가
       newBallotBox.set('INVALIDITY', []);
-      console.log('newBallotBox', newBallotBox);
-      console.log('candidates', candidates);
       await this.ballotBoxs.set(gameRoom, newBallotBox);
     } else {
       ballotBox.forEach((votedUsers, client) => {
@@ -91,9 +89,9 @@ export class TotalGameManager implements VoteManager, PoliceManager {
   }
 
   private sendVoteCurrentState(ballotBox: Map<string, string[]>, gameRoom: GameRoom) {
-    const voteCountMap = new Map<string, number>();
+    const voteCountMap: Record<string, number> = {};
     ballotBox.forEach((votedUsers, client) => {
-      voteCountMap.set(client, votedUsers.length);
+      voteCountMap[client] = votedUsers.length;
     });
     gameRoom.sendAll('vote-current-state', voteCountMap);
   }
@@ -120,8 +118,9 @@ export class TotalGameManager implements VoteManager, PoliceManager {
     const voteFlag = this.checkVote(ballotBox, from);
     if (!voteFlag) {
       toVotes.push(from);
+      ballotBox.set(to, toVotes);
     }
-    await this.sendVoteCurrentState(ballotBox, gameRoom);
+    this.sendVoteCurrentState(ballotBox, gameRoom);
   }
 
   private checkVote(ballotBox: Map<string, string[]>, fromInfo: string): boolean {
