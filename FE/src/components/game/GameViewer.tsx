@@ -39,6 +39,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
 
   const notifyInfo = (message: string) =>
     toast.info(message, {
+      toastId: 'toastInfo',
       position: 'top-center',
       autoClose: 3000,
       closeButton: false,
