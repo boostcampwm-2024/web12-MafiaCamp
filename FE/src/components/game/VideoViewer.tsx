@@ -7,13 +7,12 @@ import { useSocketStore } from '@/stores/socketStore';
 import { GamePublisher } from '@/types/gamePublisher';
 import { GameSubscriber } from '@/types/gameSubscriber';
 import { Role } from '@/constants/role';
-import { Participant } from '@/types/participant';
 import { Situation } from '@/constants/situation';
 
 interface VideoViewerProps {
   roomId: string;
   isGameStarted: boolean;
-  participantList: Participant[];
+  participantList: string[];
   playerRole: Role | null;
   otherMafiaList: string[] | null;
   situation: Situation | null;
@@ -69,27 +68,21 @@ const VideoViewer = ({
             role={playerRole}
             gameParticipant={gamePublisher}
             situation={situation}
+            votes={0}
           />
           {gameSubscribers.map((gameSubscriber, index) => (
             <VideoItem
               key={index}
               roomId={roomId}
-              playerNickname={
-                gameSubscriber.participant.stream.connection.data.split(
-                  '%/%',
-                )[0]
-              }
+              playerNickname={gameSubscriber.nickname}
               role={
-                otherMafiaList?.includes(
-                  gameSubscriber.participant.stream.connection.data.split(
-                    '%/%',
-                  )[0],
-                )
+                otherMafiaList?.includes(gameSubscriber.nickname)
                   ? 'MAFIA'
                   : null
               }
               gameParticipant={gameSubscriber}
               situation={situation}
+              votes={0}
             />
           ))}
         </div>
@@ -101,10 +94,11 @@ const VideoViewer = ({
             <VideoItem
               key={index}
               roomId={roomId}
-              playerNickname={participant.nickname}
+              playerNickname={participant}
               role={null}
               gameParticipant={null}
               situation={situation}
+              votes={0}
             />
           ))}
         </div>

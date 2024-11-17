@@ -8,7 +8,6 @@ import VideoViewer from './VideoViewer';
 import { useEffect, useState } from 'react';
 import { useSocketStore } from '@/stores/socketStore';
 import { Role } from '@/constants/role';
-import { Participant } from '@/types/participant';
 import { Bounce, toast, ToastContainer } from 'react-toastify';
 import { Situation } from '@/constants/situation';
 
@@ -18,6 +17,7 @@ interface GameViewerProps {
 
 const GameViewer = ({ roomId }: GameViewerProps) => {
   // TODO: 하단 코드 리팩토링 필요.
+
   const { socket } = useSocketStore();
   const {
     isGameStarted,
@@ -25,9 +25,13 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     gameSubscribers,
     toggleAudio,
     toggleVideo,
+    changePublisherVotes,
+    changeSubscriberVotes,
+    eliminatePublisher,
+    eliminateSubscriber,
   } = useOpenVidu();
 
-  const [participantList, setParticipantList] = useState<Participant[]>([]);
+  const [participantList, setParticipantList] = useState<string[]>([]);
   const [role, setRole] = useState<Role | null>(null);
   const [otherMafiaList, setOtherMafiaList] = useState<string[] | null>(null);
   const [situation, setSituation] = useState<Situation | null>(null);
@@ -55,13 +59,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
   useEffect(() => {
     // 게임 참가
     socket?.on('participants', (participants: string[]) => {
-      setParticipantList(
-        participants.map((participant) => ({
-          nickname: participant,
-          isAlive: true,
-          votes: 0,
-        })),
-      );
+      setParticipantList(participants);
     });
 
     // 카운트 다운
@@ -141,29 +139,47 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
 
     // 실시간 투표수 확인
     socket?.on('vote-current-state', (data: { [nickname: string]: number }) => {
-      Object.keys(data).forEach((nickname) => {
-        const participant = participantList.find(
-          (participant) => participant.nickname === nickname,
-        );
-        if (participant) {
-          participant.votes = data[nickname];
+      for (const [nickname, votes] of Object.entries(data)) {
+        if (nickname === gamePublisher?.nickname) {
+          changePublisherVotes(votes);
+        } else {
+          changeSubscriberVotes(nickname, votes);
         }
-      });
+      }
     });
 
     // 1차 투표 결과 확인
     socket?.on(
       'primary-vote-result',
       (data: { [nickname: string]: number }) => {
-        // TODO
-        console.log(data);
+        for (const [nickname, votes] of Object.entries(data)) {
+          if (nickname === gamePublisher?.nickname) {
+            changePublisherVotes(votes);
+          } else {
+            changeSubscriberVotes(nickname, votes);
+          }
+        }
       },
     );
 
     // 최종 투표 결과
     socket?.on('final-vote-result', (data: { [nickname: string]: number }) => {
-      // TODO
-      console.log(data);
+      for (const [nickname, votes] of Object.entries(data)) {
+        if (nickname === gamePublisher?.nickname) {
+          changePublisherVotes(votes);
+        } else {
+          changeSubscriberVotes(nickname, votes);
+        }
+      }
+    });
+
+    // 최종 투표 결과로 인한 플레어어 사망 처리
+    socket?.on('vote-kill-user', (nickname: string) => {
+      if (nickname === gamePublisher?.nickname) {
+        eliminatePublisher();
+      } else {
+        eliminateSubscriber(nickname);
+      }
     });
 
     return () => {
@@ -173,8 +189,16 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       socket?.off('vote-current-state');
       socket?.off('primary-vote-result');
       socket?.off('final-vote-result');
+      socket?.off('vote-kill-user');
     };
-  }, [participantList, roomId, socket]);
+  }, [
+    changePublisherVotes,
+    changeSubscriberVotes,
+    eliminatePublisher,
+    eliminateSubscriber,
+    gamePublisher?.nickname,
+    socket,
+  ]);
 
   return (
     <div className='absolute left-0 top-0 h-screen w-screen overflow-x-hidden'>

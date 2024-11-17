@@ -16,6 +16,7 @@ interface VideoItemProps {
   role: Role | null;
   gameParticipant: GamePublisher | GameSubscriber | null;
   situation: Situation | null;
+  votes: number;
 }
 
 const VideoItem = ({
@@ -24,6 +25,7 @@ const VideoItem = ({
   role,
   gameParticipant,
   situation,
+  votes,
 }: VideoItemProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const { nickname, socket } = useSocketStore();
@@ -52,15 +54,19 @@ const VideoItem = ({
       >
         {ROLE[role ?? 'CITIZEN']}
       </div>
-      <p className='absolute top-10 z-10 text-5xl text-white'>5</p>
+      {situation === 'VOTE' && (
+        <p className='absolute top-10 z-10 text-5xl text-white'>{votes}</p>
+      )}
       <video
         className='h-full w-full overflow-y-hidden rounded-t-3xl object-cover'
         ref={videoRef}
-        autoPlay
-        playsInline
+        autoPlay={true}
+        playsInline={true}
       />
       <div className='flex w-full flex-row items-center justify-between gap-3 rounded-b-3xl bg-slate-600/50 px-4 py-3'>
-        <p className='text-sm text-white'>{playerNickname}</p>
+        <p className='truncate text-nowrap text-sm text-white'>
+          {playerNickname}
+        </p>
         <div className='flex flex-row items-center gap-3'>
           {gameParticipant?.audioEnabled ? (
             <FaMicrophone className='text-slate-200' />
