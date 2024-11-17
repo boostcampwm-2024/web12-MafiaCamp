@@ -62,14 +62,15 @@ const VideoViewer = ({
         <div
           className={`${gameSubscribers.length <= 1 ? 'grid-rows-1' : 'grid-rows-2'} ${gameSubscribers.length <= 3 ? 'grid-cols-2' : gameSubscribers.length <= 5 ? 'grid-cols-3' : 'grid-cols-4'} grid h-full min-w-[67.5rem] gap-6`}
         >
-          <VideoItem
-            roomId={roomId}
-            playerNickname={nickname}
-            role={playerRole}
-            gameParticipant={gamePublisher}
-            situation={situation}
-            votes={0}
-          />
+          {gamePublisher && (
+            <VideoItem
+              roomId={roomId}
+              playerNickname={nickname}
+              role={playerRole}
+              gameParticipant={gamePublisher}
+              situation={situation}
+            />
+          )}
           {gameSubscribers.map((gameSubscriber, index) => (
             <VideoItem
               key={index}
@@ -82,7 +83,6 @@ const VideoViewer = ({
               }
               gameParticipant={gameSubscriber}
               situation={situation}
-              votes={0}
             />
           ))}
         </div>
@@ -98,7 +98,6 @@ const VideoViewer = ({
               role={null}
               gameParticipant={null}
               situation={situation}
-              votes={0}
             />
           ))}
         </div>

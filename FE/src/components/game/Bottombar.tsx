@@ -34,7 +34,7 @@ const Bottombar = ({
   toggleAudio,
   toggleVideo,
 }: BottombarProps) => {
-  const { isOpen, open, close } = useSidebarStore();
+  const { isOpen, openSidebar, closeSidebar } = useSidebarStore();
   const { socket } = useSocketStore();
   const {
     listRef,
@@ -99,7 +99,7 @@ const Bottombar = ({
           </button>
           <button
             className='flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105'
-            onClick={() => (isOpen ? close() : open())}
+            onClick={() => (isOpen ? closeSidebar() : openSidebar())}
           >
             <ChatBubbleIcon className='fill-slate-200' />
             <p>댓글</p>

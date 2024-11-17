@@ -173,7 +173,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       }
     });
 
-    // 최종 투표 결과로 인한 플레어어 사망 처리
+    // 투표 수가 제일 많은 플레이어 제거
     socket?.on('vote-kill-user', (nickname: string) => {
       if (nickname === gamePublisher?.nickname) {
         eliminatePublisher();

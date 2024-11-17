@@ -118,12 +118,7 @@ const reducer = (state: State, action: Action): State => {
     case 'ELIMINATE_PUBLISHER': {
       return {
         ...state,
-        gamePublisher: {
-          ...state.gamePublisher!,
-          audioEnabled: false,
-          videoEnabled: false,
-          isAlive: false,
-        },
+        gamePublisher: null,
       };
     }
 
