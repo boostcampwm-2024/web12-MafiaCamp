@@ -1,4 +1,3 @@
-import { Role } from '@/constants/role';
 import { useSocketStore } from '@/stores/socketStore';
 import { GamePublisher } from '@/types/gamePublisher';
 import { GameSubscriber } from '@/types/gameSubscriber';
@@ -22,36 +21,13 @@ type Action =
   | { type: 'START_GAME'; payload: { publisher: Publisher } }
   | { type: 'SUBSCRIBE'; payload: { subscriber: Subscriber } }
   | { type: 'UNSUBSCRIBE'; payload: { streamManager: StreamManager } }
-  | { type: 'CHANGE_PUBLISHER_ROLE'; payload: { role: Role } }
-  | { type: 'CHANGE_PUBLISHER_AUDIO'; payload: { audioEnabled: boolean } }
-  | { type: 'CHANGE_PUBLISHER_VIDEO'; payload: { videoEnabled: boolean } }
-  | { type: 'CHANGE_PUBLISHER_VOTES'; payload: { votes: number } }
+  | { type: 'CHANGE_PUBLISHER_STATUS'; payload: Partial<GamePublisher> }
   | {
-      type: 'CHANGE_PUBLISHER_CANDIDATE_STATUS';
-      payload: { isCandidate: boolean };
+      type: 'CHANGE_SUBSCRIBER_STATUS';
+      payload: { nickname: string; data: Partial<GameSubscriber> };
     }
-  | { type: 'ELIMINATE_PUBLISHER' }
-  | {
-      type: 'CHANGE_SUBSCRIBER_ROLE';
-      payload: { nickname: string; role: Role };
-    }
-  | {
-      type: 'CHANGE_SUBSCRIBER_AUDIO';
-      payload: { index: number; audioEnabled: boolean };
-    }
-  | {
-      type: 'CHANGE_SUBSCRIBER_VIDEO';
-      payload: { index: number; videoEnabled: boolean };
-    }
-  | {
-      type: 'CHANGE_SUBSCRIBER_VOTES';
-      payload: { nickname: string; votes: number };
-    }
-  | {
-      type: 'CHANGE_SUBSCRIBER_CANDIDATE_STATUS';
-      payload: { nickname: string; isCandidate: boolean };
-    }
-  | { type: 'INITIALIZE_VOTES' };
+  | { type: 'INITIALIZE_VOTES' }
+  | { type: 'SET_All_PARTICIPANTS_AS_CANDIDATES' };
 
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
@@ -81,7 +57,7 @@ const reducer = (state: State, action: Action): State => {
         },
       };
 
-    case 'SUBSCRIBE':
+    case 'SUBSCRIBE': {
       const index = state.gameSubscribers.findIndex(
         (gameSubscriber) =>
           gameSubscriber.nickname ===
@@ -106,6 +82,7 @@ const reducer = (state: State, action: Action): State => {
             : gameSubscriber,
         ),
       };
+    }
 
     case 'UNSUBSCRIBE':
       return {
@@ -123,63 +100,13 @@ const reducer = (state: State, action: Action): State => {
       };
     /* eslint-enable indent */
 
-    case 'CHANGE_PUBLISHER_ROLE':
+    case 'CHANGE_PUBLISHER_STATUS':
       return {
         ...state,
-        gamePublisher: {
-          ...state.gamePublisher,
-          role: action.payload.role,
-        },
+        gamePublisher: { ...state.gamePublisher, ...action.payload },
       };
 
-    case 'CHANGE_PUBLISHER_AUDIO':
-      return {
-        ...state,
-        gamePublisher: {
-          ...state.gamePublisher,
-          audioEnabled: action.payload.audioEnabled,
-        },
-      };
-
-    case 'CHANGE_PUBLISHER_VIDEO':
-      return {
-        ...state,
-        gamePublisher: {
-          ...state.gamePublisher,
-          videoEnabled: action.payload.videoEnabled,
-        },
-      };
-
-    case 'CHANGE_PUBLISHER_VOTES':
-      return {
-        ...state,
-        gamePublisher: {
-          ...state.gamePublisher,
-          votes: action.payload.votes,
-        },
-      };
-
-    case 'CHANGE_PUBLISHER_CANDIDATE_STATUS':
-      return {
-        ...state,
-        gamePublisher: {
-          ...state.gamePublisher,
-          isCandidate: action.payload.isCandidate,
-        },
-      };
-
-    case 'ELIMINATE_PUBLISHER':
-      return {
-        ...state,
-        gamePublisher: {
-          ...state.gamePublisher,
-          participant: null,
-          audioEnabled: false,
-          videoEnabled: false,
-        },
-      };
-
-    case 'CHANGE_SUBSCRIBER_ROLE': {
+    case 'CHANGE_SUBSCRIBER_STATUS': {
       const index = state.gameSubscribers.findIndex(
         (gameSubscriber) => gameSubscriber.nickname === action.payload.nickname,
       );
@@ -192,65 +119,7 @@ const reducer = (state: State, action: Action): State => {
         ...state,
         gameSubscribers: state.gameSubscribers.map((gameSubscriber, idx) =>
           idx === index
-            ? { ...gameSubscriber, role: action.payload.role }
-            : gameSubscriber,
-        ),
-      };
-    }
-
-    case 'CHANGE_SUBSCRIBER_AUDIO':
-      return {
-        ...state,
-        gameSubscribers: state.gameSubscribers.map((gameSubscriber, index) =>
-          index === action.payload.index
-            ? { ...gameSubscriber, audioEnabled: action.payload.audioEnabled }
-            : gameSubscriber,
-        ),
-      };
-
-    case 'CHANGE_SUBSCRIBER_VIDEO':
-      return {
-        ...state,
-        gameSubscribers: state.gameSubscribers.map((gameSubscriber, index) =>
-          index === action.payload.index
-            ? { ...gameSubscriber, videoEnabled: action.payload.videoEnabled }
-            : gameSubscriber,
-        ),
-      };
-
-    case 'CHANGE_SUBSCRIBER_VOTES': {
-      const index = state.gameSubscribers.findIndex(
-        (gameSubscriber) => gameSubscriber.nickname === action.payload.nickname,
-      );
-
-      if (index === -1) {
-        return state;
-      }
-
-      return {
-        ...state,
-        gameSubscribers: state.gameSubscribers.map((gameSubscriber, idx) =>
-          idx === index
-            ? { ...gameSubscriber, votes: action.payload.votes }
-            : gameSubscriber,
-        ),
-      };
-    }
-
-    case 'CHANGE_SUBSCRIBER_CANDIDATE_STATUS': {
-      const index = state.gameSubscribers.findIndex(
-        (gameSubscriber) => gameSubscriber.nickname === action.payload.nickname,
-      );
-
-      if (index === -1) {
-        return state;
-      }
-
-      return {
-        ...state,
-        gameSubscribers: state.gameSubscribers.map((gameSubscriber, idx) =>
-          idx === index
-            ? { ...gameSubscriber, isCandidate: action.payload.isCandidate }
+            ? { ...gameSubscriber, ...action.payload.data }
             : gameSubscriber,
         ),
       };
@@ -259,17 +128,24 @@ const reducer = (state: State, action: Action): State => {
     case 'INITIALIZE_VOTES':
       return {
         ...state,
-        gamePublisher: {
-          ...state.gamePublisher,
-          votes: 0,
-          isCandidate: false,
-        },
+        gamePublisher: { ...state.gamePublisher, votes: 0, isCandidate: false },
         gameSubscribers: state.gameSubscribers.map((gameSubscriber) => ({
           ...gameSubscriber,
           votes: 0,
           isCandidate: false,
         })),
       };
+
+    case 'SET_All_PARTICIPANTS_AS_CANDIDATES': {
+      return {
+        ...state,
+        gamePublisher: { ...state.gamePublisher, isCandidate: true },
+        gameSubscribers: state.gameSubscribers.map((gameSubscriber) => ({
+          ...gameSubscriber,
+          isCandidate: true,
+        })),
+      };
+    }
 
     default:
       throw new Error('Unknown action type');
@@ -293,87 +169,72 @@ export const useOpenVidu = () => {
   });
 
   const toggleAudio = () => {
-    if (!state.gamePublisher) {
+    if (!state.gamePublisher.participant) {
       return;
     }
 
     if (state.gamePublisher.audioEnabled) {
       dispatch({
-        type: 'CHANGE_PUBLISHER_AUDIO',
+        type: 'CHANGE_PUBLISHER_STATUS',
         payload: { audioEnabled: false },
       });
-      state.gamePublisher.participant?.publishAudio(false);
+      state.gamePublisher.participant.publishAudio(false);
     } else {
       dispatch({
-        type: 'CHANGE_PUBLISHER_AUDIO',
+        type: 'CHANGE_PUBLISHER_STATUS',
         payload: { audioEnabled: true },
       });
-      state.gamePublisher.participant?.publishAudio(true);
+      state.gamePublisher.participant.publishAudio(true);
     }
   };
 
   const toggleVideo = () => {
-    if (!state.gamePublisher) {
+    if (!state.gamePublisher.participant) {
       return;
     }
 
     if (state.gamePublisher.videoEnabled) {
       dispatch({
-        type: 'CHANGE_PUBLISHER_VIDEO',
+        type: 'CHANGE_PUBLISHER_STATUS',
         payload: { videoEnabled: false },
       });
-      state.gamePublisher.participant?.publishVideo(false);
+      state.gamePublisher.participant.publishVideo(false);
     } else {
       dispatch({
-        type: 'CHANGE_PUBLISHER_VIDEO',
+        type: 'CHANGE_PUBLISHER_STATUS',
         payload: { videoEnabled: true },
       });
-      state.gamePublisher.participant?.publishVideo(true);
+      state.gamePublisher.participant.publishVideo(true);
     }
   };
 
-  const changePublisherRole = (role: Role) => {
-    dispatch({ type: 'CHANGE_PUBLISHER_ROLE', payload: { role } });
+  const changePublisherStatus = (data: Partial<GamePublisher>) => {
+    dispatch({ type: 'CHANGE_PUBLISHER_STATUS', payload: data });
   };
 
-  const changePublisherVotes = (votes: number) => {
-    dispatch({ type: 'CHANGE_PUBLISHER_VOTES', payload: { votes } });
+  const changeSubscriberStatus = (
+    nickname: string,
+    data: Partial<GameSubscriber>,
+  ) => {
+    dispatch({ type: 'CHANGE_SUBSCRIBER_STATUS', payload: { nickname, data } });
   };
 
-  const changePublisherCandidateStatus = (isCandidate: boolean) => {
-    dispatch({
-      type: 'CHANGE_PUBLISHER_CANDIDATE_STATUS',
-      payload: { isCandidate },
-    });
+  const initializeVotes = () => {
+    dispatch({ type: 'INITIALIZE_VOTES' });
+  };
+
+  const setAllParticipantsAsCandidates = () => {
+    dispatch({ type: 'SET_All_PARTICIPANTS_AS_CANDIDATES' });
   };
 
   const eliminatePublisher = () => {
     state.gamePublisher?.participant?.publishAudio(false);
     state.gamePublisher?.participant?.publishVideo(false);
     session?.unpublish(state.gamePublisher.participant!);
-    dispatch({ type: 'ELIMINATE_PUBLISHER' });
-  };
-
-  const changeSubscriberRole = (nickname: string, role: Role) => {
-    dispatch({ type: 'CHANGE_SUBSCRIBER_ROLE', payload: { nickname, role } });
-  };
-
-  const changeSubscriberVotes = (nickname: string, votes: number) => {
-    dispatch({ type: 'CHANGE_SUBSCRIBER_VOTES', payload: { nickname, votes } });
-  };
-
-  const changeSubscriberCandidateStatus = (
-    nickname: string,
-    isCandidate: boolean,
-  ) => {
     dispatch({
-      type: 'CHANGE_SUBSCRIBER_CANDIDATE_STATUS',
-      payload: { nickname, isCandidate },
+      type: 'CHANGE_PUBLISHER_STATUS',
+      payload: { participant: null, audioEnabled: false, videoEnabled: false },
     });
-  };
-
-  const initializeVotes = () => {
-    dispatch({ type: 'INITIALIZE_VOTES' });
   };
 
   useEffect(() => {
@@ -472,26 +333,23 @@ export const useOpenVidu = () => {
 
       // 다른 참가자의 오디오/비디오 상태가 변경될 때
       session.on('streamPropertyChanged', (event) => {
-        const index = state.gameSubscribers.findIndex(
-          (gameSubscriber) =>
-            gameSubscriber.participant === event.stream.streamManager,
-        );
-
-        if (index === -1) {
-          return;
-        }
-
         switch (event.changedProperty) {
           case 'audioActive':
             dispatch({
-              type: 'CHANGE_SUBSCRIBER_AUDIO',
-              payload: { index, audioEnabled: event.newValue as boolean },
+              type: 'CHANGE_SUBSCRIBER_STATUS',
+              payload: {
+                nickname: event.stream.connection.data.split('%/%')[0],
+                data: { audioEnabled: event.newValue as boolean },
+              },
             });
             break;
           case 'videoActive':
             dispatch({
-              type: 'CHANGE_SUBSCRIBER_VIDEO',
-              payload: { index, videoEnabled: event.newValue as boolean },
+              type: 'CHANGE_SUBSCRIBER_STATUS',
+              payload: {
+                nickname: event.stream.connection.data.split('%/%')[0],
+                data: { videoEnabled: event.newValue as boolean },
+              },
             });
             break;
           default:
@@ -523,13 +381,10 @@ export const useOpenVidu = () => {
     gameSubscribers: state.gameSubscribers,
     toggleAudio,
     toggleVideo,
-    changePublisherRole,
-    changePublisherVotes,
-    changePublisherCandidateStatus,
-    eliminatePublisher,
-    changeSubscriberRole,
-    changeSubscriberVotes,
-    changeSubscriberCandidateStatus,
+    changePublisherStatus,
+    changeSubscriberStatus,
     initializeVotes,
+    setAllParticipantsAsCandidates,
+    eliminatePublisher,
   };
 };

@@ -25,14 +25,11 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     gameSubscribers,
     toggleAudio,
     toggleVideo,
-    changePublisherRole,
-    changePublisherVotes,
-    changePublisherCandidateStatus,
-    eliminatePublisher,
-    changeSubscriberRole,
-    changeSubscriberVotes,
-    changeSubscriberCandidateStatus,
+    changePublisherStatus,
+    changeSubscriberStatus,
     initializeVotes,
+    setAllParticipantsAsCandidates,
+    eliminatePublisher,
   } = useOpenVidu();
 
   const [situation, setSituation] = useState<Situation | null>(null);
@@ -44,7 +41,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     toast.info(message, {
       toastId: message,
       position: 'top-center',
-      autoClose: 3000,
+      autoClose: 5000,
       closeButton: false,
       hideProgressBar: false,
       closeOnClick: false,
@@ -94,16 +91,22 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
         }
 
         if (data.situation === 'MAFIA' && data.timeLeft === 30) {
+          setTarget(null);
+          setAllParticipantsAsCandidates();
           notifyInfo('마피아들은 제거할 플레이어 한 명을 선택해 주세요.');
         }
 
         if (data.situation === 'DOCTOR' && data.timeLeft === 20) {
+          setTarget(null);
+          setAllParticipantsAsCandidates();
           notifyInfo(
             '의사는 마피아로부터 보호하고 싶은 플레이어 한 명을 선택해 주세요.',
           );
         }
 
         if (data.situation === 'POLICE' && data.timeLeft === 20) {
+          setTarget(null);
+          setAllParticipantsAsCandidates();
           notifyInfo('경찰은 정체를 알고 싶은 플레이어 한 명을 선택해 주세요.');
         }
 
@@ -125,10 +128,10 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     socket?.once(
       'player-role',
       (data: { role: Role; another: [string, Role][] | null }) => {
-        changePublisherRole(data.role);
+        changePublisherStatus({ role: data.role });
 
         data.another?.forEach((value) => {
-          changeSubscriberRole(value[0], value[1]);
+          changeSubscriberStatus(value[0], { role: value[1] });
         });
       },
     );
@@ -141,9 +144,9 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
 
       for (const nickname in candidates) {
         if (nickname === gamePublisher?.nickname) {
-          changePublisherCandidateStatus(true);
+          changePublisherStatus({ isCandidate: true });
         } else {
-          changeSubscriberCandidateStatus(nickname, true);
+          changeSubscriberStatus(nickname, { isCandidate: true });
         }
       }
     });
@@ -154,9 +157,9 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
         if (nickname === 'INVALIDITY') {
           setInvalidityCount(votes);
         } else if (nickname === gamePublisher?.nickname) {
-          changePublisherVotes(votes);
+          changePublisherStatus({ votes });
         } else {
-          changeSubscriberVotes(nickname, votes);
+          changeSubscriberStatus(nickname, { votes });
         }
       }
     });
@@ -171,9 +174,9 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
           if (nickname === 'INVALIDITY') {
             setInvalidityCount(votes);
           } else if (nickname === gamePublisher?.nickname) {
-            changePublisherVotes(votes);
+            changePublisherStatus({ votes });
           } else {
-            changeSubscriberVotes(nickname, votes);
+            changeSubscriberStatus(nickname, { votes });
           }
         }
       },
@@ -200,8 +203,8 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     socket?.on(
       'police-investigation-result',
       (data: { criminal: string; criminalJob: Role }) => {
-        changeSubscriberRole(data.criminal, data.criminalJob);
-        notifyInfo(`${data.criminal} 님은 ${data.criminalJob}입니다.`);
+        changeSubscriberStatus(data.criminal, { role: data.criminalJob });
+        notifyInfo(`${data.criminal} 님은 ${ROLE[data.criminalJob]}입니다.`);
       },
     );
 
@@ -215,15 +218,12 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       socket?.off('police-investigation-result');
     };
   }, [
-    changePublisherCandidateStatus,
-    changePublisherRole,
-    changePublisherVotes,
-    changeSubscriberCandidateStatus,
-    changeSubscriberRole,
-    changeSubscriberVotes,
+    changePublisherStatus,
+    changeSubscriberStatus,
     eliminatePublisher,
     gamePublisher?.nickname,
     initializeVotes,
+    setAllParticipantsAsCandidates,
     situation,
     socket,
   ]);
