@@ -11,7 +11,6 @@ import { Situation } from '@/constants/situation';
 interface VideoViewerProps {
   roomId: string;
   isGameStarted: boolean;
-  participantList: string[];
   situation: Situation | null;
   gamePublisher: GamePublisher | null;
   gameSubscribers: GameSubscriber[];
@@ -23,7 +22,6 @@ interface VideoViewerProps {
 const VideoViewer = ({
   roomId,
   isGameStarted,
-  participantList,
   situation,
   gamePublisher,
   gameSubscribers,
@@ -42,6 +40,29 @@ const VideoViewer = ({
     onTouchMove,
     onTouchEnd,
   } = useDragScroll();
+
+  const handleInvalityButtonClick = () => {
+    if (target !== null) {
+      socket?.emit('cancel-vote-candidate', {
+        roomId,
+        from: nickname,
+        to: target,
+      });
+    }
+
+    if (target === 'INVALIDITY') {
+      setTarget(null);
+      return;
+    }
+
+    socket?.emit('vote-candidate', {
+      roomId,
+      from: nickname,
+      to: 'INVALIDITY',
+    });
+
+    setTarget('INVALIDITY');
+  };
 
   return (
     <div
@@ -68,90 +89,45 @@ const VideoViewer = ({
             `${target === 'INVALIDITY' ? 'border-2 bg-slate-600 text-white' : 'bg-white font-bold text-slate-800'}`,
             'absolute right-0 top-0 z-20 h-[3.75rem] w-[11.25rem] rounded-2xl border border-slate-400 font-bold hover:bg-slate-600 hover:text-white',
           ].join(' ')}
-          onClick={() => {
-            if (target !== null) {
-              socket?.emit('cancel-vote-candidate', {
-                roomId,
-                from: nickname,
-                to: target,
-              });
-            }
-
-            if (target === 'INVALIDITY') {
-              setTarget(null);
-              return;
-            }
-
-            socket?.emit('vote-candidate', {
-              roomId,
-              from: nickname,
-              to: 'INVALIDITY',
-            });
-
-            setTarget('INVALIDITY');
-          }}
+          onClick={handleInvalityButtonClick}
         >
           {`기권 ${invalidityCount}`}
         </button>
       )}
       {/* TODO: key 값으로 index 사용하지 않기 + 코드 리팩토링 */}
-      {isGameStarted ? (
-        <div
-          className={[
-            `${gameSubscribers.length <= 1 ? 'grid-rows-1' : 'grid-rows-2'}`,
-            `${gameSubscribers.length <= 3 ? 'grid-cols-2' : gameSubscribers.length <= 5 ? 'grid-cols-3' : 'grid-cols-4'}`,
-            'grid h-full min-w-[67.5rem] gap-6',
-          ].join(' ')}
-        >
-          {gamePublisher && (
-            <VideoItem
-              roomId={roomId}
-              playerRole={gamePublisher.role}
-              gameParticipantNickname={nickname}
-              gameParticipantRole={gamePublisher.role}
-              gameParticipant={gamePublisher}
-              situation={situation}
-              target={target}
-              setTarget={setTarget}
-            />
-          )}
-          {gameSubscribers.map((gameSubscriber, index) => (
-            <VideoItem
-              key={index}
-              roomId={roomId}
-              playerRole={gamePublisher?.role}
-              gameParticipantNickname={gameSubscriber.nickname}
-              gameParticipantRole={gameSubscriber.role}
-              gameParticipant={gameSubscriber}
-              situation={situation}
-              target={target}
-              setTarget={setTarget}
-            />
-          ))}
-        </div>
-      ) : (
-        <div
-          className={[
-            `${participantList.length <= 2 ? 'grid-rows-1' : 'grid-rows-2'}`,
-            `${participantList.length <= 4 ? 'grid-cols-2' : participantList.length <= 6 ? 'grid-cols-3' : 'grid-cols-4'}`,
-            'grid h-full min-w-[67.5rem] gap-6',
-          ].join(' ')}
-        >
-          {participantList.map((participant, index) => (
-            <VideoItem
-              key={index}
-              roomId={roomId}
-              playerRole={gamePublisher?.role}
-              gameParticipantNickname={participant}
-              gameParticipantRole={null}
-              gameParticipant={null}
-              situation={situation}
-              target={target}
-              setTarget={setTarget}
-            />
-          ))}
-        </div>
-      )}
+      <div
+        className={[
+          `${gameSubscribers.length <= 1 ? 'grid-rows-1' : 'grid-rows-2'}`,
+          `${gameSubscribers.length <= 3 ? 'grid-cols-2' : gameSubscribers.length <= 5 ? 'grid-cols-3' : 'grid-cols-4'}`,
+          'grid h-full min-w-[67.5rem] gap-6',
+        ].join(' ')}
+      >
+        {(!isGameStarted || gamePublisher?.participant) && (
+          <VideoItem
+            roomId={roomId}
+            playerRole={gamePublisher?.role}
+            gameParticipantNickname={nickname}
+            gameParticipantRole={gamePublisher?.role}
+            gameParticipant={gamePublisher}
+            situation={situation}
+            target={target}
+            setTarget={setTarget}
+          />
+        )}
+        {gameSubscribers.map((gameSubscriber, index) => (
+          <VideoItem
+            key={index}
+            roomId={roomId}
+            playerRole={gamePublisher?.role}
+            gameParticipantNickname={gameSubscriber.nickname}
+            gameParticipantRole={gameSubscriber.role}
+            gameParticipant={gameSubscriber}
+            situation={situation}
+            target={target}
+            setTarget={setTarget}
+          />
+        ))}
+      </div>
     </div>
   );
 };

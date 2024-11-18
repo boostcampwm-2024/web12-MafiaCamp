@@ -14,7 +14,7 @@ interface VideoItemProps {
   roomId: string;
   playerRole?: Role | null;
   gameParticipantNickname: string;
-  gameParticipantRole: Role | null;
+  gameParticipantRole?: Role | null;
   gameParticipant: GamePublisher | GameSubscriber | null;
   situation: Situation | null;
   target: string | null;
@@ -35,16 +35,6 @@ const VideoItem = ({
   const { nickname, socket } = useSocketStore();
 
   const handleClick = () => {
-    socket?.emit('police-investigate', {
-      roomId,
-      police: nickname,
-      criminal: gameParticipantNickname,
-    });
-
-    return;
-
-    // TODO: 삭제 예정
-
     if (!situation || !gameParticipant?.isCandidate) {
       return;
     }
@@ -86,7 +76,7 @@ const VideoItem = ({
   };
 
   useEffect(() => {
-    if (videoRef.current && gameParticipant) {
+    if (videoRef.current && gameParticipant && gameParticipant.participant) {
       gameParticipant.participant.addVideoElement(videoRef.current);
     }
   }, [gameParticipant]);

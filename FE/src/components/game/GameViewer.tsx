@@ -35,7 +35,6 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     initializeVotes,
   } = useOpenVidu();
 
-  const [participantList, setParticipantList] = useState<string[]>([]);
   const [situation, setSituation] = useState<Situation | null>(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [target, setTarget] = useState<string | null>(null);
@@ -62,11 +61,6 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
   }, [roomId, socket]);
 
   useEffect(() => {
-    // 게임 참가
-    socket?.on('participants', (participants: string[]) => {
-      setParticipantList(participants);
-    });
-
     // 카운트 다운
     socket?.on(
       'countdown',
@@ -212,7 +206,6 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     );
 
     return () => {
-      socket?.off('participants');
       socket?.off('countdown');
       socket?.off('countdown-exit');
       socket?.off('player-role');
@@ -241,7 +234,6 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       <VideoViewer
         roomId={roomId}
         isGameStarted={isGameStarted}
-        participantList={participantList}
         situation={situation}
         gamePublisher={gamePublisher}
         gameSubscribers={gameSubscribers}
@@ -251,7 +243,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       />
       <Bottombar
         roomId={roomId}
-        totalParticipants={participantList.length}
+        totalParticipants={gameSubscribers.length + 1}
         situation={situation}
         timeLeft={timeLeft}
         audioEnabled={gamePublisher?.audioEnabled}
@@ -261,7 +253,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       />
       <ChattingList
         roomId={roomId}
-        totalParticipants={participantList.length}
+        totalParticipants={gameSubscribers.length + 1}
       />
     </div>
   );

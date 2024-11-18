@@ -13,12 +13,12 @@ import { Reducer, useEffect, useReducer } from 'react';
 
 type State = {
   isGameStarted: boolean;
-  gamePublisher: GamePublisher | null;
+  gamePublisher: GamePublisher;
   gameSubscribers: GameSubscriber[];
 };
 
 type Action =
-  | { type: 'DISCONNECT' }
+  | { type: 'PARTICIPATE'; payload: { participantList: string[] } }
   | { type: 'START_GAME'; payload: { publisher: Publisher } }
   | { type: 'SUBSCRIBE'; payload: { subscriber: Subscriber } }
   | { type: 'UNSUBSCRIBE'; payload: { streamManager: StreamManager } }
@@ -55,51 +55,73 @@ type Action =
 
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
-    case 'DISCONNECT':
-      return { isGameStarted: false, gamePublisher: null, gameSubscribers: [] };
+    case 'PARTICIPATE':
+      return {
+        ...state,
+        gameSubscribers: action.payload.participantList.map((participant) => ({
+          participant: null,
+          nickname: participant,
+          role: null,
+          audioEnabled: false,
+          videoEnabled: false,
+          votes: 0,
+          isCandidate: false,
+        })),
+      };
 
     case 'START_GAME':
       return {
         ...state,
         isGameStarted: true,
         gamePublisher: {
+          ...state.gamePublisher,
           participant: action.payload.publisher,
-          nickname:
-            action.payload.publisher.stream.connection.data.split('%/%')[0],
-          role: null,
           audioEnabled: true,
           videoEnabled: true,
-          votes: 0,
-          isCandidate: false,
         },
       };
 
     case 'SUBSCRIBE':
+      const index = state.gameSubscribers.findIndex(
+        (gameSubscriber) =>
+          gameSubscriber.nickname ===
+          action.payload.subscriber.stream.connection.data.split('%/%')[0],
+      );
+
+      if (index === -1) {
+        return state;
+      }
+
+      /* eslint-disable indent */
       return {
         ...state,
-        gameSubscribers: [
-          ...state.gameSubscribers,
-          {
-            participant: action.payload.subscriber,
-            nickname:
-              action.payload.subscriber.stream.connection.data.split('%/%')[0],
-            role: null,
-            audioEnabled: true,
-            videoEnabled: true,
-            votes: 0,
-            isCandidate: false,
-          },
-        ],
+        gameSubscribers: state.gameSubscribers.map((gameSubscriber, idx) =>
+          idx === index
+            ? {
+                ...gameSubscriber,
+                participant: action.payload.subscriber,
+                audioEnabled: true,
+                videoEnabled: true,
+              }
+            : gameSubscriber,
+        ),
       };
 
     case 'UNSUBSCRIBE':
       return {
         ...state,
-        gameSubscribers: state.gameSubscribers.filter(
-          (gameSubscriber) =>
-            gameSubscriber.participant !== action.payload.streamManager,
+        gameSubscribers: state.gameSubscribers.map((gameSubscriber) =>
+          gameSubscriber.participant !== action.payload.streamManager
+            ? {
+                ...gameSubscriber,
+                participant: null,
+                audioEnabled: false,
+                videoEnabled: false,
+              }
+            : gameSubscriber,
         ),
       };
+    /* eslint-enable indent */
 
     case 'CHANGE_PUBLISHER_ROLE':
       return {
@@ -149,7 +171,12 @@ const reducer = (state: State, action: Action): State => {
     case 'ELIMINATE_PUBLISHER':
       return {
         ...state,
-        gamePublisher: null,
+        gamePublisher: {
+          ...state.gamePublisher,
+          participant: null,
+          audioEnabled: false,
+          videoEnabled: false,
+        },
       };
 
     case 'CHANGE_SUBSCRIBER_ROLE': {
@@ -253,7 +280,15 @@ export const useOpenVidu = () => {
   const { nickname, socket, session, setState } = useSocketStore();
   const [state, dispatch] = useReducer<Reducer<State, Action>>(reducer, {
     isGameStarted: false,
-    gamePublisher: null,
+    gamePublisher: {
+      participant: null,
+      nickname: nickname,
+      role: null,
+      audioEnabled: false,
+      videoEnabled: false,
+      votes: 0,
+      isCandidate: false,
+    },
     gameSubscribers: [],
   });
 
@@ -267,13 +302,13 @@ export const useOpenVidu = () => {
         type: 'CHANGE_PUBLISHER_AUDIO',
         payload: { audioEnabled: false },
       });
-      state.gamePublisher.participant.publishAudio(false);
+      state.gamePublisher.participant?.publishAudio(false);
     } else {
       dispatch({
         type: 'CHANGE_PUBLISHER_AUDIO',
         payload: { audioEnabled: true },
       });
-      state.gamePublisher.participant.publishAudio(true);
+      state.gamePublisher.participant?.publishAudio(true);
     }
   };
 
@@ -287,13 +322,13 @@ export const useOpenVidu = () => {
         type: 'CHANGE_PUBLISHER_VIDEO',
         payload: { videoEnabled: false },
       });
-      state.gamePublisher.participant.publishVideo(false);
+      state.gamePublisher.participant?.publishVideo(false);
     } else {
       dispatch({
         type: 'CHANGE_PUBLISHER_VIDEO',
         payload: { videoEnabled: true },
       });
-      state.gamePublisher.participant.publishVideo(true);
+      state.gamePublisher.participant?.publishVideo(true);
     }
   };
 
@@ -313,9 +348,9 @@ export const useOpenVidu = () => {
   };
 
   const eliminatePublisher = () => {
-    state.gamePublisher?.participant.publishAudio(false);
-    state.gamePublisher?.participant.publishVideo(false);
-    session?.unpublish(state.gamePublisher!.participant);
+    state.gamePublisher?.participant?.publishAudio(false);
+    state.gamePublisher?.participant?.publishVideo(false);
+    session?.unpublish(state.gamePublisher!.participant!);
     dispatch({ type: 'ELIMINATE_PUBLISHER' });
   };
 
@@ -342,6 +377,18 @@ export const useOpenVidu = () => {
   };
 
   useEffect(() => {
+    // 게임 참가
+    socket?.on('participants', (participants: string[]) => {
+      dispatch({
+        type: 'PARTICIPATE',
+        payload: {
+          participantList: participants.filter(
+            (participant) => participant !== nickname,
+          ),
+        },
+      });
+    });
+
     (async () => {
       try {
         // OpenVidu 객체 생성
@@ -397,6 +444,7 @@ export const useOpenVidu = () => {
     })();
 
     return () => {
+      socket?.off('participants');
       socket?.off('video-info');
     };
   }, [nickname, setState, socket]);
@@ -406,7 +454,6 @@ export const useOpenVidu = () => {
       if (session) {
         session.disconnect();
         setState({ session: null });
-        dispatch({ type: 'DISCONNECT' });
       }
     };
   }, [session, setState]);
