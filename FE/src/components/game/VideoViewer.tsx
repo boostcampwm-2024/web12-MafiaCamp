@@ -7,6 +7,7 @@ import { useSocketStore } from '@/stores/socketStore';
 import { GamePublisher } from '@/types/gamePublisher';
 import { GameSubscriber } from '@/types/gameSubscriber';
 import { Situation } from '@/constants/situation';
+import { useMemo } from 'react';
 
 interface VideoViewerProps {
   roomId: string;
@@ -40,6 +41,16 @@ const VideoViewer = ({
     onTouchMove,
     onTouchEnd,
   } = useDragScroll();
+
+  const totalSurvivors = useMemo(
+    () =>
+      (gamePublisher?.participant ? 1 : 0) +
+      gameSubscribers.reduce(
+        (total, gameSubscriber) => total + (gameSubscriber.participant ? 1 : 0),
+        0,
+      ),
+    [gamePublisher?.participant, gameSubscribers],
+  );
 
   const handleInvalityButtonClick = () => {
     if (target !== null) {
@@ -96,8 +107,8 @@ const VideoViewer = ({
       )}
       <div
         className={[
-          `${gameSubscribers.length <= 1 ? 'grid-rows-1' : 'grid-rows-2'}`,
-          `${gameSubscribers.length <= 3 ? 'grid-cols-2' : gameSubscribers.length <= 5 ? 'grid-cols-3' : 'grid-cols-4'}`,
+          `${totalSurvivors <= 1 ? 'grid-rows-1' : 'grid-rows-2'}`,
+          `${totalSurvivors <= 3 ? 'grid-cols-2' : totalSurvivors <= 5 ? 'grid-cols-3' : 'grid-cols-4'}`,
           'grid h-full min-w-[67.5rem] gap-6',
         ].join(' ')}
       >
