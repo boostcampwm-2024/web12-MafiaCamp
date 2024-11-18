@@ -246,8 +246,12 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
         totalParticipants={gameSubscribers.length + 1}
         situation={situation}
         timeLeft={timeLeft}
-        audioEnabled={gamePublisher?.audioEnabled}
-        videoEnabled={gamePublisher?.videoEnabled}
+        audioEnabled={
+          gamePublisher.participant ? gamePublisher.audioEnabled : null
+        }
+        videoEnabled={
+          gamePublisher.participant ? gamePublisher.videoEnabled : null
+        }
         toggleAudio={toggleAudio}
         toggleVideo={toggleVideo}
       />

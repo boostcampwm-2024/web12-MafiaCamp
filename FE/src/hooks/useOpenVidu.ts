@@ -111,7 +111,7 @@ const reducer = (state: State, action: Action): State => {
       return {
         ...state,
         gameSubscribers: state.gameSubscribers.map((gameSubscriber) =>
-          gameSubscriber.participant !== action.payload.streamManager
+          gameSubscriber.participant === action.payload.streamManager
             ? {
                 ...gameSubscriber,
                 participant: null,
@@ -127,7 +127,7 @@ const reducer = (state: State, action: Action): State => {
       return {
         ...state,
         gamePublisher: {
-          ...state.gamePublisher!,
+          ...state.gamePublisher,
           role: action.payload.role,
         },
       };
@@ -136,7 +136,7 @@ const reducer = (state: State, action: Action): State => {
       return {
         ...state,
         gamePublisher: {
-          ...state.gamePublisher!,
+          ...state.gamePublisher,
           audioEnabled: action.payload.audioEnabled,
         },
       };
@@ -145,7 +145,7 @@ const reducer = (state: State, action: Action): State => {
       return {
         ...state,
         gamePublisher: {
-          ...state.gamePublisher!,
+          ...state.gamePublisher,
           videoEnabled: action.payload.videoEnabled,
         },
       };
@@ -154,7 +154,7 @@ const reducer = (state: State, action: Action): State => {
       return {
         ...state,
         gamePublisher: {
-          ...state.gamePublisher!,
+          ...state.gamePublisher,
           votes: action.payload.votes,
         },
       };
@@ -163,7 +163,7 @@ const reducer = (state: State, action: Action): State => {
       return {
         ...state,
         gamePublisher: {
-          ...state.gamePublisher!,
+          ...state.gamePublisher,
           isCandidate: action.payload.isCandidate,
         },
       };
@@ -260,7 +260,7 @@ const reducer = (state: State, action: Action): State => {
       return {
         ...state,
         gamePublisher: {
-          ...state.gamePublisher!,
+          ...state.gamePublisher,
           votes: 0,
           isCandidate: false,
         },
@@ -350,7 +350,7 @@ export const useOpenVidu = () => {
   const eliminatePublisher = () => {
     state.gamePublisher?.participant?.publishAudio(false);
     state.gamePublisher?.participant?.publishVideo(false);
-    session?.unpublish(state.gamePublisher!.participant!);
+    session?.unpublish(state.gamePublisher.participant!);
     dispatch({ type: 'ELIMINATE_PUBLISHER' });
   };
 

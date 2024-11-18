@@ -94,7 +94,6 @@ const VideoViewer = ({
           {`기권 ${invalidityCount}`}
         </button>
       )}
-      {/* TODO: key 값으로 index 사용하지 않기 + 코드 리팩토링 */}
       <div
         className={[
           `${gameSubscribers.length <= 1 ? 'grid-rows-1' : 'grid-rows-2'}`,
@@ -114,19 +113,23 @@ const VideoViewer = ({
             setTarget={setTarget}
           />
         )}
-        {gameSubscribers.map((gameSubscriber, index) => (
-          <VideoItem
-            key={index}
-            roomId={roomId}
-            playerRole={gamePublisher?.role}
-            gameParticipantNickname={gameSubscriber.nickname}
-            gameParticipantRole={gameSubscriber.role}
-            gameParticipant={gameSubscriber}
-            situation={situation}
-            target={target}
-            setTarget={setTarget}
-          />
-        ))}
+        {gameSubscribers
+          .filter(
+            (gameSubscriber) => !isGameStarted || gameSubscriber.participant,
+          )
+          .map((gameSubscriber) => (
+            <VideoItem
+              key={gameSubscriber.nickname}
+              roomId={roomId}
+              playerRole={gamePublisher?.role}
+              gameParticipantNickname={gameSubscriber.nickname}
+              gameParticipantRole={gameSubscriber.role}
+              gameParticipant={gameSubscriber}
+              situation={situation}
+              target={target}
+              setTarget={setTarget}
+            />
+          ))}
       </div>
     </div>
   );

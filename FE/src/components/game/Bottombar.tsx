@@ -18,8 +18,8 @@ interface BottombarProps {
   totalParticipants: number;
   situation: Situation | null;
   timeLeft: number;
-  audioEnabled?: boolean;
-  videoEnabled?: boolean;
+  audioEnabled: boolean | null;
+  videoEnabled: boolean | null;
   toggleAudio: () => void;
   toggleVideo: () => void;
 }
@@ -76,7 +76,7 @@ const Bottombar = ({
             게임 시작
           </button>
           <button
-            className={`${audioEnabled === undefined && 'hidden'} flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105`}
+            className={`${audioEnabled === null && 'hidden'} flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105`}
             onClick={() => toggleAudio()}
           >
             {audioEnabled ? (
@@ -87,7 +87,7 @@ const Bottombar = ({
             오디오
           </button>
           <button
-            className={`${videoEnabled === undefined && 'hidden'} flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105`}
+            className={`${videoEnabled === null && 'hidden'} flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105`}
             onClick={() => toggleVideo()}
           >
             {videoEnabled ? (

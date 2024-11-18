@@ -95,7 +95,7 @@ const VideoItem = ({
       >
         {ROLE[gameParticipantRole ?? 'CITIZEN']}
       </div>
-      {situation === 'VOTE' && (
+      {situation === 'VOTE' && gameParticipant?.isCandidate && (
         <p className='absolute top-0 z-10 flex h-full w-full items-center justify-center text-5xl text-white'>
           {gameParticipant?.votes ?? 0}
         </p>
