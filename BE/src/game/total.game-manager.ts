@@ -203,6 +203,8 @@ export class TotalGameManager implements VoteManager, PoliceManager {
   }
 
   async executePolice(gameRoom: GameRoom, police: string, criminal: string): Promise<void> {
+    console.log('All game rooms:', await this.games.keys());
+    console.log('investgationFlag', await this.policeInvestigationMap.keys());
     const investigationFlag = await this.policeInvestigationMap.get(gameRoom.roomId);
     let policeFlag = false;
     let criminalFlag = false;
