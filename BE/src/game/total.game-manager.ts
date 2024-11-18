@@ -80,6 +80,7 @@ export class TotalGameManager implements VoteManager, PoliceManager {
   async cancelVote(gameRoom: GameRoom, from: string, to: string): Promise<void> {
     await this.checkVoteAuthority(gameRoom, from);
     const ballotBox = await this.ballotBoxs.get(gameRoom);
+    console.log(from, to, ballotBox);
     const toVotes = ballotBox.get(to);
     const voteFlag = this.checkVote(ballotBox, from);
     if (voteFlag) {
@@ -114,6 +115,7 @@ export class TotalGameManager implements VoteManager, PoliceManager {
   async vote(gameRoom: GameRoom, from: string, to: string): Promise<void> {
     await this.checkVoteAuthority(gameRoom, from);
     const ballotBox = await this.ballotBoxs.get(gameRoom);
+    console.log(from, to, ballotBox);
     const toVotes = ballotBox.get(to);
     const voteFlag = this.checkVote(ballotBox, from);
     if (!voteFlag) {
@@ -207,6 +209,7 @@ export class TotalGameManager implements VoteManager, PoliceManager {
     let criminalJob: MAFIA_ROLE;
 
     const userInfos = await this.games.get(gameRoom);
+    console.log(userInfos);
     userInfos.forEach((playerInfo, client) => {
       if (police === client && playerInfo.role === MAFIA_ROLE.POLICE && playerInfo.status === USER_STATUS.ALIVE) {
         policeFlag = true;
