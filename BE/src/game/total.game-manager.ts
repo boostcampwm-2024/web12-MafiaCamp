@@ -211,6 +211,7 @@ export class TotalGameManager implements VoteManager, PoliceManager {
 
     const userInfos = await this.games.get(gameRoom);
     console.log('gameRoom2', gameRoom);
+    console.log('games', this.games);
     console.log('userInfos', userInfos);
     userInfos.forEach((playerInfo, client) => {
       if (police === client && playerInfo.role === MAFIA_ROLE.POLICE && playerInfo.status === USER_STATUS.ALIVE) {
