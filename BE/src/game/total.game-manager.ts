@@ -30,7 +30,7 @@ export class TotalGameManager implements VoteManager, PoliceManager {
         gameInfo.set(client.nickname, { role, status: USER_STATUS.ALIVE });
       });
       await this.games.set(gameRoom, gameInfo);
-      console.log(await this.games.get(gameRoom));
+      console.log('gameRoom', await this.games.get(gameRoom));
     }
   }
 
@@ -210,7 +210,7 @@ export class TotalGameManager implements VoteManager, PoliceManager {
     let criminalJob: MAFIA_ROLE;
 
     const userInfos = await this.games.get(gameRoom);
-    console.log(userInfos);
+    console.log('userInfos', userInfos);
     userInfos.forEach((playerInfo, client) => {
       if (police === client && playerInfo.role === MAFIA_ROLE.POLICE && playerInfo.status === USER_STATUS.ALIVE) {
         policeFlag = true;
