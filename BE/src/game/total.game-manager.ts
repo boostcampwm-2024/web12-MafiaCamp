@@ -81,7 +81,6 @@ export class TotalGameManager implements VoteManager, PoliceManager {
   async cancelVote(gameRoom: GameRoom, from: string, to: string): Promise<void> {
     await this.checkVoteAuthority(gameRoom, from);
     const ballotBox = await this.ballotBoxs.get(gameRoom.roomId);
-    console.log(from, to, ballotBox);
     const toVotes = ballotBox.get(to);
     const voteFlag = this.checkVote(ballotBox, from);
     if (voteFlag) {
