@@ -44,7 +44,7 @@ export class TotalGameManager implements VoteManager, PoliceManager {
     playerInfo.status = USER_STATUS.DEAD;
     gameInfo.set(player, playerInfo);
 
-    gameRoom.sendAll('vote-kill-user', player);
+    gameRoom.sendAll('vote-kill-user', { player, job: playerInfo.role });
   }
 
   async registerBallotBox(gameRoom: GameRoom): Promise<void> {
@@ -140,9 +140,8 @@ export class TotalGameManager implements VoteManager, PoliceManager {
     }
     await this.voteForYourself(ballotBox);
 
-    const voteResult = new Map<string, number>();
     const newBalletBox = new Map<string, string[]>();
-    const maxVotedUsers = this.findMostVotedUser(ballotBox, voteResult);
+    const maxVotedUsers = this.findMostVotedUser(ballotBox);
 
     if ((maxVotedUsers.length === 1 && maxVotedUsers[0] !== null) || (maxVotedUsers.length > 1)) {
       /*
@@ -155,18 +154,17 @@ export class TotalGameManager implements VoteManager, PoliceManager {
       });
       newBalletBox.set('INVALIDITY', []);
       await this.ballotBoxs.set(gameRoom, newBalletBox);
-      gameRoom.sendAll('primary-vote-result', voteResult);
+      gameRoom.sendAll('primary-vote-result', maxVotedUsers);
       return VOTE_STATE.PRIMARY;
     }
-    gameRoom.sendAll('primary-vote-result', voteResult);
+    gameRoom.sendAll('primary-vote-result', maxVotedUsers);
     return VOTE_STATE.INVALIDITY;
   }
 
-  private findMostVotedUser(ballotBox: Map<string, string[]>, voteResult: Map<string, number>): string[] {
+  private findMostVotedUser(ballotBox: Map<string, string[]>): string[] {
     let maxVotedUsers: string[] = [];
     let maxCnt = -1;
     ballotBox.forEach((votedUsers, client) => {
-      voteResult[client] = votedUsers.length;
       if (maxCnt < votedUsers.length) {
         maxVotedUsers = [client];
         maxCnt = votedUsers.length;
@@ -190,14 +188,15 @@ export class TotalGameManager implements VoteManager, PoliceManager {
     if (!ballotBox) {
       throw new NotFoundBallotBoxException();
     }
-    const voteResult = new Map<string, number>();
-    const mostVotedUser = this.findMostVotedUser(ballotBox, voteResult);
+    const mostVotedUser = this.findMostVotedUser(ballotBox);
+
+    await this.ballotBoxs.delete(gameRoom);
 
     if (mostVotedUser.length === 1 && mostVotedUser[0] !== null) {
       await this.killUser(gameRoom, mostVotedUser[0]);
+    } else {
+      gameRoom.sendAll('vote-kill-user', null);
     }
-    await this.ballotBoxs.delete(gameRoom);
-    gameRoom.sendAll('final-vote-result', voteResult);
     return VOTE_STATE.FINAL;
   }
 
