@@ -30,6 +30,7 @@ export class TotalGameManager implements VoteManager, PoliceManager {
         gameInfo.set(client.nickname, { role, status: USER_STATUS.ALIVE });
       });
       await this.games.set(gameRoom, gameInfo);
+      console.log(await this.games.get(gameRoom));
     }
   }
 
