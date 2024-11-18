@@ -7,7 +7,7 @@ import { MAFIA_ROLE } from '../../mafia-role';
 import { Transactional } from 'typeorm-transactional';
 import { JOB_FACTORY, JobFactory } from './job.factory';
 import { GAME_HISTORY_REPOSITORY, GameHistoryRepository } from '../../repository/game-history.repository';
-import { GAME_MANAGER, GameManager } from '../game-manager/game-manager';
+import { GAME_MANAGER, VoteManager } from '../game-manager/vote-manager';
 
 @Injectable()
 export class AllocateUserRoleService implements AllocateUserRoleUsecase {
@@ -18,7 +18,7 @@ export class AllocateUserRoleService implements AllocateUserRoleUsecase {
     @Inject(GAME_HISTORY_REPOSITORY)
     private readonly gameHistoryRepository: GameHistoryRepository<GameHistoryEntity, number>,
     @Inject(GAME_MANAGER)
-    private readonly gameManager: GameManager,
+    private readonly gameManager: VoteManager,
   ) {
   }
 
@@ -32,6 +32,6 @@ export class AllocateUserRoleService implements AllocateUserRoleUsecase {
     const gameHistoryEntity = new GameHistoryEntity();
     await this.gameHistoryRepository.save(gameHistoryEntity);
     const userRoles: Map<GameClient, MAFIA_ROLE> = this.jobFactory.allocateGameRoles(jobRequest.gameRoom);
-    this.gameManager.register(jobRequest.gameRoom, userRoles);
+    await this.gameManager.register(jobRequest.gameRoom, userRoles);
   }
 }

@@ -5,7 +5,7 @@ import { EventManager } from './event-manager';
 import { GameModule } from 'src/game/game.module';
 
 @Module({
-  imports: [GameRoomModule, GameModule],
+  imports: [GameRoomModule, GameModule,],
   providers: [EventGateway, EventManager],
 })
 export class EventModule {}

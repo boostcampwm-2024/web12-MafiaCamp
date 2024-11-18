@@ -4,7 +4,7 @@ import { StopCountdownRequest } from '../../dto/stop.countdown.request';
 export const COUNTDOWN_TIMEOUT_USECASE = Symbol('COUNTDOWN_TIMEOUT_USECASE');
 
 export interface CountdownTimeoutUsecase {
-  countdownStart(startCountdownRequest: StartCountdownRequest) : void;
+  countdownStart(startCountdownRequest: StartCountdownRequest) : Promise<void>;
 
-  countdownStop(stopCountdownRequest: StopCountdownRequest): void;
+  countdownStop(stopCountdownRequest: StopCountdownRequest): Promise<void>;
 }

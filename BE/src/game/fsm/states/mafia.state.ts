@@ -1,7 +1,9 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { StartCountdownRequest } from 'src/game/dto/start.countdown.request';
-import { CountdownTimeoutService } from 'src/game/usecase/countdown/countdown.timeout.service';
-import { COUNTDOWN_TIMEOUT_USECASE } from 'src/game/usecase/countdown/countdown.timeout.usecase';
+import {
+  COUNTDOWN_TIMEOUT_USECASE,
+  CountdownTimeoutUsecase,
+} from 'src/game/usecase/countdown/countdown.timeout.usecase';
 import { GameState, TransitionHandler } from './state';
 import { DoctorState } from './doctor.state';
 import { GameContext } from '../game-context';
@@ -10,7 +12,7 @@ import { GameContext } from '../game-context';
 export class MafiaState extends GameState {
   constructor(
     @Inject(COUNTDOWN_TIMEOUT_USECASE)
-    private readonly countdownTimeoutService: CountdownTimeoutService,
+    private readonly countdownTimeoutUsecase: CountdownTimeoutUsecase,
     @Inject(forwardRef(() => DoctorState))
     private readonly doctorState: DoctorState,
   ) {
@@ -19,7 +21,7 @@ export class MafiaState extends GameState {
 
   async handle(context: GameContext, next: TransitionHandler) {
     const room = context.room;
-    await this.countdownTimeoutService.countdownStart(
+    await this.countdownTimeoutUsecase.countdownStart(
       new StartCountdownRequest(room, 'MAFIA'),
     );
     next(this.doctorState);

@@ -52,7 +52,7 @@ export class RandomJobFactory implements JobFactory {
 
     mafiaUsers.forEach(([currentPlayer, currentRole]) => {
       const otherMafias = mafiaUsers
-        .filter((player:[GameClient,MAFIA_ROLE]) => player[0] !== currentPlayer)
+        .filter((player: [GameClient, MAFIA_ROLE]) => player[0] !== currentPlayer)
         .map(([player, role]) => [player.nickname, role]);
 
       currentPlayer.send('player-role', {

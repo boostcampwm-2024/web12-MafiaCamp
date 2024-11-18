@@ -15,8 +15,10 @@ import { WebsocketLoggerInterceptor } from 'src/common/logger/websocket.logger.i
 import { EventClient } from './event-client.model';
 import { EventManager } from './event-manager';
 import { Event } from './event.const';
-import { START_GAME_USECASE } from 'src/game/usecase/start-game/start-game.usecase';
+import { START_GAME_USECASE, StartGameUsecase } from 'src/game/usecase/start-game/start-game.usecase';
 import { StartGameService } from 'src/game/usecase/start-game/start-game.service';
+import { VOTE_MAFIA_USECASE, VoteMafiaUsecase } from '../game/usecase/game-manager/vote.mafia.usecase';
+import { VoteCandidateRequest } from '../game/dto/vote.candidate.request';
 
 // @UseInterceptors(WebsocketLoggerInterceptor)
 @WebSocketGateway({
@@ -33,7 +35,9 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly eventManager: EventManager,
     private readonly gameRoomService: GameRoomService,
     @Inject(START_GAME_USECASE)
-    private readonly startGameService: StartGameService,
+    private readonly startGameUsecase: StartGameUsecase,
+    @Inject(VOTE_MAFIA_USECASE)
+    private readonly voteMafiaUsecase: VoteMafiaUsecase
   ) {}
 
   handleConnection(socket: Socket) {
@@ -115,7 +119,19 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
         data: { success: false }
       };
     }
-    this.startGameService.start(room);
+    this.startGameUsecase.start(room);
+  }
+
+  @SubscribeMessage('vote-candidate')
+  async voteCandidate(@MessageBody() voteCandidateRequest:VoteCandidateRequest){
+    const room = this.gameRoomService.findRoomById(voteCandidateRequest.roomId);
+    await this.voteMafiaUsecase.vote(room, voteCandidateRequest.from, voteCandidateRequest.to);
+  }
+
+  @SubscribeMessage('cancel-vote-candidate')
+  async cancelVoteCandidate(@MessageBody() voteCandidateRequest:VoteCandidateRequest){
+    const room = this.gameRoomService.findRoomById(voteCandidateRequest.roomId);
+    await this.voteMafiaUsecase.cancelVote(room, voteCandidateRequest.from, voteCandidateRequest.to);
   }
 
   private publishRoomDataChangedEvent() {

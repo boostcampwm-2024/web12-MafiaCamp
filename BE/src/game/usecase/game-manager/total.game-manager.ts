@@ -1,4 +1,4 @@
-import { GameManager } from './game-manager';
+import { VoteManager } from './vote-manager';
 import { Injectable } from '@nestjs/common';
 import { GameRoom } from '../../../game-room/entity/game-room.model';
 import { GameClient } from '../../../game-room/entity/game-client.model';
@@ -7,37 +7,32 @@ import { USER_STATUS } from '../../user-status';
 import { NotFoundGameRoomException } from '../../../common/error/not.found.game-room.exception';
 import { NotFoundBallotBoxException } from '../../../common/error/not.found.ballot-box.exception';
 import { UnauthorizedUserBallotException } from '../../../common/error/unauthorized.user.ballot.exception';
+import { MutexMap } from '../../../common/utils/mutex-map';
+import { VOTE_STATE } from '../../vote-state';
 
 interface PlayerInfo {
   role: MAFIA_ROLE;
   status: USER_STATUS;
 }
 
-/*
-무효표도 넣기
-무효표가 다수일 때 어떻게 해야할지?
-죽은 유저는 하지 못하게 막아야 함
-죽은 유저에게랑 살아있는 유저에게 보이는 투표 화면은 달라야 함
- */
 @Injectable()
-export class TotalGameManager implements GameManager {
-  private readonly games = new Map<GameRoom, Map<GameClient, PlayerInfo>>();
-  private readonly ballotBoxs = new Map<GameRoom, Map<GameClient, string[]>>();
+export class TotalGameManager implements VoteManager {
+  private readonly games = new MutexMap<GameRoom, Map<string, PlayerInfo>>();
+  private readonly ballotBoxs = new MutexMap<GameRoom, Map<string, string[]>>();
 
-  register(gameRoom: GameRoom, players: Map<GameClient, MAFIA_ROLE>): void {
-    const gameInfo = new Map<GameClient, PlayerInfo>();
+  async register(gameRoom: GameRoom, players: Map<GameClient, MAFIA_ROLE>): Promise<void> {
+    if (!await this.games.get(gameRoom)) {
 
-    players.forEach((role, gameClient) => {
-      gameInfo.set(gameClient, {
-        role, status: USER_STATUS.ALIVE,
+      const gameInfo = new Map<string, PlayerInfo>();
+      players.forEach((role, client) => {
+        gameInfo.set(client.nickname, { role, status: USER_STATUS.ALIVE });
       });
-    });
-
-    this.games.set(gameRoom, gameInfo);
+      await this.games.set(gameRoom, gameInfo);
+    }
   }
 
-  private killUser(gameRoom: GameRoom, player: GameClient): void {
-    const gameInfo = this.games.get(gameRoom);
+  private async killUser(gameRoom: GameRoom, player: string): Promise<void> {
+    const gameInfo = await this.games.get(gameRoom);
     if (!gameInfo) {
       throw new NotFoundGameRoomException();
     }
@@ -47,156 +42,161 @@ export class TotalGameManager implements GameManager {
     playerInfo.status = USER_STATUS.DEAD;
     gameInfo.set(player, playerInfo);
 
-    console.log('투표로 죽은 해당 유저 죽은 사실 게임 방 유저들에게 소켓으로 보낼 예정');
+    gameRoom.sendAll('vote-kill-user', player);
   }
 
-  registerBallotBox(gameRoom: GameRoom): void {
-    const ballotBox = this.ballotBoxs.get(gameRoom);
+  async registerBallotBox(gameRoom: GameRoom): Promise<void> {
+    const ballotBox = await this.ballotBoxs.get(gameRoom);
+    const candidates: string[] = ['INVALIDITY'];
     if (!ballotBox) {
-      const gameInfo = this.games.get(gameRoom);
+      const gameInfo = await this.games.get(gameRoom);
       if (!gameInfo) {
         throw new NotFoundGameRoomException();
       }
-
-      const newBallotBox = new Map<GameClient, string[]>();
+      const newBallotBox = new Map<string, string[]>();
       gameInfo.forEach((playerInfo, client) => {
         if (playerInfo.status === USER_STATUS.ALIVE) {
           newBallotBox.set(client, []);
+          candidates.push(client);
         }
       });
       // 무효표 추가
-      newBallotBox.set(null, []);
-      this.ballotBoxs.set(gameRoom, newBallotBox);
+      newBallotBox.set('INVALIDITY', []);
+      console.log('newBallotBox', newBallotBox);
+      console.log('candidates', candidates);
+      await this.ballotBoxs.set(gameRoom, newBallotBox);
+    } else {
+      ballotBox.forEach((votedUsers, client) => {
+        candidates.push(client);
+      });
     }
 
-    console.log('해당 방 유저들에게 투표 대상자를 소켓으로 보낼 예정');
+    gameRoom.sendAll('send-vote-candidates', candidates);
   }
 
   /*
-    무효표인 경우 to에 null로 보내면 됩니다.
+    무효표인 경우 to에 INVALIDITY로 보내면 됩니다.
    */
-  cancelVote(gameRoom: GameRoom, from: GameClient, to: GameClient): void {
-    const ballotBox = this.checkVoteAuthority(gameRoom, from);
+  async cancelVote(gameRoom: GameRoom, from: string, to: string): Promise<void> {
+    await this.checkVoteAuthority(gameRoom, from);
+    const ballotBox = await this.ballotBoxs.get(gameRoom);
     const toVotes = ballotBox.get(to);
-    const fromSocketId = from.client.socket.id;
-    const voteFlag = this.checkVote(ballotBox, fromSocketId);
+    const voteFlag = this.checkVote(ballotBox, from);
     if (voteFlag) {
-      ballotBox.set(to, toVotes.filter(voteId => voteId !== fromSocketId));
-
+      ballotBox.set(to, toVotes.filter(voteId => voteId !== from));
     }
-
-    console.log('해당 방 유저들에게 현재 투표 상황 소켓으로 보낼 예정');
+    this.sendVoteCurrentState(ballotBox, gameRoom);
   }
 
-  private checkVoteAuthority(gameRoom: GameRoom, from: GameClient) {
-    const ballotBox = this.ballotBoxs.get(gameRoom);
-    if (!ballotBox) {
+  private sendVoteCurrentState(ballotBox: Map<string, string[]>, gameRoom: GameRoom) {
+    const voteCountMap = new Map<string, number>();
+    ballotBox.forEach((votedUsers, client) => {
+      voteCountMap.set(client, votedUsers.length);
+    });
+    gameRoom.sendAll('vote-current-state', voteCountMap);
+  }
+
+  private async checkVoteAuthority(gameRoom: GameRoom, from: string): Promise<void> {
+    const game = await this.games.get(gameRoom);
+    if (!game) {
       throw new NotFoundBallotBoxException();
     }
-    if (this.games.get(gameRoom).get(from).status !== USER_STATUS.ALIVE) {
+
+    const fromClientInfo = game.get(from);
+    if (fromClientInfo.status !== USER_STATUS.ALIVE) {
       throw new UnauthorizedUserBallotException();
     }
-    return ballotBox;
   }
 
   /*
-      무효표인 경우 to에 null로 보내면 됩니다.
+      무효표인 경우 to에 INVALIDITY로 보내면 됩니다.
      */
-  vote(gameRoom: GameRoom, from: GameClient, to: GameClient): void {
-    const ballotBox = this.checkVoteAuthority(gameRoom, from);
+  async vote(gameRoom: GameRoom, from: string, to: string): Promise<void> {
+    await this.checkVoteAuthority(gameRoom, from);
+    const ballotBox = await this.ballotBoxs.get(gameRoom);
     const toVotes = ballotBox.get(to);
-    const fromSocketId = from.client.socket.id;
-    const voteFlag = this.checkVote(ballotBox, fromSocketId);
+    const voteFlag = this.checkVote(ballotBox, from);
     if (!voteFlag) {
-      toVotes.push(fromSocketId);
+      toVotes.push(from);
     }
-
-    console.log('해당 방 유저들에게 현재 투표 상황 소켓으로 보낼 예정');
+    await this.sendVoteCurrentState(ballotBox, gameRoom);
   }
 
-  private checkVote(ballotBox: Map<GameClient, string[]>, fromSocketId: string) {
+  private checkVote(ballotBox: Map<string, string[]>, fromInfo: string): boolean {
     let voteFlag = false;
     ballotBox.forEach((votedUser) => {
-      if (votedUser.some(voteId => voteId === fromSocketId)) {
+      if (votedUser.some(voteId => voteId === fromInfo)) {
         voteFlag = true;
       }
     });
     return voteFlag;
   }
 
-  primaryVoteResult(gameRoom: GameRoom): void {
-    const ballotBox = this.ballotBoxs.get(gameRoom);
+  async primaryVoteResult(gameRoom: GameRoom): Promise<VOTE_STATE> {
+    const ballotBox = await this.ballotBoxs.get(gameRoom);
     if (!ballotBox) {
       throw new NotFoundBallotBoxException();
     }
-    this.voteForYourself(ballotBox);
+    await this.voteForYourself(ballotBox);
 
     const voteResult = new Map<string, number>();
-    const newBalletBox = new Map<GameClient, string[]>();
+    const newBalletBox = new Map<string, string[]>();
     const maxVotedUsers = this.findMostVotedUser(ballotBox, voteResult);
 
     if ((maxVotedUsers.length === 1 && maxVotedUsers[0] !== null) || (maxVotedUsers.length > 1)) {
       /*
       투표결과가 1등이 있는 경우 혹은 공동이 있는 경우
        */
-      maxVotedUsers.forEach((votedUser) => {
+      maxVotedUsers.forEach((votedUser)=>{
         if (votedUser !== null) {
           newBalletBox.set(votedUser, []);
         }
-      });
-      newBalletBox.set(null, []);
-      this.ballotBoxs.set(gameRoom, newBalletBox);
-      console.log('해당 방 유저들에게 현재 투표 결과 소켓으로 보낼 예정');
-      gameRoom.sendAll('primary-game-manager-result', voteResult);
-    }else{
-      /*
-    무효표가 1등인 경우
-     */
-      console.log('해당 방 유저들에게 무표효 1등 결과 소켓으로 보낼 예정');
+      })
+      newBalletBox.set('INVALIDITY', []);
+      await this.ballotBoxs.set(gameRoom, newBalletBox);
+      gameRoom.sendAll('primary-vote-result', voteResult);
+      return VOTE_STATE.PRIMARY;
     }
+    gameRoom.sendAll('primary-vote-result', voteResult);
+    return VOTE_STATE.INVALIDITY;
   }
 
-  private findMostVotedUser(ballotBox: Map<GameClient, string[]>, voteResult: Map<string, number>) {
-    let maxVotedUsers: GameClient[] = [];
+  private findMostVotedUser(ballotBox: Map<string, string[]>, voteResult: Map<string, number>): string[] {
+    let maxVotedUsers: string[] = [];
     let maxCnt = -1;
-    ballotBox.forEach((votedUsers, gameClient) => {
-      voteResult[gameClient.client.socket.id] = votedUsers.length;
+    ballotBox.forEach((votedUsers, client) => {
+      voteResult[client] = votedUsers.length;
       if (maxCnt < votedUsers.length) {
-        maxVotedUsers = [gameClient];
+        maxVotedUsers = [client];
         maxCnt = votedUsers.length;
       } else if (maxCnt === votedUsers.length) {
-        maxVotedUsers.push(gameClient);
+        maxVotedUsers.push(client);
       }
     });
     return maxVotedUsers;
   }
 
-  private voteForYourself(ballotBox: Map<GameClient, string[]>) {
-    ballotBox.forEach((votedUser, gameClient) => {
-      const userId: string = gameClient.client.socket.id;
-      const voteFlag: boolean = this.checkVote(ballotBox, userId);
-      if (!voteFlag) {
-        votedUser.push(userId);
+  private voteForYourself(ballotBox: Map<string, string[]>) {
+    ballotBox.forEach((votedUsers, client) => {
+      if (!this.checkVote(ballotBox, client) && client !== 'INVALIDITY') {
+        votedUsers.push(client);
       }
     });
   }
 
-  finalVoteResult(gameRoom: GameRoom): void {
-    const ballotBox = this.ballotBoxs.get(gameRoom);
+  async finalVoteResult(gameRoom: GameRoom): Promise<VOTE_STATE> {
+    const ballotBox = await this.ballotBoxs.get(gameRoom);
     if (!ballotBox) {
       throw new NotFoundBallotBoxException();
     }
     const voteResult = new Map<string, number>();
     const mostVotedUser = this.findMostVotedUser(ballotBox, voteResult);
 
-    /*
-    투표가능한 유저 수 구하고 찬성 개수 비교해서 죽일지 살릴지 비교
-    그리고 ballotBox 초기화
-     */
     if (mostVotedUser.length === 1 && mostVotedUser[0] !== null) {
-      this.killUser(gameRoom, mostVotedUser[0]);
+      await this.killUser(gameRoom, mostVotedUser[0]);
     }
-    this.ballotBoxs.delete(gameRoom);
-    console.log('웹 소켓을 활용하여 해당 방 유저들에게 결과를 보낼 예정');
+    await this.ballotBoxs.delete(gameRoom);
+    gameRoom.sendAll('final-vote-result', voteResult);
+    return VOTE_STATE.FINAL;
   }
 }

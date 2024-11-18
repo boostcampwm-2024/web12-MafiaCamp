@@ -1,36 +1,36 @@
 import { VoteMafiaUsecase } from './vote.mafia.usecase';
 import { Inject, Injectable } from '@nestjs/common';
 import { GameRoom } from '../../../game-room/entity/game-room.model';
-import { GameClient } from '../../../game-room/entity/game-client.model';
-import { GAME_MANAGER, GameManager } from './game-manager';
+import { VOTE_MANAGER, VoteManager } from './vote-manager';
+import { VOTE_STATE } from '../../vote-state';
 
 @Injectable()
 export class VoteMafiaService implements VoteMafiaUsecase {
 
   constructor(
-    @Inject(GAME_MANAGER)
-    private readonly gameManager: GameManager,
+    @Inject(VOTE_MANAGER)
+    private readonly gameManager: VoteManager,
   ) {
   }
 
-  cancelVote(gameRoom: GameRoom, from: GameClient, to: GameClient): void {
-    this.gameManager.cancelVote(gameRoom, from, to);
+  async cancelVote(gameRoom: GameRoom, from: string, to: string): Promise<void> {
+    await this.gameManager.cancelVote(gameRoom, from, to);
   }
 
-  finalVoteResult(gameRoom: GameRoom): void {
-    this.gameManager.finalVoteResult(gameRoom);
+  async finalVoteResult(gameRoom: GameRoom): Promise<VOTE_STATE> {
+    return await this.gameManager.finalVoteResult(gameRoom);
   }
 
-  primaryVoteResult(gameRoom: GameRoom): void {
-    this.gameManager.primaryVoteResult(gameRoom);
+  async primaryVoteResult(gameRoom: GameRoom): Promise<VOTE_STATE> {
+    return await this.gameManager.primaryVoteResult(gameRoom);
   }
 
-  registerBallotBox(gameRoom: GameRoom): void {
-    this.gameManager.registerBallotBox(gameRoom);
+  async registerBallotBox(gameRoom: GameRoom): Promise<void> {
+    await this.gameManager.registerBallotBox(gameRoom);
   }
 
-  vote(gameRoom: GameRoom, from: GameClient, to: GameClient): void {
-    this.gameManager.vote(gameRoom, from, to);
+  async vote(gameRoom: GameRoom, from: string, to: string): Promise<void> {
+    await this.gameManager.vote(gameRoom, from, to);
   }
 
 }
