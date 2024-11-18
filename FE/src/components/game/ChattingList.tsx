@@ -118,7 +118,11 @@ const ChattingList = ({ roomId, totalParticipants }: ChattingListProps) => {
               placeholder='내용을 입력해 주세요.'
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
+                if (
+                  e.key === 'Enter' &&
+                  !e.shiftKey &&
+                  !e.nativeEvent.isComposing
+                ) {
                   e.preventDefault();
                   handleSubmit(e);
                 }
