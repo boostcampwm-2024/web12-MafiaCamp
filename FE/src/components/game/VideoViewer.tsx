@@ -44,12 +44,15 @@ const VideoViewer = ({
 
   const totalSurvivors = useMemo(
     () =>
-      (gamePublisher?.participant ? 1 : 0) +
-      gameSubscribers.reduce(
-        (total, gameSubscriber) => total + (gameSubscriber.participant ? 1 : 0),
-        0,
-      ),
-    [gamePublisher?.participant, gameSubscribers],
+      isGameStarted
+        ? (gamePublisher?.participant ? 1 : 0) +
+          gameSubscribers.reduce(
+            (total, gameSubscriber) =>
+              total + (gameSubscriber.participant ? 1 : 0),
+            0,
+          )
+        : gameSubscribers.length + 1,
+    [gamePublisher?.participant, gameSubscribers, isGameStarted],
   );
 
   const handleInvalityButtonClick = () => {
@@ -107,8 +110,8 @@ const VideoViewer = ({
       )}
       <div
         className={[
-          `${totalSurvivors <= 1 ? 'grid-rows-1' : 'grid-rows-2'}`,
-          `${totalSurvivors <= 3 ? 'grid-cols-2' : totalSurvivors <= 5 ? 'grid-cols-3' : 'grid-cols-4'}`,
+          `${totalSurvivors <= 2 ? 'grid-rows-1' : 'grid-rows-2'}`,
+          `${totalSurvivors <= 4 ? 'grid-cols-2' : totalSurvivors <= 6 ? 'grid-cols-3' : 'grid-cols-4'}`,
           'grid h-full min-w-[67.5rem] gap-6',
         ].join(' ')}
       >
