@@ -8,11 +8,20 @@ export class MutexMap<K, V> {
   }
 
   private async withLock<T>(callback: (map: Map<K, V>) => T | Promise<T>): Promise<T> {
-    const release = await this.mutex.acquire();
-    try {
-      return await callback(this._map);
-    } finally {
-      release();
+    let retries = 3;
+    while (retries > 0) {
+      try {
+        const release = await this.mutex.acquire();
+        try {
+          return await callback(this._map);
+        } finally {
+          release();
+        }
+      } catch (error) {
+        retries--;
+        if (retries === 0) throw error;
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
     }
   }
 
