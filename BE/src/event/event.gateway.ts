@@ -143,7 +143,6 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('police-investigate')
   async policeInvestigate(@MessageBody() policeInvestigationRequest: PoliceInvestigationRequest) {
     const room = this.gameRoomService.findRoomById(policeInvestigationRequest.roomId);
-    console.log('room', room);
     await this.policeInvestigateUsecase.executePolice(room, policeInvestigationRequest.police, policeInvestigationRequest.criminal);
   }
 
