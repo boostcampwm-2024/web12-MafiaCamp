@@ -7,7 +7,7 @@ import ChattingList from './ChattingList';
 import VideoViewer from './VideoViewer';
 import { useEffect, useState } from 'react';
 import { useSocketStore } from '@/stores/socketStore';
-import { Role } from '@/constants/role';
+import { ROLE, Role } from '@/constants/role';
 import { Bounce, toast, ToastContainer } from 'react-toastify';
 import { Situation } from '@/constants/situation';
 
@@ -188,29 +188,30 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       },
     );
 
-    // 최종 투표 결과
-    socket?.on('final-vote-result', (data: { [nickname: string]: number }) => {
-      setTarget(null);
-
-      for (const [nickname, votes] of Object.entries(data)) {
-        if (nickname === 'INVALIDITY') {
-          setInvalidityCount(votes);
-        } else if (nickname === gamePublisher?.nickname) {
-          changePublisherVotes(votes);
-        } else {
-          changeSubscriberVotes(nickname, votes);
-        }
-      }
-    });
-
     // 투표 수가 제일 많은 플레이어 제거
-    socket?.on('vote-kill-user', (nickname: string) => {
-      if (nickname === gamePublisher?.nickname) {
-        eliminatePublisher();
-      }
+    socket?.on(
+      'vote-kill-user',
+      (data: { player: string; job: Role } | null) => {
+        if (!data) {
+          notifyInfo('처형이 보류되었습니다.');
+          return;
+        }
 
-      notifyInfo(`${nickname} 님이 사망하였습니다.`);
-    });
+        if (data.player === gamePublisher?.nickname) {
+          eliminatePublisher();
+        }
+
+        notifyInfo(`${ROLE[data.job]} ${data.player} 님이 사망하였습니다.`);
+      },
+    );
+
+    // 경찰 조사 결과 확인
+    socket?.on(
+      'police-investigation-result',
+      (data: { criminal: string; criminalJob: Role }) => {
+        notifyInfo(`${data.criminal} 님은 ${data.criminalJob}입니다.`);
+      },
+    );
 
     return () => {
       socket?.off('participants');
@@ -219,8 +220,8 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       socket?.off('player-role');
       socket?.off('vote-current-state');
       socket?.off('primary-vote-result');
-      socket?.off('final-vote-result');
       socket?.off('vote-kill-user');
+      socket?.off('police-investigation-result');
     };
   }, [
     changePublisherCandidateStatus,

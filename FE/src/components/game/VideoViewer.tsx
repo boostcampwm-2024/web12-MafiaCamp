@@ -60,7 +60,8 @@ const VideoViewer = ({
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
-      {situation === 'VOTE' && (
+      {(situation === 'VOTE' ||
+        (situation === 'POLICE' && playerRole === 'POLICE')) && (
         <div className='pointer-events-none absolute bottom-0 left-0 z-10 h-full w-full bg-slate-800/75' />
       )}
       {situation === 'VOTE' && (
@@ -100,8 +101,9 @@ const VideoViewer = ({
           {gamePublisher && (
             <VideoItem
               roomId={roomId}
-              playerNickname={nickname}
-              role={playerRole}
+              playerRole={playerRole}
+              gameParticipantNickname={nickname}
+              gameParticipantRole={playerRole}
               gameParticipant={gamePublisher}
               situation={situation}
               target={target}
@@ -112,8 +114,9 @@ const VideoViewer = ({
             <VideoItem
               key={index}
               roomId={roomId}
-              playerNickname={gameSubscriber.nickname}
-              role={
+              playerRole={playerRole}
+              gameParticipantNickname={gameSubscriber.nickname}
+              gameParticipantRole={
                 otherMafiaList?.includes(gameSubscriber.nickname)
                   ? 'MAFIA'
                   : null
@@ -133,8 +136,9 @@ const VideoViewer = ({
             <VideoItem
               key={index}
               roomId={roomId}
-              playerNickname={participant}
-              role={null}
+              playerRole={playerRole}
+              gameParticipantNickname={participant}
+              gameParticipantRole={null}
               gameParticipant={null}
               situation={situation}
               target={target}
