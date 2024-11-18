@@ -9,12 +9,12 @@ import { GameHistoryEntity } from './entity/game-history.entity';
 import { COUNTDOWN_TIMER } from './usecase/countdown/countdown.timer';
 import { MafiaCountdownTimer } from './usecase/countdown/mafia.countdown.timer';
 import { COUNTDOWN_TIMEOUT_USECASE } from './usecase/countdown/countdown.timeout.usecase';
-import { GAME_MANAGER, VOTE_MANAGER } from './usecase/game-manager/vote-manager';
-import { TotalGameManager } from './usecase/game-manager/total.game-manager';
+import { VOTE_MANAGER } from './usecase/vote-manager/vote-manager';
+import { TotalGameManager } from './total.game-manager';
 import { AllocateUserRoleService } from './usecase/allocate-user-role/allocate.user-role.service';
 import { CountdownTimeoutService } from './usecase/countdown/countdown.timeout.service';
-import { VOTE_MAFIA_USECASE } from './usecase/game-manager/vote.mafia.usecase';
-import { VoteMafiaService } from './usecase/game-manager/vote.mafia.service';
+import { VOTE_MAFIA_USECASE } from './usecase/vote-manager/vote.mafia.usecase';
+import { VoteMafiaService } from './usecase/vote-manager/vote.mafia.service';
 import { ArgumentState } from './fsm/states/argument.state';
 import { DiscussionState } from './fsm/states/discussion.state';
 import { MafiaState } from './fsm/states/mafia.state';
@@ -26,6 +26,9 @@ import { VideoServerModule } from 'src/video-server/video-server.module';
 import { SetUpState } from './fsm/states/set-up.state';
 import { StartGameService } from './usecase/start-game/start-game.service';
 import { FinalVoteState } from './fsm/states/final-vote.state';
+import { POLICE_MANAGER } from './usecase/role-playing/police-manager';
+import { POLICE_INVESTIGATE_USECASE } from './usecase/role-playing/police.investigate.usecase';
+import { PoliceInvestigateService } from './usecase/role-playing/police.investigate.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([GameHistoryEntity]), VideoServerModule],
@@ -62,10 +65,18 @@ import { FinalVoteState } from './fsm/states/final-vote.state';
       provide: START_GAME_USECASE,
       useClass: StartGameService,
     },
-    ArgumentState, DiscussionState, DoctorState, MafiaState, PoliceState, SetUpState, PrimaryVoteState, FinalVoteState
+    {
+      provide: POLICE_MANAGER,
+      useClass: TotalGameManager,
+    },
+    {
+      provide: POLICE_INVESTIGATE_USECASE,
+      useClass: PoliceInvestigateService,
+    },
+    ArgumentState, DiscussionState, DoctorState, MafiaState, PoliceState, SetUpState, PrimaryVoteState, FinalVoteState,
   ],
   exports: [
-    START_GAME_USECASE, ALLOCATE_USER_ROLE_USECASE, COUNTDOWN_TIMEOUT_USECASE, VOTE_MAFIA_USECASE,
+    START_GAME_USECASE, ALLOCATE_USER_ROLE_USECASE, COUNTDOWN_TIMEOUT_USECASE, VOTE_MAFIA_USECASE,POLICE_INVESTIGATE_USECASE
   ],
 })
 export class GameModule {

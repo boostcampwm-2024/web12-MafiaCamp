@@ -10,15 +10,18 @@ import {
 import { Socket } from 'socket.io';
 import { CreateRoomRequest } from 'src/game-room/dto/create-room.request';
 import { GameRoomService } from 'src/game-room/game-room.service';
-import { Inject, Logger, UseInterceptors } from '@nestjs/common';
-import { WebsocketLoggerInterceptor } from 'src/common/logger/websocket.logger.interceptor';
+import { Inject, Logger } from '@nestjs/common';
 import { EventClient } from './event-client.model';
 import { EventManager } from './event-manager';
 import { Event } from './event.const';
 import { START_GAME_USECASE, StartGameUsecase } from 'src/game/usecase/start-game/start-game.usecase';
-import { StartGameService } from 'src/game/usecase/start-game/start-game.service';
-import { VOTE_MAFIA_USECASE, VoteMafiaUsecase } from '../game/usecase/game-manager/vote.mafia.usecase';
+import { VOTE_MAFIA_USECASE, VoteMafiaUsecase } from '../game/usecase/vote-manager/vote.mafia.usecase';
 import { VoteCandidateRequest } from '../game/dto/vote.candidate.request';
+import { PoliceInvestigationRequest } from '../game/dto/police.investigation.request';
+import {
+  POLICE_INVESTIGATE_USECASE,
+  PoliceInvestigateUsecase,
+} from '../game/usecase/role-playing/police.investigate.usecase';
 
 // @UseInterceptors(WebsocketLoggerInterceptor)
 @WebSocketGateway({
@@ -37,8 +40,11 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @Inject(START_GAME_USECASE)
     private readonly startGameUsecase: StartGameUsecase,
     @Inject(VOTE_MAFIA_USECASE)
-    private readonly voteMafiaUsecase: VoteMafiaUsecase
-  ) {}
+    private readonly voteMafiaUsecase: VoteMafiaUsecase,
+    @Inject(POLICE_INVESTIGATE_USECASE)
+    private readonly policeInvestigateUsecase: PoliceInvestigateUsecase,
+  ) {
+  }
 
   handleConnection(socket: Socket) {
     this.logger.log(`client connected: ${socket.id}`);
@@ -116,22 +122,28 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (!room.isFull()) {
       return {
         event: 'start-game',
-        data: { success: false }
+        data: { success: false },
       };
     }
     this.startGameUsecase.start(room);
   }
 
   @SubscribeMessage('vote-candidate')
-  async voteCandidate(@MessageBody() voteCandidateRequest:VoteCandidateRequest){
+  async voteCandidate(@MessageBody() voteCandidateRequest: VoteCandidateRequest) {
     const room = this.gameRoomService.findRoomById(voteCandidateRequest.roomId);
     await this.voteMafiaUsecase.vote(room, voteCandidateRequest.from, voteCandidateRequest.to);
   }
 
   @SubscribeMessage('cancel-vote-candidate')
-  async cancelVoteCandidate(@MessageBody() voteCandidateRequest:VoteCandidateRequest){
+  async cancelVoteCandidate(@MessageBody() voteCandidateRequest: VoteCandidateRequest) {
     const room = this.gameRoomService.findRoomById(voteCandidateRequest.roomId);
     await this.voteMafiaUsecase.cancelVote(room, voteCandidateRequest.from, voteCandidateRequest.to);
+  }
+
+  @SubscribeMessage('police-investigate')
+  async policeInvestigate(@MessageBody() policeInvestigationRequest: PoliceInvestigationRequest) {
+    const room = this.gameRoomService.findRoomById(policeInvestigationRequest.roomId);
+    await this.policeInvestigateUsecase.executePolice(room, policeInvestigationRequest.police, policeInvestigationRequest.criminal);
   }
 
   private publishRoomDataChangedEvent() {
