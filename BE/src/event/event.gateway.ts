@@ -14,14 +14,25 @@ import { Inject, Logger } from '@nestjs/common';
 import { EventClient } from './event-client.model';
 import { EventManager } from './event-manager';
 import { Event } from './event.const';
-import { START_GAME_USECASE, StartGameUsecase } from 'src/game/usecase/start-game/start-game.usecase';
-import { VOTE_MAFIA_USECASE, VoteMafiaUsecase } from '../game/usecase/vote-manager/vote.mafia.usecase';
+import {
+  START_GAME_USECASE,
+  StartGameUsecase,
+} from 'src/game/usecase/start-game/start-game.usecase';
+import {
+  VOTE_MAFIA_USECASE,
+  VoteMafiaUsecase,
+} from '../game/usecase/vote-manager/vote.mafia.usecase';
 import { VoteCandidateRequest } from '../game/dto/vote.candidate.request';
 import { PoliceInvestigationRequest } from '../game/dto/police.investigation.request';
 import {
   POLICE_INVESTIGATE_USECASE,
   PoliceInvestigateUsecase,
 } from '../game/usecase/role-playing/police.investigate.usecase';
+import { MafiaSelectTargetRequest } from '../game/dto/mafia.select.target.request';
+import {
+  MAFIA_KILL_USECASE,
+  MafiaKillUsecase,
+} from '../game/usecase/role-playing/mafia.kill.usecase';
 
 // @UseInterceptors(WebsocketLoggerInterceptor)
 @WebSocketGateway({
@@ -43,8 +54,9 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly voteMafiaUsecase: VoteMafiaUsecase,
     @Inject(POLICE_INVESTIGATE_USECASE)
     private readonly policeInvestigateUsecase: PoliceInvestigateUsecase,
-  ) {
-  }
+    @Inject(MAFIA_KILL_USECASE)
+    private readonly mafiaKillUseCase: MafiaKillUsecase,
+  ) {}
 
   handleConnection(socket: Socket) {
     this.logger.log(`client connected: ${socket.id}`);
@@ -129,21 +141,54 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('vote-candidate')
-  async voteCandidate(@MessageBody() voteCandidateRequest: VoteCandidateRequest) {
+  async voteCandidate(
+    @MessageBody() voteCandidateRequest: VoteCandidateRequest,
+  ) {
     const room = this.gameRoomService.findRoomById(voteCandidateRequest.roomId);
-    await this.voteMafiaUsecase.vote(room, voteCandidateRequest.from, voteCandidateRequest.to);
+    await this.voteMafiaUsecase.vote(
+      room,
+      voteCandidateRequest.from,
+      voteCandidateRequest.to,
+    );
   }
 
   @SubscribeMessage('cancel-vote-candidate')
-  async cancelVoteCandidate(@MessageBody() voteCandidateRequest: VoteCandidateRequest) {
+  async cancelVoteCandidate(
+    @MessageBody() voteCandidateRequest: VoteCandidateRequest,
+  ) {
     const room = this.gameRoomService.findRoomById(voteCandidateRequest.roomId);
-    await this.voteMafiaUsecase.cancelVote(room, voteCandidateRequest.from, voteCandidateRequest.to);
+    await this.voteMafiaUsecase.cancelVote(
+      room,
+      voteCandidateRequest.from,
+      voteCandidateRequest.to,
+    );
   }
 
   @SubscribeMessage('police-investigate')
-  async policeInvestigate(@MessageBody() policeInvestigationRequest: PoliceInvestigationRequest) {
-    const room = this.gameRoomService.findRoomById(policeInvestigationRequest.roomId);
-    await this.policeInvestigateUsecase.executePolice(room, policeInvestigationRequest.police, policeInvestigationRequest.criminal);
+  async policeInvestigate(
+    @MessageBody() policeInvestigationRequest: PoliceInvestigationRequest,
+  ) {
+    const room = this.gameRoomService.findRoomById(
+      policeInvestigationRequest.roomId,
+    );
+    await this.policeInvestigateUsecase.executePolice(
+      room,
+      policeInvestigationRequest.police,
+      policeInvestigationRequest.criminal,
+    );
+  }
+
+  @SubscribeMessage('select-mafia-target')
+  async selectMafiaTarget(
+    @MessageBody() mafiaSelectTargetRequest: MafiaSelectTargetRequest,
+  ) {
+    const room = this.gameRoomService.findRoomById(
+      mafiaSelectTargetRequest.roomId,
+    );
+    await this.mafiaKillUseCase.mafiaSelectTarget(
+      room,
+      mafiaSelectTargetRequest.target,
+    );
   }
 
   private publishRoomDataChangedEvent() {

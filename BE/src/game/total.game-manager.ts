@@ -10,6 +10,9 @@ import { UnauthorizedUserBallotException } from '../common/error/unauthorized.us
 import { MutexMap } from '../common/utils/mutex-map';
 import { VOTE_STATE } from './vote-state';
 import { PoliceManager } from './usecase/role-playing/police-manager';
+import { MafiaManager } from './usecase/role-playing/mafia-manager';
+import { NotFoundUserException } from '../common/error/not.found.user.exception';
+import { CanNotSelectMafiaException } from '../common/error/can-not.select.mafia.exception';
 
 interface PlayerInfo {
   role: MAFIA_ROLE;
@@ -17,14 +20,20 @@ interface PlayerInfo {
 }
 
 @Injectable()
-export class TotalGameManager implements VoteManager, PoliceManager {
+export class TotalGameManager
+  implements VoteManager, PoliceManager, MafiaManager
+{
   private readonly games = new MutexMap<GameRoom, Map<string, PlayerInfo>>();
   private readonly ballotBoxs = new MutexMap<GameRoom, Map<string, string[]>>();
   private readonly policeInvestigationMap = new MutexMap<GameRoom, boolean>();
+  private readonly mafiaCurrentTarget = new MutexMap<GameRoom, string>();
+  private readonly mafiaKillLogs = new MutexMap<GameRoom, string[]>();
 
-  async register(gameRoom: GameRoom, players: Map<GameClient, MAFIA_ROLE>): Promise<void> {
-    if (!await this.games.get(gameRoom)) {
-
+  async register(
+    gameRoom: GameRoom,
+    players: Map<GameClient, MAFIA_ROLE>,
+  ): Promise<void> {
+    if (!(await this.games.get(gameRoom))) {
       const gameInfo = new Map<string, PlayerInfo>();
       players.forEach((role, client) => {
         gameInfo.set(client.nickname, { role, status: USER_STATUS.ALIVE });
@@ -77,18 +86,28 @@ export class TotalGameManager implements VoteManager, PoliceManager {
   /*
     무효표인 경우 to에 INVALIDITY로 보내면 됩니다.
    */
-  async cancelVote(gameRoom: GameRoom, from: string, to: string): Promise<void> {
+  async cancelVote(
+    gameRoom: GameRoom,
+    from: string,
+    to: string,
+  ): Promise<void> {
     await this.checkVoteAuthority(gameRoom, from);
     const ballotBox = await this.ballotBoxs.get(gameRoom);
     const toVotes = ballotBox.get(to);
     const voteFlag = this.checkVote(ballotBox, from);
     if (voteFlag) {
-      ballotBox.set(to, toVotes.filter(voteId => voteId !== from));
+      ballotBox.set(
+        to,
+        toVotes.filter((voteId) => voteId !== from),
+      );
     }
     this.sendVoteCurrentState(ballotBox, gameRoom);
   }
 
-  private sendVoteCurrentState(ballotBox: Map<string, string[]>, gameRoom: GameRoom) {
+  private sendVoteCurrentState(
+    ballotBox: Map<string, string[]>,
+    gameRoom: GameRoom,
+  ) {
     const voteCountMap: Record<string, number> = {};
     ballotBox.forEach((votedUsers, client) => {
       voteCountMap[client] = votedUsers.length;
@@ -96,7 +115,10 @@ export class TotalGameManager implements VoteManager, PoliceManager {
     gameRoom.sendAll('vote-current-state', voteCountMap);
   }
 
-  private async checkVoteAuthority(gameRoom: GameRoom, from: string): Promise<void> {
+  private async checkVoteAuthority(
+    gameRoom: GameRoom,
+    from: string,
+  ): Promise<void> {
     const game = await this.games.get(gameRoom);
     if (!game) {
       throw new NotFoundBallotBoxException();
@@ -123,10 +145,13 @@ export class TotalGameManager implements VoteManager, PoliceManager {
     this.sendVoteCurrentState(ballotBox, gameRoom);
   }
 
-  private checkVote(ballotBox: Map<string, string[]>, fromInfo: string): boolean {
+  private checkVote(
+    ballotBox: Map<string, string[]>,
+    fromInfo: string,
+  ): boolean {
     let voteFlag = false;
     ballotBox.forEach((votedUser) => {
-      if (votedUser.some(voteId => voteId === fromInfo)) {
+      if (votedUser.some((voteId) => voteId === fromInfo)) {
         voteFlag = true;
       }
     });
@@ -143,7 +168,10 @@ export class TotalGameManager implements VoteManager, PoliceManager {
     const newBalletBox = new Map<string, string[]>();
     const maxVotedUsers = this.findMostVotedUser(ballotBox);
 
-    if ((maxVotedUsers.length === 1 && maxVotedUsers[0] !== null) || (maxVotedUsers.length > 1)) {
+    if (
+      (maxVotedUsers.length === 1 && maxVotedUsers[0] !== null) ||
+      maxVotedUsers.length > 1
+    ) {
       /*
       투표결과가 1등이 있는 경우 혹은 공동이 있는 경우
        */
@@ -200,7 +228,11 @@ export class TotalGameManager implements VoteManager, PoliceManager {
     return VOTE_STATE.FINAL;
   }
 
-  async executePolice(gameRoom: GameRoom, police: string, criminal: string): Promise<void> {
+  async executePolice(
+    gameRoom: GameRoom,
+    police: string,
+    criminal: string,
+  ): Promise<void> {
     const investigationFlag = await this.policeInvestigationMap.get(gameRoom);
     let policeFlag = false;
     let criminalFlag = false;
@@ -208,9 +240,16 @@ export class TotalGameManager implements VoteManager, PoliceManager {
 
     const userInfos = await this.games.get(gameRoom);
     userInfos.forEach((playerInfo, client) => {
-      if (police === client && playerInfo.role === MAFIA_ROLE.POLICE && playerInfo.status === USER_STATUS.ALIVE) {
+      if (
+        police === client &&
+        playerInfo.role === MAFIA_ROLE.POLICE &&
+        playerInfo.status === USER_STATUS.ALIVE
+      ) {
         policeFlag = true;
-      } else if (criminal === client && playerInfo.status === USER_STATUS.ALIVE) {
+      } else if (
+        criminal === client &&
+        playerInfo.status === USER_STATUS.ALIVE
+      ) {
         criminalFlag = true;
         criminalJob = playerInfo.role;
       }
@@ -221,7 +260,10 @@ export class TotalGameManager implements VoteManager, PoliceManager {
         (client) => client.nickname === police,
       );
       if (policeClient) {
-        policeClient.send('police-investigation-result', { criminal, criminalJob });
+        policeClient.send('police-investigation-result', {
+          criminal,
+          criminalJob,
+        });
       }
     }
   }
@@ -232,5 +274,59 @@ export class TotalGameManager implements VoteManager, PoliceManager {
 
   async initPolice(gameRoom: GameRoom): Promise<void> {
     await this.policeInvestigationMap.set(gameRoom, false);
+  }
+
+  async selectMafiaTarget(gameRoom: GameRoom, target: string): Promise<void> {
+    const gameInfo = await this.games.get(gameRoom);
+    if (!gameInfo) {
+      throw new NotFoundGameRoomException();
+    }
+
+    const targetInfo = gameInfo.get(target);
+    if (!targetInfo) {
+      throw new NotFoundUserException();
+    }
+
+    if (
+      targetInfo.status !== USER_STATUS.ALIVE ||
+      targetInfo.role === MAFIA_ROLE.MAFIA
+    ) {
+      throw new CanNotSelectMafiaException();
+    }
+
+    await this.mafiaCurrentTarget.set(gameRoom, target);
+    await this.sendCurrentMafiaTarget(target, gameRoom);
+  }
+
+  async sendCurrentMafiaTarget(
+    target: string,
+    gameRoom: GameRoom,
+  ): Promise<void> {
+    gameRoom.sendToRole(MAFIA_ROLE.MAFIA, 'mafia-current-target', target);
+  }
+
+  async initMafia(gameRoom: GameRoom): Promise<void> {
+    await Promise.all([
+      this.mafiaCurrentTarget.set(gameRoom, 'NO_SELECTION'),
+      this.mafiaKillLogs.set(gameRoom, []),
+    ]);
+  }
+
+  async decisionMafiaTarget(gameRoom: GameRoom): Promise<void> {
+    const [logs, finalTarget] = await Promise.all([
+      this.mafiaKillLogs.get(gameRoom),
+      this.mafiaCurrentTarget.get(gameRoom),
+    ]);
+
+    if (!finalTarget) {
+      throw new NotFoundUserException();
+    }
+
+    const updateKillLogs = [...(logs || []), finalTarget];
+
+    await Promise.all([
+      this.mafiaKillLogs.set(gameRoom, updateKillLogs),
+      this.mafiaCurrentTarget.delete(gameRoom),
+    ]);
   }
 }
