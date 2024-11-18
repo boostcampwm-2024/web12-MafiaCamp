@@ -22,7 +22,7 @@ export class DoctorState extends GameState {
   async handle(context: GameContext, next: TransitionHandler) {
     const room = context.room;
     await this.countdownTimeoutUsecase.countdownStart(
-      new StartCountdownRequest(room, 'ARGUMENT'),
+      new StartCountdownRequest(room, 'DOCTOR'),
     );
     next(this.policeState);
   }
