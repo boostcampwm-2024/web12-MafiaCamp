@@ -25,17 +25,17 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     gameSubscribers,
     toggleAudio,
     toggleVideo,
+    changePublisherRole,
     changePublisherVotes,
-    changeSubscriberVotes,
     changePublisherCandidateStatus,
-    changeSubscriberCandidateStatus,
     eliminatePublisher,
+    changeSubscriberRole,
+    changeSubscriberVotes,
+    changeSubscriberCandidateStatus,
     initializeVotes,
   } = useOpenVidu();
 
   const [participantList, setParticipantList] = useState<string[]>([]);
-  const [role, setRole] = useState<Role | null>(null);
-  const [otherMafiaList, setOtherMafiaList] = useState<string[] | null>(null);
   const [situation, setSituation] = useState<Situation | null>(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [target, setTarget] = useState<string | null>(null);
@@ -130,15 +130,12 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     // 직업 확인
     socket?.once(
       'player-role',
-      ({
-        role,
-        another,
-      }: {
-        role: Role | null;
-        another: string[][] | null;
-      }) => {
-        setRole(role);
-        setOtherMafiaList(another?.map((value) => value[0]) ?? []);
+      (data: { role: Role; another: [string, Role][] | null }) => {
+        changePublisherRole(data.role);
+
+        data.another?.forEach((value) => {
+          changeSubscriberRole(value[0], value[1]);
+        });
       },
     );
 
@@ -209,6 +206,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     socket?.on(
       'police-investigation-result',
       (data: { criminal: string; criminalJob: Role }) => {
+        changeSubscriberRole(data.criminal, data.criminalJob);
         notifyInfo(`${data.criminal} 님은 ${data.criminalJob}입니다.`);
       },
     );
@@ -225,8 +223,10 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     };
   }, [
     changePublisherCandidateStatus,
+    changePublisherRole,
     changePublisherVotes,
     changeSubscriberCandidateStatus,
+    changeSubscriberRole,
     changeSubscriberVotes,
     eliminatePublisher,
     gamePublisher?.nickname,
@@ -242,8 +242,6 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
         roomId={roomId}
         isGameStarted={isGameStarted}
         participantList={participantList}
-        playerRole={role}
-        otherMafiaList={otherMafiaList}
         situation={situation}
         gamePublisher={gamePublisher}
         gameSubscribers={gameSubscribers}

@@ -6,15 +6,12 @@ import { useDragScroll } from '@/hooks/useDragScroll';
 import { useSocketStore } from '@/stores/socketStore';
 import { GamePublisher } from '@/types/gamePublisher';
 import { GameSubscriber } from '@/types/gameSubscriber';
-import { Role } from '@/constants/role';
 import { Situation } from '@/constants/situation';
 
 interface VideoViewerProps {
   roomId: string;
   isGameStarted: boolean;
   participantList: string[];
-  playerRole: Role | null;
-  otherMafiaList: string[] | null;
   situation: Situation | null;
   gamePublisher: GamePublisher | null;
   gameSubscribers: GameSubscriber[];
@@ -27,8 +24,6 @@ const VideoViewer = ({
   roomId,
   isGameStarted,
   participantList,
-  playerRole,
-  otherMafiaList,
   situation,
   gamePublisher,
   gameSubscribers,
@@ -50,7 +45,10 @@ const VideoViewer = ({
 
   return (
     <div
-      className={`${isOpen ? 'right-[21.5rem]' : 'right-6'} absolute bottom-[6.5rem] left-6 top-6 max-h-screen overflow-auto transition-all duration-500 ease-out`}
+      className={[
+        `${isOpen ? 'right-[21.5rem]' : 'right-6'}`,
+        'absolute bottom-[6.5rem] left-6 top-6 max-h-screen overflow-auto transition-all duration-500 ease-out',
+      ].join(' ')}
       ref={listRef}
       onMouseDown={onDragStart}
       onMouseMove={onDragMove}
@@ -61,12 +59,15 @@ const VideoViewer = ({
       onTouchEnd={onTouchEnd}
     >
       {(situation === 'VOTE' ||
-        (situation === 'POLICE' && playerRole === 'POLICE')) && (
+        (situation === 'POLICE' && gamePublisher?.role === 'POLICE')) && (
         <div className='pointer-events-none absolute bottom-0 left-0 z-10 h-full w-full bg-slate-800/75' />
       )}
       {situation === 'VOTE' && (
         <button
-          className={`${target === 'INVALIDITY' ? 'border-2 bg-slate-600 text-white' : 'bg-white font-bold text-slate-800'} absolute right-0 top-0 z-20 h-[3.75rem] w-[11.25rem] rounded-2xl border border-slate-400 font-bold hover:bg-slate-600 hover:text-white`}
+          className={[
+            `${target === 'INVALIDITY' ? 'border-2 bg-slate-600 text-white' : 'bg-white font-bold text-slate-800'}`,
+            'absolute right-0 top-0 z-20 h-[3.75rem] w-[11.25rem] rounded-2xl border border-slate-400 font-bold hover:bg-slate-600 hover:text-white',
+          ].join(' ')}
           onClick={() => {
             if (target !== null) {
               socket?.emit('cancel-vote-candidate', {
@@ -96,14 +97,18 @@ const VideoViewer = ({
       {/* TODO: key 값으로 index 사용하지 않기 + 코드 리팩토링 */}
       {isGameStarted ? (
         <div
-          className={`${gameSubscribers.length <= 1 ? 'grid-rows-1' : 'grid-rows-2'} ${gameSubscribers.length <= 3 ? 'grid-cols-2' : gameSubscribers.length <= 5 ? 'grid-cols-3' : 'grid-cols-4'} grid h-full min-w-[67.5rem] gap-6`}
+          className={[
+            `${gameSubscribers.length <= 1 ? 'grid-rows-1' : 'grid-rows-2'}`,
+            `${gameSubscribers.length <= 3 ? 'grid-cols-2' : gameSubscribers.length <= 5 ? 'grid-cols-3' : 'grid-cols-4'}`,
+            'grid h-full min-w-[67.5rem] gap-6',
+          ].join(' ')}
         >
           {gamePublisher && (
             <VideoItem
               roomId={roomId}
-              playerRole={playerRole}
+              playerRole={gamePublisher.role}
               gameParticipantNickname={nickname}
-              gameParticipantRole={playerRole}
+              gameParticipantRole={gamePublisher.role}
               gameParticipant={gamePublisher}
               situation={situation}
               target={target}
@@ -114,13 +119,9 @@ const VideoViewer = ({
             <VideoItem
               key={index}
               roomId={roomId}
-              playerRole={playerRole}
+              playerRole={gamePublisher?.role}
               gameParticipantNickname={gameSubscriber.nickname}
-              gameParticipantRole={
-                otherMafiaList?.includes(gameSubscriber.nickname)
-                  ? 'MAFIA'
-                  : null
-              }
+              gameParticipantRole={gameSubscriber.role}
               gameParticipant={gameSubscriber}
               situation={situation}
               target={target}
@@ -130,13 +131,17 @@ const VideoViewer = ({
         </div>
       ) : (
         <div
-          className={`${participantList.length <= 2 ? 'grid-rows-1' : 'grid-rows-2'} ${participantList.length <= 4 ? 'grid-cols-2' : participantList.length <= 6 ? 'grid-cols-3' : 'grid-cols-4'} grid h-full min-w-[67.5rem] gap-6`}
+          className={[
+            `${participantList.length <= 2 ? 'grid-rows-1' : 'grid-rows-2'}`,
+            `${participantList.length <= 4 ? 'grid-cols-2' : participantList.length <= 6 ? 'grid-cols-3' : 'grid-cols-4'}`,
+            'grid h-full min-w-[67.5rem] gap-6',
+          ].join(' ')}
         >
           {participantList.map((participant, index) => (
             <VideoItem
               key={index}
               roomId={roomId}
-              playerRole={playerRole}
+              playerRole={gamePublisher?.role}
               gameParticipantNickname={participant}
               gameParticipantRole={null}
               gameParticipant={null}

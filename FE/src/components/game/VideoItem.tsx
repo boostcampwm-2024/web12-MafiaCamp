@@ -12,7 +12,7 @@ import { FaMicrophone, FaMicrophoneSlash } from 'react-icons/fa';
 
 interface VideoItemProps {
   roomId: string;
-  playerRole: Role | null;
+  playerRole?: Role | null;
   gameParticipantNickname: string;
   gameParticipantRole: Role | null;
   gameParticipant: GamePublisher | GameSubscriber | null;
@@ -35,6 +35,16 @@ const VideoItem = ({
   const { nickname, socket } = useSocketStore();
 
   const handleClick = () => {
+    socket?.emit('police-investigate', {
+      roomId,
+      police: nickname,
+      criminal: gameParticipantNickname,
+    });
+
+    return;
+
+    // TODO: 삭제 예정
+
     if (!situation || !gameParticipant?.isCandidate) {
       return;
     }
@@ -62,11 +72,13 @@ const VideoItem = ({
         });
         break;
       case 'POLICE':
-        socket?.emit('police-investigate', {
-          roomId,
-          police: nickname,
-          criminal: gameParticipantNickname,
-        });
+        if (playerRole === 'POLICE') {
+          socket?.emit('police-investigate', {
+            roomId,
+            police: nickname,
+            criminal: gameParticipantNickname,
+          });
+        }
         break;
       default:
         break;
@@ -81,7 +93,11 @@ const VideoItem = ({
 
   return (
     <div
-      className={`${(situation === 'VOTE' || (situation === 'POLICE' && playerRole === 'POLICE')) && gameParticipant?.isCandidate && 'cursor-pointer hover:z-10'} ${target === gameParticipantNickname && 'z-10 border-2'} relative flex h-full w-full flex-col items-center rounded-3xl border border-slate-200 bg-black`}
+      className={[
+        `${(situation === 'VOTE' || (situation === 'POLICE' && playerRole === 'POLICE')) && gameParticipant?.isCandidate && 'cursor-pointer hover:z-10'}`,
+        `${target === gameParticipantNickname && 'z-10 border-2'}`,
+        'relative flex h-full w-full flex-col items-center rounded-3xl border border-slate-200 bg-black',
+      ].join(' ')}
       onClick={handleClick}
     >
       <div
