@@ -30,6 +30,9 @@ export class FinalVoteState extends GameState {
     );
 
     await this.voteMafiaUsecase.finalVoteResult(room);
+    // if (시민win) {
+    //   return next(finishstate);
+    // }
     next(this.mafiaState);
   }
 }

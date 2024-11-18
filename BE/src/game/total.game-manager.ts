@@ -28,6 +28,9 @@ export class TotalGameManager implements VoteManager, PoliceManager {
       const gameInfo = new Map<string, PlayerInfo>();
       players.forEach((role, client) => {
         gameInfo.set(client.nickname, { role, status: USER_STATUS.ALIVE });
+        if (role === MAFIA_ROLE.MAFIA) {
+          gameRoom.addMafia(client);
+        }
       });
       await this.games.set(gameRoom.roomId, gameInfo);
     }
@@ -143,7 +146,7 @@ export class TotalGameManager implements VoteManager, PoliceManager {
     const newBalletBox = new Map<string, string[]>();
     const maxVotedUsers = this.findMostVotedUser(ballotBox);
 
-    if ((maxVotedUsers.length === 1 && maxVotedUsers[0] !== null) || (maxVotedUsers.length > 1)) {
+    if ((maxVotedUsers.length === 1 && maxVotedUsers[0] !== 'INVALIDITY') || (maxVotedUsers.length > 1)) {
       /*
       투표결과가 1등이 있는 경우 혹은 공동이 있는 경우
        */
@@ -192,7 +195,7 @@ export class TotalGameManager implements VoteManager, PoliceManager {
 
     await this.ballotBoxs.delete(gameRoom.roomId);
 
-    if (mostVotedUser.length === 1 && mostVotedUser[0] !== null) {
+    if (mostVotedUser.length === 1 && mostVotedUser[0] !== 'INVALIDITY') {
       await this.killUser(gameRoom, mostVotedUser[0]);
     } else {
       gameRoom.sendAll('vote-kill-user', null);

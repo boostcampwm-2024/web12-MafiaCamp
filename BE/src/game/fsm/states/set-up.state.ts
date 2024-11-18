@@ -15,6 +15,7 @@ import {
 } from 'src/game/usecase/allocate-user-role/allocate.user-role.usecase';
 import { AllocateJobRequest } from 'src/game/dto/allocate.job.request';
 import { OpenViduRoleType } from 'src/video-server/types/openvidu.type';
+import { GameRoomStatus } from 'src/game-room/entity/game-room.status';
 
 @Injectable()
 export class SetUpState extends GameState {
@@ -33,6 +34,7 @@ export class SetUpState extends GameState {
 
   async handle(context: GameContext, next: TransitionHandler) {
     const room = context.room;
+    room.setStatus(GameRoomStatus.RUNNING);
     await this.startVideo(room);
     await this.allocateUserRole(room);
 

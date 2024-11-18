@@ -1,6 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
 import { v4 as uuid } from 'uuid';
-import { CreateRoomRequest } from '../dto/create-room.request';
 import { GameRoomStatus } from './game-room.status';
 import { GameClient } from './game-client.model';
 
@@ -10,12 +9,9 @@ export class GameRoom {
   private status: GameRoomStatus = GameRoomStatus.READY;
   private createdAt: number = Date.now();
   private readonly _clients: GameClient[] = [];
+  private readonly _mafias: GameClient[] = [];
 
   constructor(private title: string, private capacity: number) {}
-
-  set roomId(roomId) {
-    this._roomId = roomId;
-  }
 
   get roomId() {
     return this._roomId;
@@ -25,8 +21,11 @@ export class GameRoom {
     return this._clients;
   }
 
-  static from(createRoomRequest: CreateRoomRequest) {
-    const { title, capacity } = createRoomRequest;
+  setStatus(status: GameRoomStatus) {
+    this.status = status;
+  }
+
+  static of(title: string, capacity: number) {
     return new GameRoom(title, capacity);
   }
 
@@ -36,12 +35,19 @@ export class GameRoom {
     }
     this.participants++;
     this._clients.push(client);
-    const participants = this._clients.map((c) => c.nickname);
-    this.sendAll('participants', participants);
+    this.sendParticipantInfo();
   }
 
-  sendAll(event : string, ...args) {
+  sendAll(event: string, ...args) {
     this._clients.forEach((c) => c.send(event, ...args));
+  }
+
+  addMafia(mafia: GameClient) {
+    this._mafias.push(mafia);
+  }
+
+  sendMafia(event: string, ...args) {
+    this._mafias.forEach((m) => m.send(event, ...args));
   }
 
   isFull() {
@@ -57,5 +63,10 @@ export class GameRoom {
       status: this.status,
       createdAt: this.createdAt,
     };
+  }
+
+  private sendParticipantInfo() {
+    const participants = this._clients.map((c) => c.nickname);
+    this.sendAll('participants', participants);
   }
 }

@@ -108,10 +108,28 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() socket: Socket,
   ) {
     const { roomId, message } = data;
+    const room = this.gameRoomService.findRoomById(roomId);
     const client = this.connectedClients.get(socket);
-    this.gameRoomService.sendChat(roomId, {
+
+    room.sendAll('chat', {
       from: client.nickname,
       to: 'room',
+      message,
+    });
+  }
+
+  @SubscribeMessage('send-mafia')
+  sendMafia(
+    @MessageBody() data: { roomId: string; message: string },
+    @ConnectedSocket() socket: Socket,
+  ) {
+    const { roomId, message } = data;
+    const room = this.gameRoomService.findRoomById(roomId);
+    const client = this.connectedClients.get(socket);
+
+    room.sendMafia('chat-mafia', {
+      from: client.nickname,
+      to: 'maifa',
       message,
     });
   }
