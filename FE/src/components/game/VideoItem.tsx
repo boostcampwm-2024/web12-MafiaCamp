@@ -12,7 +12,8 @@ import { FaMicrophone, FaMicrophoneSlash } from 'react-icons/fa';
 
 interface VideoItemProps {
   roomId: string;
-  playerRole?: Role | null;
+  isPublisherAlive: boolean;
+  gamePublisherRole: Role | null;
   gameParticipant: GamePublisher | GameSubscriber;
   situation: Situation | null;
   target: string | null;
@@ -21,7 +22,8 @@ interface VideoItemProps {
 
 const VideoItem = ({
   roomId,
-  playerRole,
+  isPublisherAlive,
+  gamePublisherRole,
   gameParticipant,
   situation,
   target,
@@ -58,7 +60,7 @@ const VideoItem = ({
         });
         break;
       case 'MAFIA':
-        if (playerRole === 'MAFIA') {
+        if (gamePublisherRole === 'MAFIA') {
           socket?.emit('select-mafia-target', {
             roomId,
             from: nickname,
@@ -67,7 +69,7 @@ const VideoItem = ({
         }
         break;
       case 'POLICE':
-        if (playerRole === 'POLICE') {
+        if (gamePublisherRole === 'POLICE') {
           socket?.emit('police-investigate', {
             roomId,
             police: nickname,
@@ -89,7 +91,7 @@ const VideoItem = ({
   return (
     <div
       className={[
-        `${(situation === 'VOTE' || (situation === 'MAFIA' && playerRole === 'MAFIA') || (situation === 'POLICE' && playerRole === 'POLICE')) && gameParticipant.isCandidate && 'cursor-pointer hover:z-10'}`,
+        `${isPublisherAlive && (situation === 'VOTE' || (situation === 'MAFIA' && gamePublisherRole === 'MAFIA') || (situation === 'POLICE' && gamePublisherRole === 'POLICE')) && gameParticipant.isCandidate && 'cursor-pointer hover:z-10'}`,
         `${(target === gameParticipant.nickname || situation === 'ARGUMENT') && gameParticipant.isCandidate && 'z-10 border-2'}`,
         'relative flex h-full w-full flex-col items-center rounded-3xl border border-slate-200 bg-black',
       ].join(' ')}

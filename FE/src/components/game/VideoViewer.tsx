@@ -93,15 +93,23 @@ const VideoViewer = ({
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
-      {(situation === 'VOTE' ||
-        situation === 'ARGUMENT' ||
-        (situation === 'MAFIA' && gamePublisher.role === 'MAFIA') ||
-        (situation === 'POLICE' && gamePublisher.role === 'POLICE')) && (
-        <div className='pointer-events-none absolute bottom-0 left-0 z-10 h-full w-full bg-slate-800/75' />
-      )}
-      {situation === 'VOTE' && (
+      {
+        gamePublisher.participant &&
+          /* eslint-disable indent */
+          (situation === 'VOTE' ||
+            situation === 'ARGUMENT' ||
+            (situation === 'MAFIA' && gamePublisher.role === 'MAFIA') ||
+            (situation === 'POLICE' && gamePublisher.role === 'POLICE')) && (
+            <div className='pointer-events-none absolute bottom-0 left-0 z-10 h-full w-full bg-slate-800/75' />
+          )
+        /* eslint-enable indent */
+      }
+      {gamePublisher.participant && situation === 'VOTE' && (
         <div
-          className={`${isOpen ? 'right-[21.5rem]' : 'right-6'} fixed bottom-3 left-6 z-20 h-[3.75rem] transition-all duration-500 ease-out`}
+          className={[
+            `${isOpen ? 'right-[21.5rem]' : 'right-6'}`,
+            'fixed bottom-3 left-6 z-20 h-[3.75rem] transition-all duration-500 ease-out',
+          ].join(' ')}
         >
           <button
             className={[
@@ -124,7 +132,8 @@ const VideoViewer = ({
         {(!isGameStarted || gamePublisher.participant) && (
           <VideoItem
             roomId={roomId}
-            playerRole={gamePublisher.role}
+            isPublisherAlive={gamePublisher.participant ? true : false}
+            gamePublisherRole={gamePublisher.role}
             gameParticipant={gamePublisher}
             situation={situation}
             target={target}
@@ -139,7 +148,8 @@ const VideoViewer = ({
             <VideoItem
               key={gameSubscriber.nickname}
               roomId={roomId}
-              playerRole={gamePublisher.role}
+              isPublisherAlive={gamePublisher.participant ? true : false}
+              gamePublisherRole={gamePublisher.role}
               gameParticipant={gameSubscriber}
               situation={situation}
               target={target}
