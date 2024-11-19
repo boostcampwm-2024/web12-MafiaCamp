@@ -15,17 +15,21 @@ import { FaMicrophone, FaMicrophoneSlash } from 'react-icons/fa';
 
 interface BottombarProps {
   roomId: string;
+  isGameStarted: boolean;
+  isPublisherAlive: boolean;
   totalParticipants: number;
   situation: Situation | null;
   timeLeft: number;
-  audioEnabled: boolean | null;
-  videoEnabled: boolean | null;
+  audioEnabled: boolean;
+  videoEnabled: boolean;
   toggleAudio: () => void;
   toggleVideo: () => void;
 }
 
 const Bottombar = ({
   roomId,
+  isGameStarted,
+  isPublisherAlive,
   totalParticipants,
   situation,
   timeLeft,
@@ -67,36 +71,45 @@ const Bottombar = ({
         onTouchEnd={onTouchEnd}
       >
         <div className='flex flex-row items-center gap-4'>
-          <button
-            className={`${totalParticipants !== Number(capacity) ? 'cursor-not-allowed opacity-50' : 'hover:scale-105'} flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4`}
-            onClick={() => socket?.emit('start-game', { roomId })}
-            disabled={totalParticipants !== Number(capacity)}
-          >
-            <PlayIcon className='fill-slate-200' />
-            게임 시작
-          </button>
-          <button
-            className={`${audioEnabled === null && 'hidden'} flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105`}
-            onClick={() => toggleAudio()}
-          >
-            {audioEnabled ? (
-              <FaMicrophone className='scale-125 cursor-pointer text-slate-200 hover:text-white' />
-            ) : (
-              <FaMicrophoneSlash className='scale-150 cursor-pointer text-slate-200 hover:text-white' />
-            )}
-            오디오
-          </button>
-          <button
-            className={`${videoEnabled === null && 'hidden'} flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105`}
-            onClick={() => toggleVideo()}
-          >
-            {videoEnabled ? (
-              <VideoCameraIcon className='scale-90 cursor-pointer fill-slate-200 hover:fill-white' />
-            ) : (
-              <VideoCameraSlashIcon className='scale-90 cursor-pointer fill-slate-200 hover:fill-white' />
-            )}
-            카메라
-          </button>
+          {!isGameStarted && (
+            <button
+              className={[
+                `${totalParticipants !== Number(capacity) ? 'cursor-not-allowed opacity-50' : 'hover:scale-105'}`,
+                'flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4',
+              ].join(' ')}
+              onClick={() => socket?.emit('start-game', { roomId })}
+              disabled={totalParticipants !== Number(capacity)}
+            >
+              <PlayIcon className='fill-slate-200' />
+              게임 시작
+            </button>
+          )}
+          {isPublisherAlive && (
+            <button
+              className='flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105'
+              onClick={() => toggleAudio()}
+            >
+              {audioEnabled ? (
+                <FaMicrophone className='scale-125 cursor-pointer text-slate-200 hover:text-white' />
+              ) : (
+                <FaMicrophoneSlash className='scale-150 cursor-pointer text-slate-200 hover:text-white' />
+              )}
+              오디오
+            </button>
+          )}
+          {isPublisherAlive && (
+            <button
+              className='flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105'
+              onClick={() => toggleVideo()}
+            >
+              {videoEnabled ? (
+                <VideoCameraIcon className='scale-90 cursor-pointer fill-slate-200 hover:fill-white' />
+              ) : (
+                <VideoCameraSlashIcon className='scale-90 cursor-pointer fill-slate-200 hover:fill-white' />
+              )}
+              카메라
+            </button>
+          )}
           <button
             className='flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105'
             onClick={() => (isOpen ? closeSidebar() : openSidebar())}

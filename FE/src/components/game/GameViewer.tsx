@@ -240,20 +240,21 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       />
       <Bottombar
         roomId={roomId}
+        isGameStarted={isGameStarted}
+        isPublisherAlive={gamePublisher.participant ? true : false}
         totalParticipants={gameSubscribers.length + 1}
         situation={situation}
         timeLeft={timeLeft}
-        audioEnabled={
-          gamePublisher.participant ? gamePublisher.audioEnabled : null
-        }
-        videoEnabled={
-          gamePublisher.participant ? gamePublisher.videoEnabled : null
-        }
+        audioEnabled={gamePublisher.audioEnabled}
+        videoEnabled={gamePublisher.videoEnabled}
         toggleAudio={toggleAudio}
         toggleVideo={toggleVideo}
       />
       <ChattingList
         roomId={roomId}
+        chatEnabled={
+          !isGameStarted || (gamePublisher.participant ? true : false)
+        }
         totalParticipants={gameSubscribers.length + 1}
       />
     </div>
