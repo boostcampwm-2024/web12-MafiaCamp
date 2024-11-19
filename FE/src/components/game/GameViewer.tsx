@@ -29,6 +29,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     changeSubscriberStatus,
     initializeVotes,
     setAllParticipantsAsCandidates,
+    setTargetsOfMafia,
     eliminatePublisher,
   } = useOpenVidu();
 
@@ -80,7 +81,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
 
         if (data.situation === 'MAFIA' && data.timeLeft === 30) {
           setTarget(null);
-          setAllParticipantsAsCandidates();
+          setTargetsOfMafia();
           notifyInfo(SITUATION_MESSAGE.MAFIA);
         }
 
@@ -208,6 +209,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       socket?.off('vote-current-state');
       socket?.off('primary-vote-result');
       socket?.off('vote-kill-user');
+      socket?.off('mafia-current-target');
       socket?.off('police-investigation-result');
     };
   }, [
@@ -218,6 +220,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     gamePublisher.role,
     initializeVotes,
     setAllParticipantsAsCandidates,
+    setTargetsOfMafia,
     situation,
     socket,
   ]);
