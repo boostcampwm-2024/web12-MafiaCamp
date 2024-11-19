@@ -252,6 +252,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       />
       <ChattingList
         roomId={roomId}
+        isMafia={gamePublisher.role === 'MAFIA'}
         chatEnabled={
           !isGameStarted || (gamePublisher.participant ? true : false)
         }

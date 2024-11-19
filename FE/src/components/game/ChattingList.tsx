@@ -13,12 +13,14 @@ import { useSearchParams } from 'next/navigation';
 
 interface ChattingListProps {
   roomId: string;
+  isMafia: boolean;
   chatEnabled: boolean;
   totalParticipants: number;
 }
 
 const ChattingList = ({
   roomId,
+  isMafia,
   chatEnabled,
   totalParticipants,
 }: ChattingListProps) => {
@@ -144,13 +146,15 @@ const ChattingList = ({
                   >
                     전체
                   </button>
-                  <button
-                    className={`${!isMafiaOnly && 'bg-transparent/10 hover:bg-transparent/50'} h-9 w-20 rounded-2xl bg-slate-600 text-sm text-white`}
-                    type='button'
-                    onClick={() => setIsMafiaOnly(true)}
-                  >
-                    마피아
-                  </button>
+                  {isMafia && (
+                    <button
+                      className={`${!isMafiaOnly && 'bg-transparent/10 hover:bg-transparent/50'} h-9 w-20 rounded-2xl bg-slate-600 text-sm text-white`}
+                      type='button'
+                      onClick={() => setIsMafiaOnly(true)}
+                    >
+                      마피아
+                    </button>
+                  )}
                 </div>
                 <button
                   className='flex h-9 w-9 items-center justify-center rounded-full bg-slate-600 hover:scale-105'
