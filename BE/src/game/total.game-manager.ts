@@ -148,7 +148,7 @@ export class TotalGameManager implements VoteManager, PoliceManager {
       투표결과가 1등이 있는 경우 혹은 공동이 있는 경우
        */
       maxVotedUsers.forEach((votedUser) => {
-        if (votedUser !== null) {
+        if (votedUser !== 'INVALIDITY') {
           newBalletBox.set(votedUser, []);
         }
       });
