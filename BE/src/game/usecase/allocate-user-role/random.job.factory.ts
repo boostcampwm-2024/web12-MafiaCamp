@@ -42,23 +42,29 @@ export class RandomJobFactory implements JobFactory {
       if (role === MAFIA_ROLE.MAFIA) {
         mafiaUsers.push([players[idx], role]);
       } else {
-        players[idx].send('player-role', {
-          'role': role,
-          'another': null,
-        });
+        this.assignRole(players[idx], role);
+        // players[idx].job = role;
+        // players[idx].send('player-role', {
+        //   role: role,
+        //   another: null,
+        // });
       }
       userRoles.set(players[idx], role);
     });
 
     mafiaUsers.forEach(([currentPlayer, currentRole]) => {
       const otherMafias = mafiaUsers
-        .filter((player: [GameClient, MAFIA_ROLE]) => player[0] !== currentPlayer)
+        .filter(
+          (player: [GameClient, MAFIA_ROLE]) => player[0] !== currentPlayer,
+        )
         .map(([player, role]) => [player.nickname, role]);
 
-      currentPlayer.send('player-role', {
-        'role': currentRole,
-        'another': otherMafias,
-      });
+      this.assignRole(currentPlayer, currentRole, otherMafias);
+      // currentPlayer.job = currentRole;
+      // currentPlayer.send('player-role', {
+      //   role: currentRole,
+      //   another: otherMafias,
+      // });
     });
     return userRoles;
   }
@@ -91,5 +97,17 @@ export class RandomJobFactory implements JobFactory {
     if (mafia < 0 || police < 0 || doctor < 0 || citizen < 0) {
       throw new RoleCountNegativeException();
     }
+  }
+
+  private assignRole(
+    client: GameClient,
+    role: MAFIA_ROLE,
+    additionalInfo: any = null,
+  ): void {
+    client.job = role;
+    client.send('player-role', {
+      role: role,
+      another: additionalInfo,
+    });
   }
 }

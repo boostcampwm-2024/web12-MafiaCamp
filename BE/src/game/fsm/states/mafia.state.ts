@@ -7,6 +7,10 @@ import {
 import { GameState, TransitionHandler } from './state';
 import { DoctorState } from './doctor.state';
 import { GameContext } from '../game-context';
+import {
+  MAFIA_MANAGER,
+  MafiaManager,
+} from '../../usecase/role-playing/mafia-manager';
 
 @Injectable()
 export class MafiaState extends GameState {
@@ -15,15 +19,19 @@ export class MafiaState extends GameState {
     private readonly countdownTimeoutUsecase: CountdownTimeoutUsecase,
     @Inject(forwardRef(() => DoctorState))
     private readonly doctorState: DoctorState,
+    @Inject(MAFIA_MANAGER)
+    private readonly mafiaManager: MafiaManager,
   ) {
     super();
   }
 
   async handle(context: GameContext, next: TransitionHandler) {
     const room = context.room;
+    await this.mafiaManager.initMafia(room);
     await this.countdownTimeoutUsecase.countdownStart(
       new StartCountdownRequest(room, 'MAFIA'),
     );
+    await this.mafiaManager.decisionMafiaTarget(room);
     next(this.doctorState);
   }
 }

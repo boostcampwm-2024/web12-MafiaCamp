@@ -7,7 +7,10 @@ import {
 import { GameState, TransitionHandler } from './state';
 import { GameContext } from '../game-context';
 import { DiscussionState } from './discussion.state';
-import { POLICE_MANAGER, PoliceManager } from '../../usecase/role-playing/police-manager';
+import {
+  POLICE_MANAGER,
+  PoliceManager,
+} from '../../usecase/role-playing/police-manager';
 
 @Injectable()
 export class PoliceState extends GameState {
@@ -17,7 +20,7 @@ export class PoliceState extends GameState {
     @Inject(forwardRef(() => DiscussionState))
     private readonly discussionState: DiscussionState,
     @Inject(POLICE_MANAGER)
-    private readonly policeManager: PoliceManager
+    private readonly policeManager: PoliceManager,
   ) {
     super();
   }
