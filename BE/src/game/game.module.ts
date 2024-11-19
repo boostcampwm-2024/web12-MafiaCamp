@@ -55,9 +55,10 @@ import { MafiaKillService } from './usecase/role-playing/mafia-kill.service';
       provide: COUNTDOWN_TIMEOUT_USECASE,
       useClass: CountdownTimeoutService,
     },
+    TotalGameManager,
     {
       provide: VOTE_MANAGER,
-      useClass: TotalGameManager,
+      useExisting: TotalGameManager,
     },
     {
       provide: VOTE_MAFIA_USECASE,
@@ -69,7 +70,7 @@ import { MafiaKillService } from './usecase/role-playing/mafia-kill.service';
     },
     {
       provide: POLICE_MANAGER,
-      useClass: TotalGameManager,
+      useExisting: TotalGameManager,
     },
     {
       provide: POLICE_INVESTIGATE_USECASE,
