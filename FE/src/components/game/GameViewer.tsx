@@ -62,10 +62,6 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     socket?.on(
       'countdown',
       (data: { situation: Situation; timeLeft: number }) => {
-        if (data.situation === 'INTERMISSION' && data.timeLeft === 5) {
-          notifyInfo('잠시 후 게임이 시작됩니다.');
-        }
-
         if (data.situation === 'DISCUSSION' && data.timeLeft === 150) {
           notifyInfo(
             '낮이 되었습니다. 모든 플레이어들은 토론을 진행해 주세요.',
@@ -129,10 +125,11 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       'player-role',
       (data: { role: Role; another: [string, Role][] | null }) => {
         changePublisherStatus({ role: data.role });
-
         data.another?.forEach((value) => {
           changeSubscriberStatus(value[0], { role: value[1] });
         });
+
+        notifyInfo('잠시 후 게임이 시작됩니다.');
       },
     );
 
