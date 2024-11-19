@@ -6,8 +6,13 @@ import { UserService } from './user.service';
 import { REGISTER_USER_USECASE } from './usecase/register.user.usecase';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from './entity/user.entity';
+import { AuthController } from './controller/auth.controller';
+import { LOGIN_USER_USECASE } from './usecase/login.user.usecase';
+import { UPDATE_USER_USECASE } from './usecase/update.user.usecase';
+import { UserController } from './controller/user.controller';
 
 @Module({
+  controllers: [AuthController,UserController],
   imports: [TypeOrmModule.forFeature([UserEntity])],
   providers: [
     {
@@ -22,7 +27,16 @@ import { UserEntity } from './entity/user.entity';
       provide: REGISTER_USER_USECASE,
       useClass: UserService,
     },
+    {
+      provide: LOGIN_USER_USECASE,
+      useClass: UserService
+    },
+    {
+      provide: UPDATE_USER_USECASE,
+      useClass: UserService
+    }
   ],
   exports: [FIND_USER_USECASE, REGISTER_USER_USECASE],
 })
-export class UserModule {}
+export class UserModule {
+}

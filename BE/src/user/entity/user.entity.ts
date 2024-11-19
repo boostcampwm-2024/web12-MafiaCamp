@@ -1,4 +1,5 @@
 import {
+  BaseEntity,
   Column,
   Entity,
   Index,
@@ -8,7 +9,7 @@ import {
 import { GameUserEntity } from '../../game-user/entity/game-user.entity';
 
 @Entity('user')
-export class UserEntity {
+export class UserEntity extends BaseEntity{
   @PrimaryGeneratedColumn('increment', {
     type: 'bigint',
     name: 'user_id',
@@ -63,6 +64,7 @@ export class UserEntity {
     score: number,
     createdAt: Date,
   ) {
+    super();
     this.email = email;
     this.nickname = nickname;
     this.oAuthId = oAuthId;
@@ -70,7 +72,12 @@ export class UserEntity {
     this.createdAt = createdAt;
   }
 
-  static create(email: string, nickname: string, oAuthId: string): UserEntity {
+  static createUser(email: string, nickname: string, oAuthId: string): UserEntity {
     return new UserEntity(email, nickname, oAuthId, 0, new Date());
+  }
+  sta
+  updateNickname(newNickname: string) {
+    this.nickname = newNickname;
+    this.createdAt = new Date();
   }
 }
