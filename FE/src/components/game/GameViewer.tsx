@@ -126,8 +126,8 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     // 투표 시작 시 투표 대상 후보자 설정
     socket?.on('send-vote-candidates', (candidates: string[]) => {
       initializeVotes();
-      setInvalidityCount(0);
       setTarget(null);
+      setInvalidityCount(0);
 
       for (const nickname of candidates) {
         if (nickname === gamePublisher.nickname) {
@@ -152,22 +152,19 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     });
 
     // 1차 투표 결과 확인
-    socket?.on(
-      'primary-vote-result',
-      (data: { [nickname: string]: number }) => {
-        setTarget(null);
+    socket?.on('primary-vote-result', (candidates: string[]) => {
+      initializeVotes();
+      setTarget(null);
+      setInvalidityCount(0);
 
-        for (const [nickname, votes] of Object.entries(data)) {
-          if (nickname === 'INVALIDITY') {
-            setInvalidityCount(votes);
-          } else if (nickname === gamePublisher.nickname) {
-            changePublisherStatus({ votes });
-          } else {
-            changeSubscriberStatus(nickname, { votes });
-          }
+      for (const nickname of candidates) {
+        if (nickname === gamePublisher.nickname) {
+          changePublisherStatus({ isCandidate: true });
+        } else {
+          changeSubscriberStatus(nickname, { isCandidate: true });
         }
-      },
-    );
+      }
+    });
 
     // 투표 수가 제일 많은 플레이어 제거
     socket?.on(

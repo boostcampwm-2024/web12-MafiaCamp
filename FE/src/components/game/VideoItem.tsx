@@ -85,13 +85,16 @@ const VideoItem = ({
     <div
       className={[
         `${(situation === 'VOTE' || (situation === 'POLICE' && playerRole === 'POLICE')) && gameParticipant?.isCandidate && 'cursor-pointer hover:z-10'}`,
-        `${target === gameParticipantNickname && 'z-10 border-2'}`,
+        `${target === gameParticipantNickname || (situation === 'ARGUMENT' && gameParticipant?.isCandidate && 'z-10 border-2')}`,
         'relative flex h-full w-full flex-col items-center rounded-3xl border border-slate-200 bg-black',
       ].join(' ')}
       onClick={handleClick}
     >
       <div
-        className={`${gameParticipantRole === null && 'hidden'} absolute left-4 top-4 z-10 flex h-8 w-20 items-center justify-center rounded-2xl border border-blue-200 bg-blue-50 text-xs text-blue-800`}
+        className={[
+          `${gameParticipantRole === null && 'hidden'}`,
+          'absolute left-4 top-4 z-10 flex h-8 w-20 items-center justify-center rounded-2xl border border-blue-200 bg-blue-50 text-xs text-blue-800',
+        ].join(' ')}
       >
         {ROLE[gameParticipantRole ?? 'CITIZEN']}
       </div>
