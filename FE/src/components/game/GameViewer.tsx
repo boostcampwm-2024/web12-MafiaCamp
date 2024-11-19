@@ -139,8 +139,8 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       setInvalidityCount(0);
       setTarget(null);
 
-      for (const nickname in candidates) {
-        if (nickname === gamePublisher?.nickname) {
+      for (const nickname of candidates) {
+        if (nickname === gamePublisher.nickname) {
           changePublisherStatus({ isCandidate: true });
         } else {
           changeSubscriberStatus(nickname, { isCandidate: true });
@@ -153,7 +153,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       for (const [nickname, votes] of Object.entries(data)) {
         if (nickname === 'INVALIDITY') {
           setInvalidityCount(votes);
-        } else if (nickname === gamePublisher?.nickname) {
+        } else if (nickname === gamePublisher.nickname) {
           changePublisherStatus({ votes });
         } else {
           changeSubscriberStatus(nickname, { votes });
@@ -170,7 +170,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
         for (const [nickname, votes] of Object.entries(data)) {
           if (nickname === 'INVALIDITY') {
             setInvalidityCount(votes);
-          } else if (nickname === gamePublisher?.nickname) {
+          } else if (nickname === gamePublisher.nickname) {
             changePublisherStatus({ votes });
           } else {
             changeSubscriberStatus(nickname, { votes });
@@ -188,7 +188,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
           return;
         }
 
-        if (data.player === gamePublisher?.nickname) {
+        if (data.player === gamePublisher.nickname) {
           eliminatePublisher();
         }
 
@@ -218,7 +218,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     changePublisherStatus,
     changeSubscriberStatus,
     eliminatePublisher,
-    gamePublisher?.nickname,
+    gamePublisher.nickname,
     initializeVotes,
     setAllParticipantsAsCandidates,
     situation,
