@@ -22,6 +22,18 @@ export class EventClient {
     return this._socket;
   }
 
+  on(event: string, listener) {
+    this._socket.on(event, listener);
+  }
+
+  once(event: string, listener) {
+    this._socket.once(event, listener);
+  }
+
+  removeListener(event: string, listener) {
+    this._socket.removeListener(event, listener);
+  }
+
   emit(event: string, ...args) {
     this._socket.emit(event, ...args);
   }

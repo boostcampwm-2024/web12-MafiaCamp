@@ -46,7 +46,7 @@ export class SetUpState extends GameState {
     next(this.discussionState);
   }
 
-  async startVideo(room: GameRoom) {
+  private async startVideo(room: GameRoom) {
     const roomId = room.roomId;
     const clients = room.clients;
 
@@ -65,7 +65,7 @@ export class SetUpState extends GameState {
     });
   }
 
-  async allocateUserRole(room: GameRoom) {
+  private async allocateUserRole(room: GameRoom) {
     await this.allocateUserRoleUsecase.allocate(new AllocateJobRequest(room));
   }
 }

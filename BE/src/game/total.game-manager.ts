@@ -207,7 +207,7 @@ export class TotalGameManager implements VoteManager, PoliceManager {
   }
 
   async executePolice(gameRoom: GameRoom, police: string, criminal: string): Promise<void> {
-    const investigationFlag = await this.policeInvestigationMap.get(gameRoom.roomId);
+    // const investigationFlag = await this.policeInvestigationMap.get(gameRoom.roomId);
     let policeFlag = false;
     let criminalFlag = false;
     let criminalJob: MAFIA_ROLE;
@@ -221,8 +221,8 @@ export class TotalGameManager implements VoteManager, PoliceManager {
         criminalJob = playerInfo.role;
       }
     });
-    if (!investigationFlag && policeFlag && criminalFlag) {
-      await this.policeInvestigationMap.set(gameRoom.roomId, true);
+    if (policeFlag && criminalFlag) {
+      // await this.policeInvestigationMap.set(gameRoom.roomId, true);
       const policeClient = gameRoom.clients.find(
         (client) => client.nickname === police,
       );
@@ -241,7 +241,7 @@ export class TotalGameManager implements VoteManager, PoliceManager {
   }
 
   private async checkFinishCondition(gameRoom: GameRoom) {
-    const gameInfo = await this.games.get(gameRoom);
+    const gameInfo = await this.games.get(gameRoom.roomId);
     if (!gameInfo) {
       throw new NotFoundGameRoomException();
     }

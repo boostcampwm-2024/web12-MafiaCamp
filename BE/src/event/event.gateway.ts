@@ -158,12 +158,6 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     await this.voteMafiaUsecase.cancelVote(room, voteCandidateRequest.from, voteCandidateRequest.to);
   }
 
-  @SubscribeMessage('police-investigate')
-  async policeInvestigate(@MessageBody() policeInvestigationRequest: PoliceInvestigationRequest) {
-    const room = this.gameRoomService.findRoomById(policeInvestigationRequest.roomId);
-    await this.policeInvestigateUsecase.executePolice(room, policeInvestigationRequest.police, policeInvestigationRequest.criminal);
-  }
-
   private publishRoomDataChangedEvent() {
     this.eventManager.publish(Event.ROOM_DATA_CHANGED, {
       event: 'room-list',
