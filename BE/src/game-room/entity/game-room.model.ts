@@ -2,12 +2,14 @@ import { BadRequestException } from '@nestjs/common';
 import { v4 as uuid } from 'uuid';
 import { GameRoomStatus } from './game-room.status';
 import { GameClient } from './game-client.model';
+import { GAME_HISTORY_RESULT } from 'src/game/entity/game-history.result';
 
 export class GameRoom {
   private _roomId: string = uuid();
   private participants = 0;
-  private status: GameRoomStatus = GameRoomStatus.READY;
+  private _status: GameRoomStatus = GameRoomStatus.READY;
   private createdAt: number = Date.now();
+  private _result: GAME_HISTORY_RESULT = null;
   private readonly _clients: GameClient[] = [];
   private readonly _mafias: GameClient[] = [];
 
@@ -21,8 +23,16 @@ export class GameRoom {
     return this._clients;
   }
 
-  setStatus(status: GameRoomStatus) {
-    this.status = status;
+  get result(): GAME_HISTORY_RESULT {
+    return this._result;
+  }
+
+  set result(result: GAME_HISTORY_RESULT) {
+    this._result = result;
+  }
+
+  set status(status: GameRoomStatus) {
+    this._status = status;
   }
 
   static of(title: string, capacity: number) {

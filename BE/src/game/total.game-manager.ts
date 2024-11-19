@@ -10,6 +10,7 @@ import { UnauthorizedUserBallotException } from '../common/error/unauthorized.us
 import { MutexMap } from '../common/utils/mutex-map';
 import { VOTE_STATE } from './vote-state';
 import { PoliceManager } from './usecase/role-playing/police-manager';
+import { GAME_HISTORY_RESULT } from './entity/game-history.result';
 
 interface PlayerInfo {
   role: MAFIA_ROLE;
@@ -28,6 +29,7 @@ export class TotalGameManager implements VoteManager, PoliceManager {
       const gameInfo = new Map<string, PlayerInfo>();
       players.forEach((role, client) => {
         gameInfo.set(client.nickname, { role, status: USER_STATUS.ALIVE });
+        client.job = role;
         if (role === MAFIA_ROLE.MAFIA) {
           gameRoom.addMafia(client);
         }
@@ -197,6 +199,7 @@ export class TotalGameManager implements VoteManager, PoliceManager {
 
     if (mostVotedUser.length === 1 && mostVotedUser[0] !== 'INVALIDITY') {
       await this.killUser(gameRoom, mostVotedUser[0]);
+      await this.checkFinishCondition(gameRoom);
     } else {
       gameRoom.sendAll('vote-kill-user', null);
     }
@@ -235,5 +238,33 @@ export class TotalGameManager implements VoteManager, PoliceManager {
 
   async initPolice(gameRoom: GameRoom): Promise<void> {
     await this.policeInvestigationMap.set(gameRoom.roomId, false);
+  }
+
+  private async checkFinishCondition(gameRoom: GameRoom) {
+    const gameInfo = await this.games.get(gameRoom);
+    if (!gameInfo) {
+      throw new NotFoundGameRoomException();
+    }
+
+    let mafiaCount = 0;
+    let citienCount = 0;
+    gameInfo.forEach((playerInfo) => {
+      if (playerInfo.status === USER_STATUS.DEAD) {
+        return;
+      }
+      if (playerInfo.role === MAFIA_ROLE.MAFIA) {
+        mafiaCount++;
+      } else {
+        citienCount++;
+      }
+    });
+    
+    
+    if (mafiaCount === 0) {
+      gameRoom.result = GAME_HISTORY_RESULT.CITIZEN;
+    }
+    if (mafiaCount >= citienCount) {
+      gameRoom.result = GAME_HISTORY_RESULT.MAFIA;
+    }
   }
 }

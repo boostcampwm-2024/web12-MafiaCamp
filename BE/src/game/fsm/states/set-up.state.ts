@@ -34,8 +34,8 @@ export class SetUpState extends GameState {
 
   async handle(context: GameContext, next: TransitionHandler) {
     const room = context.room;
-    room.setStatus(GameRoomStatus.RUNNING);
-    await this.startVideo(room);
+    room.status = GameRoomStatus.RUNNING;
+    // await this.startVideo(room);
     await this.allocateUserRole(room);
 
     // 게임이 시작하기 전에 5초의 여유 기간을 두기 위함입니다. 프론트엔드에서는 '잠시 후 게임이 시작됩니다.'와 같은 메시지를 표시하면 좋을 것 같습니다.
