@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 import { useSocketStore } from '@/stores/socketStore';
 import { ROLE, Role } from '@/constants/role';
 import { Bounce, toast, ToastContainer } from 'react-toastify';
-import { Situation } from '@/constants/situation';
+import { Situation, SITUATION_MESSAGE } from '@/constants/situation';
 
 interface GameViewerProps {
   roomId: string;
@@ -63,47 +63,37 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       'countdown',
       (data: { situation: Situation; timeLeft: number }) => {
         if (data.situation === 'DISCUSSION' && data.timeLeft === 150) {
-          notifyInfo(
-            '낮이 되었습니다. 모든 플레이어들은 토론을 진행해 주세요.',
-          );
+          notifyInfo(SITUATION_MESSAGE.DISCUSSION);
         }
 
         if (data.situation === 'ARGUMENT' && data.timeLeft === 90) {
-          notifyInfo(
-            '처형 후보가 결정되었습니다. 후보로 결정된 플레이어는 변론을 해주세요.',
-          );
+          notifyInfo(SITUATION_MESSAGE.ARGUMENT);
         }
 
         if (data.situation === 'VOTE' && data.timeLeft === 15) {
           if (situation === 'DISCUSSION') {
-            notifyInfo(
-              '투표를 시작하겠습니다. 마피아라고 생각되는 플레이어를 선택해 주세요.',
-            );
+            notifyInfo(SITUATION_MESSAGE.PRIMARY_VOTE);
           } else if (situation === 'ARGUMENT') {
-            notifyInfo(
-              '최종 투표를 시작하겠습니다. 해당 플레이어를 죽일지, 아니면 살릴지 결정해 주세요.',
-            );
+            notifyInfo(SITUATION_MESSAGE.FINAL_VOTE);
           }
         }
 
         if (data.situation === 'MAFIA' && data.timeLeft === 30) {
           setTarget(null);
           setAllParticipantsAsCandidates();
-          notifyInfo('마피아들은 제거할 플레이어 한 명을 선택해 주세요.');
+          notifyInfo(SITUATION_MESSAGE.MAFIA);
         }
 
         if (data.situation === 'DOCTOR' && data.timeLeft === 20) {
           setTarget(null);
           setAllParticipantsAsCandidates();
-          notifyInfo(
-            '의사는 마피아로부터 보호하고 싶은 플레이어 한 명을 선택해 주세요.',
-          );
+          notifyInfo(SITUATION_MESSAGE.DOCTOR);
         }
 
         if (data.situation === 'POLICE' && data.timeLeft === 20) {
           setTarget(null);
           setAllParticipantsAsCandidates();
-          notifyInfo('경찰은 정체를 알고 싶은 플레이어 한 명을 선택해 주세요.');
+          notifyInfo(SITUATION_MESSAGE.POLICE);
         }
 
         setSituation(data.situation);
@@ -129,7 +119,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
           changeSubscriberStatus(value[0], { role: value[1] });
         });
 
-        notifyInfo('잠시 후 게임이 시작됩니다.');
+        notifyInfo(SITUATION_MESSAGE.INTERMISSION);
       },
     );
 
