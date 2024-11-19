@@ -53,9 +53,10 @@ import { PoliceInvestigateService } from './usecase/role-playing/police.investig
       provide: COUNTDOWN_TIMEOUT_USECASE,
       useClass: CountdownTimeoutService,
     },
+    TotalGameManager,
     {
       provide: VOTE_MANAGER,
-      useClass: TotalGameManager,
+      useExisting: TotalGameManager,
     },
     {
       provide: VOTE_MAFIA_USECASE,
@@ -67,7 +68,7 @@ import { PoliceInvestigateService } from './usecase/role-playing/police.investig
     },
     {
       provide: POLICE_MANAGER,
-      useClass: TotalGameManager,
+      useExisting: TotalGameManager,
     },
     {
       provide: POLICE_INVESTIGATE_USECASE,
@@ -76,7 +77,7 @@ import { PoliceInvestigateService } from './usecase/role-playing/police.investig
     ArgumentState, DiscussionState, DoctorState, MafiaState, PoliceState, SetUpState, PrimaryVoteState, FinalVoteState,
   ],
   exports: [
-    START_GAME_USECASE, ALLOCATE_USER_ROLE_USECASE, COUNTDOWN_TIMEOUT_USECASE, VOTE_MAFIA_USECASE,POLICE_INVESTIGATE_USECASE
+    START_GAME_USECASE, ALLOCATE_USER_ROLE_USECASE, COUNTDOWN_TIMEOUT_USECASE, VOTE_MAFIA_USECASE, POLICE_INVESTIGATE_USECASE,
   ],
 })
 export class GameModule {
