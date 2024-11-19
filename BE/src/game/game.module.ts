@@ -31,6 +31,7 @@ import { POLICE_INVESTIGATE_USECASE } from './usecase/role-playing/police.invest
 import { PoliceInvestigateService } from './usecase/role-playing/police.investigate.service';
 import { MAFIA_KILL_USECASE } from './usecase/role-playing/mafia.kill.usecase';
 import { MafiaKillService } from './usecase/role-playing/mafia-kill.service';
+import { MAFIA_MANAGER } from './usecase/role-playing/mafia-manager';
 
 @Module({
   imports: [TypeOrmModule.forFeature([GameHistoryEntity]), VideoServerModule],
@@ -75,6 +76,10 @@ import { MafiaKillService } from './usecase/role-playing/mafia-kill.service';
     {
       provide: POLICE_INVESTIGATE_USECASE,
       useClass: PoliceInvestigateService,
+    },
+    {
+      provide: MAFIA_MANAGER,
+      useExisting: TotalGameManager,
     },
     {
       provide: MAFIA_KILL_USECASE,

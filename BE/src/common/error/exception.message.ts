@@ -19,6 +19,8 @@ export const EXCEPTION_MESSAGE = {
     '해당하는 투표함을 찾을 수 없습니다. 다시 시도해주세요.',
   UNAUTHORIZED_USER_BALLOT_EXCEPTION:
     '해당 유저는 투표할 수 있는 권한이 없습니다. 다시 시도해주세요.',
+  UNAUTHORIZED_MAFIA_SELECT_EXCEPTION:
+    '마피아가 아닌 사용자는 이 작업을 수행할 수 없습니다.',
   CANNOT_SELECT_MAFIA_EXCEPTION:
     '마피아는 살아있는 시민들만 선택할 수 있습니다. 다시 시도해주세요.',
 } as const;

@@ -9,19 +9,23 @@ export class MafiaKillService implements MafiaKillUsecase {
     @Inject(MAFIA_MANAGER)
     private readonly mafiaManager: MafiaManager,
   ) {}
-  async mafiaSelectTarget(gameRoom: GameRoom, target: string): Promise<void> {
-    await this.mafiaManager.mafiaSelectTarget(gameRoom, target);
+  async mafiaSelectTarget(
+    gameRoom: GameRoom,
+    from: string,
+    target: string,
+  ): Promise<void> {
+    await this.mafiaManager.selectMafiaTarget(gameRoom, from, target);
   }
 
   async sendCurrentTarget(target: string, gameRoom: GameRoom): Promise<void> {
-    await this.mafiaManager.sendCurrentTarget(target, gameRoom);
+    await this.mafiaManager.sendCurrentMafiaTarget(target, gameRoom);
   }
 
   async initMafia(gameRoom: GameRoom): Promise<void> {
     await this.mafiaManager.initMafia(gameRoom);
   }
 
-  async finishMafia(gameRoom: GameRoom): Promise<void> {
-    await this.mafiaManager.finishMafia(gameRoom);
+  async decisionMafiaTarget(gameRoom: GameRoom): Promise<void> {
+    await this.mafiaManager.decisionMafiaTarget(gameRoom);
   }
 }

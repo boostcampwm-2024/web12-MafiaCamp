@@ -187,6 +187,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
     await this.mafiaKillUseCase.mafiaSelectTarget(
       room,
+      mafiaSelectTargetRequest.from,
       mafiaSelectTargetRequest.target,
     );
   }

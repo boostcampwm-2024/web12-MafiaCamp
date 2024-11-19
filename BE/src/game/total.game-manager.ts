@@ -13,6 +13,7 @@ import { PoliceManager } from './usecase/role-playing/police-manager';
 import { MafiaManager } from './usecase/role-playing/mafia-manager';
 import { NotFoundUserException } from '../common/error/not.found.user.exception';
 import { CanNotSelectMafiaException } from '../common/error/can-not.select.mafia.exception';
+import { UnauthorizedMafiaSelectException } from '../common/error/unauthorized.mafia.select.exception';
 
 interface PlayerInfo {
   role: MAFIA_ROLE;
@@ -26,8 +27,8 @@ export class TotalGameManager
   private readonly games = new MutexMap<string, Map<string, PlayerInfo>>();
   private readonly ballotBoxs = new MutexMap<string, Map<string, string[]>>();
   private readonly policeInvestigationMap = new MutexMap<string, boolean>();
-  private readonly mafiaCurrentTarget = new MutexMap<GameRoom, string>();
-  private readonly mafiaKillLogs = new MutexMap<GameRoom, string[]>();
+  private readonly mafiaCurrentTarget = new MutexMap<string, string>();
+  private readonly mafiaKillLogs = new MutexMap<string, string[]>();
 
   async register(
     gameRoom: GameRoom,
@@ -278,17 +279,27 @@ export class TotalGameManager
     await this.policeInvestigationMap.set(gameRoom.roomId, false);
   }
 
-  async selectMafiaTarget(gameRoom: GameRoom, target: string): Promise<void> {
+  async selectMafiaTarget(
+    gameRoom: GameRoom,
+    from: string,
+    target: string,
+  ): Promise<void> {
     const gameInfo = await this.games.get(gameRoom.roomId);
     if (!gameInfo) {
       throw new NotFoundGameRoomException();
     }
-
     const targetInfo = gameInfo.get(target);
+    const fromClientInfo = gameInfo.get(from);
+
+    if (
+      fromClientInfo.status !== USER_STATUS.ALIVE ||
+      fromClientInfo.role !== MAFIA_ROLE.MAFIA
+    ) {
+      throw new UnauthorizedMafiaSelectException();
+    }
     if (!targetInfo) {
       throw new NotFoundUserException();
     }
-
     if (
       targetInfo.status !== USER_STATUS.ALIVE ||
       targetInfo.role === MAFIA_ROLE.MAFIA
@@ -296,7 +307,7 @@ export class TotalGameManager
       throw new CanNotSelectMafiaException();
     }
 
-    await this.mafiaCurrentTarget.set(gameRoom, target);
+    await this.mafiaCurrentTarget.set(gameRoom.roomId, target);
     await this.sendCurrentMafiaTarget(target, gameRoom);
   }
 
@@ -309,15 +320,15 @@ export class TotalGameManager
 
   async initMafia(gameRoom: GameRoom): Promise<void> {
     await Promise.all([
-      this.mafiaCurrentTarget.set(gameRoom, 'NO_SELECTION'),
-      this.mafiaKillLogs.set(gameRoom, []),
+      this.mafiaCurrentTarget.set(gameRoom.roomId, 'NO_SELECTION'),
+      this.mafiaKillLogs.set(gameRoom.roomId, []),
     ]);
   }
 
   async decisionMafiaTarget(gameRoom: GameRoom): Promise<void> {
     const [logs, finalTarget] = await Promise.all([
-      this.mafiaKillLogs.get(gameRoom),
-      this.mafiaCurrentTarget.get(gameRoom),
+      this.mafiaKillLogs.get(gameRoom.roomId),
+      this.mafiaCurrentTarget.get(gameRoom.roomId),
     ]);
 
     if (!finalTarget) {
@@ -327,8 +338,8 @@ export class TotalGameManager
     const updateKillLogs = [...(logs || []), finalTarget];
 
     await Promise.all([
-      this.mafiaKillLogs.set(gameRoom, updateKillLogs),
-      this.mafiaCurrentTarget.delete(gameRoom),
+      this.mafiaKillLogs.set(gameRoom.roomId, updateKillLogs),
+      this.mafiaCurrentTarget.delete(gameRoom.roomId),
     ]);
   }
 }
