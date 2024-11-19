@@ -43,9 +43,8 @@ const Header = () => {
       <motion.div
         className={`${pathname === '/' && !isScrolled ? 'bg-transparent' : 'bg-slate-600/50'} fixed top-0 z-10 flex h-20 w-[80rem] flex-row items-center justify-between self-center rounded-b-3xl px-24 max-[1280px]:w-full max-[1280px]:px-12 max-[768px]:px-6`}
         initial={{ y: '-0.5rem', opacity: 0 }}
-        whileInView={{ y: '0rem', opacity: 1 }}
+        animate={{ y: '0rem', opacity: 1 }}
         transition={{ delay: 0.5, duration: 0.5 }}
-        viewport={{ once: true }}
       >
         <Link href='/'>
           <Image
@@ -95,9 +94,8 @@ const Header = () => {
             <motion.h1
               className='flex flex-col text-nowrap text-4xl text-white max-[768px]:items-center max-[768px]:text-3xl'
               initial={{ y: '0.5rem', opacity: 0 }}
-              whileInView={{ y: '0rem', opacity: 1 }}
+              animate={{ y: '0rem', opacity: 1 }}
               transition={{ duration: 0.5 }}
-              viewport={{ once: true }}
             >
               <p>누구나 즐길 수 있는</p>
               <p>마피아 게임,</p>
@@ -108,18 +106,17 @@ const Header = () => {
             <motion.button
               className='h-[3.75rem] w-[11.25rem] rounded-2xl bg-white font-bold text-slate-800 hover:bg-slate-800 hover:text-white max-[768px]:h-12 max-[768px]:w-36 max-[768px]:text-sm'
               initial={{ y: '0.5rem', opacity: 0 }}
-              whileInView={{ y: '0rem', opacity: 1 }}
+              animate={{ y: '0rem', opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.5 }}
-              viewport={{ once: true }}
+              onClick={() => alert('TODO: 구현 예정')}
             >
               QUICK START
             </motion.button>
           </div>
           <motion.div
             initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
+            animate={{ opacity: 1 }}
             transition={{ delay: 1, duration: 0.5 }}
-            viewport={{ once: true }}
           >
             <Lottie
               animationData={LottieFile}

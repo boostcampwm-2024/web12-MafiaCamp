@@ -13,7 +13,9 @@ const LobbyItem = ({ room }: LobbyItemProps) => {
       className={`${room.participants === room.capacity && 'opacity-50'} flex h-60 flex-col justify-between rounded-3xl border border-slate-200 bg-slate-600/50 p-6 duration-300 hover:bg-slate-400/50`}
     >
       <div className='flex h-8 w-20 items-center justify-center rounded-2xl border border-blue-200 bg-blue-50 text-xs text-blue-800'>
-        {ROOM_STATUS[room.status]}
+        {room.participants === room.capacity
+          ? '모집 완료'
+          : ROOM_STATUS[room.status]}
       </div>
       <div className='flex flex-col gap-3'>
         <h2 className='line-clamp-2 text-lg text-white'>{room.title}</h2>

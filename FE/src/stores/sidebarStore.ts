@@ -9,8 +9,8 @@ interface SidebarState {
 // 액션 인터페이스 정의
 interface SidebarAction {
   initialize: () => void;
-  open: () => void;
-  close: () => void;
+  openSidebar: () => void;
+  closeSidebar: () => void;
 }
 
 // 초기 상태 정의
@@ -23,8 +23,8 @@ export type SidebarStoreType = SidebarState & SidebarAction;
 const sidebarStore: StateCreator<SidebarStoreType> = (set) => ({
   ...initialState,
   initialize: () => set({ ...initialState }),
-  open: () => set({ isOpen: true }),
-  close: () => set({ isOpen: false }),
+  openSidebar: () => set({ isOpen: true }),
+  closeSidebar: () => set({ isOpen: false }),
 });
 
 export const useSidebarStore = create<SidebarStoreType>()(

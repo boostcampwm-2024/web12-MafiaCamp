@@ -19,7 +19,7 @@ interface ChattingListProps {
 const ChattingList = ({ roomId, totalParticipants }: ChattingListProps) => {
   // TODO: 커스텀 훅 생성
   const { nickname, socket } = useSocketStore();
-  const { isOpen, initialize, close } = useSidebarStore();
+  const { isOpen, initialize, closeSidebar } = useSidebarStore();
   const [chatList, setChatList] = useState<Chat[]>([]);
   const [message, setMessage] = useState('');
   const capacity = useSearchParams().get('capacity');
@@ -84,7 +84,7 @@ const ChattingList = ({ roomId, totalParticipants }: ChattingListProps) => {
               </div>
               <CloseIcon
                 className='cursor-pointer rounded-lg fill-white hover:bg-slate-400'
-                onClick={() => close()}
+                onClick={() => closeSidebar()}
               />
             </div>
           </div>

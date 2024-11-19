@@ -10,15 +10,15 @@ const ChattingItem = ({ isSelf, nickname, content }: ChattingItemProps) => {
   if (isSelf) {
     return (
       <div className='flex flex-col items-end text-sm text-white'>
-        <div className='flex flex-row items-center gap-2'>
-          <p className='text-xs'>
+        <div className='flex max-w-full flex-row items-center gap-2'>
+          <p className='text-nowrap text-xs'>
             {new Date().toLocaleTimeString('ko', {
               hour12: true,
               hour: 'numeric',
               minute: 'numeric',
             })}
           </p>
-          <div className='flex h-6 items-center justify-center rounded-t-lg bg-slate-600 px-3'>
+          <div className='truncate rounded-t-lg bg-slate-600 px-3 py-0.5'>
             {nickname}
           </div>
         </div>
@@ -31,11 +31,11 @@ const ChattingItem = ({ isSelf, nickname, content }: ChattingItemProps) => {
 
   return (
     <div className='flex flex-col items-start text-sm text-slate-800'>
-      <div className='flex flex-row items-center gap-2'>
-        <div className='flex h-6 items-center justify-center rounded-t-lg bg-white px-3'>
+      <div className='flex w-full flex-row items-center gap-2'>
+        <div className='truncate rounded-t-lg bg-white px-3 py-0.5'>
           {nickname}
         </div>
-        <p className='text-xs text-white'>
+        <p className='text-nowrap text-xs text-white'>
           {new Date().toLocaleTimeString('ko', {
             hour12: true,
             hour: 'numeric',

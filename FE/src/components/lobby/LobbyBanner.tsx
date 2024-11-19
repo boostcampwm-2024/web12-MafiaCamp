@@ -17,9 +17,8 @@ const LobbyBanner = () => {
           <motion.div
             className='flex flex-col items-start gap-8 max-[1080px]:items-center'
             initial={{ y: '0.5rem', opacity: 0 }}
-            whileInView={{ y: '0rem', opacity: 1 }}
+            animate={{ y: '0rem', opacity: 1 }}
             transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
           >
             <h2 className='text-3xl font-bold text-white max-[768px]:text-2xl'>
               <p>생성되어 있는 방에 들어가거나</p>
@@ -34,9 +33,8 @@ const LobbyBanner = () => {
           </motion.div>
           <motion.div
             initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
+            animate={{ opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.5 }}
-            viewport={{ once: true }}
           >
             <Lottie animationData={LottieFile} className='h-[22.5rem]' />
           </motion.div>
