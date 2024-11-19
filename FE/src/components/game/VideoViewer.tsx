@@ -100,15 +100,19 @@ const VideoViewer = ({
         <div className='pointer-events-none absolute bottom-0 left-0 z-10 h-full w-full bg-slate-800/75' />
       )}
       {situation === 'VOTE' && (
-        <button
-          className={[
-            `${target === 'INVALIDITY' ? 'border-2 bg-slate-600 text-white' : 'bg-white font-bold text-slate-800'}`,
-            'absolute right-0 top-0 z-20 h-[3.75rem] w-[11.25rem] rounded-2xl border border-slate-400 font-bold hover:bg-slate-600 hover:text-white',
-          ].join(' ')}
-          onClick={handleInvalityButtonClick}
+        <div
+          className={`${isOpen ? 'right-[21.5rem]' : 'right-6'} fixed bottom-3 left-6 z-20 h-[3.75rem] transition-all duration-500 ease-out`}
         >
-          {`기권 ${invalidityCount}`}
-        </button>
+          <button
+            className={[
+              `${target === 'INVALIDITY' ? 'border-2 bg-slate-600 text-white' : 'bg-white font-bold text-slate-800'}`,
+              'h-full w-full rounded-2xl border border-slate-400 font-bold hover:bg-slate-600 hover:text-white',
+            ].join(' ')}
+            onClick={handleInvalityButtonClick}
+          >
+            {`기권 ${invalidityCount}`}
+          </button>
+        </div>
       )}
       <div
         className={[
