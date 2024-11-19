@@ -9,12 +9,12 @@ export class MafiaKillService implements MafiaKillUsecase {
     @Inject(MAFIA_MANAGER)
     private readonly mafiaManager: MafiaManager,
   ) {}
-  async mafiaSelectTarget(
+  async selectMafiaTarget(
     gameRoom: GameRoom,
     from: string,
     killTarget: string,
   ): Promise<void> {
-    await this.mafiaManager.selectMafiaTarget(gameRoom, from, killTarget);
+    await this.mafiaManager.mafiaSelectTarget(gameRoom, from, killTarget);
   }
 
   async sendCurrentTarget(

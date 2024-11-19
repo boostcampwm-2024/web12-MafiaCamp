@@ -28,7 +28,7 @@ import {
   POLICE_INVESTIGATE_USECASE,
   PoliceInvestigateUsecase,
 } from '../game/usecase/role-playing/police.investigate.usecase';
-import { MafiaSelectTargetRequest } from '../game/dto/mafia.select.target.request';
+import { SelectMafiaTargetRequest } from '../game/dto/select.mafia.target.request';
 import {
   MAFIA_KILL_USECASE,
   MafiaKillUsecase,
@@ -180,15 +180,15 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('select-mafia-target')
   async selectMafiaTarget(
-    @MessageBody() mafiaSelectTargetRequest: MafiaSelectTargetRequest,
+    @MessageBody() selectMafiaTargetRequest: SelectMafiaTargetRequest,
   ) {
     const room = this.gameRoomService.findRoomById(
-      mafiaSelectTargetRequest.roomId,
+      selectMafiaTargetRequest.roomId,
     );
-    await this.mafiaKillUseCase.mafiaSelectTarget(
+    await this.mafiaKillUseCase.selectMafiaTarget(
       room,
-      mafiaSelectTargetRequest.from,
-      mafiaSelectTargetRequest.killTarget,
+      selectMafiaTargetRequest.from,
+      selectMafiaTargetRequest.killTarget,
     );
   }
 

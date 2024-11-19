@@ -14,6 +14,7 @@ import { MafiaManager } from './usecase/role-playing/mafia-manager';
 import { NotFoundUserException } from '../common/error/not.found.user.exception';
 import { CanNotSelectMafiaException } from '../common/error/can-not.select.mafia.exception';
 import { UnauthorizedMafiaSelectException } from '../common/error/unauthorized.mafia.select.exception';
+import { DoctorManager } from './usecase/role-playing/doctor-manager';
 
 interface PlayerInfo {
   role: MAFIA_ROLE;
@@ -22,7 +23,7 @@ interface PlayerInfo {
 
 @Injectable()
 export class TotalGameManager
-  implements VoteManager, PoliceManager, MafiaManager
+  implements VoteManager, PoliceManager, MafiaManager, DoctorManager
 {
   private readonly games = new MutexMap<string, Map<string, PlayerInfo>>();
   private readonly ballotBoxs = new MutexMap<string, Map<string, string[]>>();
@@ -229,6 +230,23 @@ export class TotalGameManager
     return VOTE_STATE.FINAL;
   }
 
+  async isPoliceAlive(gameRoom: GameRoom): Promise<boolean> {
+    const gameInfo = await this.games.get(gameRoom.roomId);
+    if (!gameInfo) {
+      throw new NotFoundGameRoomException();
+    }
+
+    for (const playerInfo of gameInfo.values()) {
+      if (
+        playerInfo.role === MAFIA_ROLE.POLICE &&
+        playerInfo.status === USER_STATUS.ALIVE
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   async executePolice(
     gameRoom: GameRoom,
     police: string,
@@ -341,5 +359,34 @@ export class TotalGameManager
       this.mafiaKillLogs.set(gameRoom.roomId, updateKillLogs),
       this.mafiaCurrentTarget.delete(gameRoom.roomId),
     ]);
+  }
+
+  async isDoctorAlive(gameRoom: GameRoom): Promise<boolean> {
+    const gameInfo = await this.games.get(gameRoom.roomId);
+    if (!gameInfo) {
+      throw new NotFoundGameRoomException();
+    }
+
+    for (const playerInfo of gameInfo.values()) {
+      if (
+        playerInfo.role === MAFIA_ROLE.DOCTOR &&
+        playerInfo.status === USER_STATUS.ALIVE
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  async selectDoctorTarget(
+    gameRoom: GameRoom,
+    from: string,
+    saveTarget: string,
+  ): Promise<boolean> {
+    return;
+  }
+
+  async initDoctor(gameRoom: GameRoom): Promise<void> {
+    return;
   }
 }
