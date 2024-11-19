@@ -1,4 +1,4 @@
-import { GameUserEntity } from '../enitity/game-user.entity';
+import { GameUserEntity } from '../entity/game-user.entity';
 
 export const FIND_GAME_USER_USECASE = Symbol('FIND_GAME_USER_USECASE');
 

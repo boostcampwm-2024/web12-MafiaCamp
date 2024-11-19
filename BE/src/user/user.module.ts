@@ -8,10 +8,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from './entity/user.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([UserEntity]),
-  ]
-  , providers: [
+  imports: [TypeOrmModule.forFeature([UserEntity])],
+  providers: [
     {
       provide: USER_REPOSITORY,
       useClass: TypeormUserRepository,

@@ -1,11 +1,16 @@
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { GAME_STATUS} from './game-status';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { GAME_STATUS } from './game-status';
 import { GAME_HISTORY_RESULT } from './game-history.result';
-import { GameUserEntity } from '../../game-user/enitity/game-user.entity';
+import { GameUserEntity } from '../../game-user/entity/game-user.entity';
 
 @Entity('game_history')
 export class GameHistoryEntity {
-
   @PrimaryGeneratedColumn('increment', {
     type: 'bigint',
     name: 'game_id',
@@ -42,10 +47,7 @@ export class GameHistoryEntity {
   })
   gameStatus: GAME_STATUS;
 
-  @OneToMany(
-    () => GameUserEntity,
-    gameUser => gameUser.gameHistory,
-  )
+  @OneToMany(() => GameUserEntity, (gameUser) => gameUser.gameHistory)
   gameUsers: Array<GameUserEntity>;
 
   constructor() {

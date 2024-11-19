@@ -4,12 +4,14 @@ import { EXCEPTION_MESSAGE } from './exception.message';
 
 export class NotFoundGameUserException extends HttpException {
   constructor() {
-    super({
+    super(
+      {
         code: EXCEPTION_CODE.NOT_FOUND_GAME_USER_EXCEPTION,
         message: EXCEPTION_MESSAGE.NOT_FOUND_GAME_USER_EXCEPTION,
         error: 'NotFoundGameUserException',
         statusCode: HttpStatus.BAD_REQUEST,
       },
-      HttpStatus.BAD_REQUEST);
+      HttpStatus.BAD_REQUEST,
+    );
   }
 }

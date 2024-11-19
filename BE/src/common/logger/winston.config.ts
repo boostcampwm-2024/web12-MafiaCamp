@@ -5,49 +5,52 @@ import * as path from 'path';
 import * as process from 'process';
 
 const createLokiFormat = (configService: ConfigService) => {
-  return winston.format.printf(({ timestamp, level, message, context, ...meta }) => {
-    return JSON.stringify({
-      ts: timestamp,
-      labels: {
-        level,
-        app: configService.get<string>('APPLICATION_NAME'),
-        environment: configService.get<string>('NODE_ENV', 'development'),
-        context: context || 'default',
-      },
-      content: {
-        message: typeof message === 'object' ? JSON.stringify(message) : message,
-        ...meta,
-      },
-    });
-  });
+  return winston.format.printf(
+    ({ timestamp, level, message, context, ...meta }) => {
+      return JSON.stringify({
+        ts: timestamp,
+        labels: {
+          level,
+          app: configService.get<string>('APPLICATION_NAME'),
+          environment: configService.get<string>('NODE_ENV', 'development'),
+          context: context || 'default',
+        },
+        content: {
+          message:
+            typeof message === 'object' ? JSON.stringify(message) : message,
+          ...meta,
+        },
+      });
+    },
+  );
 };
 
 const koreanTimestamp = {
   format: 'YYYY-MM-DD HH:mm:ss.SSS Z',
-  tz: 'Asia/Seoul'
-}
+  tz: 'Asia/Seoul',
+};
 
 export const winstonConfig = (configService: ConfigService) => {
   return {
     transports: [
       new winston.transports.Console({
-        level: configService.get<string>('LOG_LEVEL','info'),
+        level: configService.get<string>('LOG_LEVEL', 'info'),
         format: winston.format.combine(
           winston.format.timestamp(koreanTimestamp),
           winston.format.colorize(),
-          createLokiFormat(configService)
-        )
+          createLokiFormat(configService),
+        ),
       }),
       new DailyRotateFile({
-        dirname: path.join(process.cwd(),'logs'),
+        dirname: path.join(process.cwd(), 'logs'),
         filename: '%DATE%.log',
         datePattern: 'YYYY-MM-DD',
         maxFiles: '7d',
         format: winston.format.combine(
           winston.format.timestamp(koreanTimestamp),
-          createLokiFormat(configService)
-        )
-      })
-    ]
-  }
+          createLokiFormat(configService),
+        ),
+      }),
+    ],
+  };
 };

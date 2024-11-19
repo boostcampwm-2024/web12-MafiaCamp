@@ -1,9 +1,14 @@
-import { Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { GameUserEntity } from '../../game-user/enitity/game-user.entity';
+import {
+  Column,
+  Entity,
+  Index,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { GameUserEntity } from '../../game-user/entity/game-user.entity';
 
 @Entity('user')
 export class UserEntity {
-
   @PrimaryGeneratedColumn('increment', {
     type: 'bigint',
     name: 'user_id',
@@ -40,7 +45,6 @@ export class UserEntity {
   })
   score: number;
 
-
   @Column({
     type: 'datetime',
     name: 'created_at',
@@ -49,14 +53,16 @@ export class UserEntity {
   @Index('idx_created_at')
   createdAt: Date;
 
-  @OneToMany(
-    () => GameUserEntity,
-    gameUser => gameUser.user,
-  )
+  @OneToMany(() => GameUserEntity, (gameUser) => gameUser.user)
   gameUsers: Array<GameUserEntity>;
 
-
-  private constructor(email: string, nickname: string, oAuthId: string, score: number, createdAt: Date) {
+  private constructor(
+    email: string,
+    nickname: string,
+    oAuthId: string,
+    score: number,
+    createdAt: Date,
+  ) {
     this.email = email;
     this.nickname = nickname;
     this.oAuthId = oAuthId;

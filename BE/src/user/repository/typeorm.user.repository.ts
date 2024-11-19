@@ -4,12 +4,13 @@ import { Repository } from 'typeorm';
 import { NotFoundUserException } from '../../common/error/not.found.user.exception';
 import { InjectRepository } from '@nestjs/typeorm';
 
-export class TypeormUserRepository implements UserRepository<UserEntity, number> {
-
+export class TypeormUserRepository
+  implements UserRepository<UserEntity, number>
+{
   constructor(
     @InjectRepository(UserEntity)
-    private readonly _repository: Repository<UserEntity>) {
-  }
+    private readonly _repository: Repository<UserEntity>,
+  ) {}
 
   async save(userEntity: UserEntity): Promise<void> {
     await this._repository.insert(userEntity);
@@ -24,5 +25,4 @@ export class TypeormUserRepository implements UserRepository<UserEntity, number>
     }
     throw new NotFoundUserException();
   }
-
 }

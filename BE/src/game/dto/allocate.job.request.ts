@@ -1,11 +1,8 @@
-import { IsArray, IsNumber } from 'class-validator';
+import { GameRoom } from '../../game-room/entity/game-room.model';
 
 export class AllocateJobRequest {
 
-  @IsArray()
-  @IsNumber({}, { each: true })
-  readonly playerIds: Array<number>;
-  constructor(playerIds : Array<number>) {
-    this.playerIds = playerIds;
+  constructor(readonly gameRoom:GameRoom) {
   }
+
 }
