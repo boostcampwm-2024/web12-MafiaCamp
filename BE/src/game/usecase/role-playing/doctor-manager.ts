@@ -1,8 +1,8 @@
 import { GameRoom } from '../../../game-room/entity/game-room.model';
 
-export const DOCTOR_SAVE_USECASE = Symbol('DOCTOR_SAVE_USECASE');
+export const DOCTOR_MANAGER = Symbol('DOCTOR_MANAGER');
 
-export interface DoctorSaveUsecase {
+export interface DoctorManager {
   isDoctorAlive(gameRoom: GameRoom): Promise<boolean>;
 
   selectDoctorTarget(

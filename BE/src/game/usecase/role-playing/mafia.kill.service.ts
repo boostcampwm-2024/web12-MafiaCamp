@@ -14,7 +14,7 @@ export class MafiaKillService implements MafiaKillUsecase {
     from: string,
     killTarget: string,
   ): Promise<void> {
-    await this.mafiaManager.mafiaSelectTarget(gameRoom, from, killTarget);
+    await this.mafiaManager.selectMafiaTarget(gameRoom, from, killTarget);
   }
 
   async sendCurrentTarget(
