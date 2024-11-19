@@ -79,7 +79,7 @@ const ChattingList = ({
         >
           <div className='flex h-16 w-full flex-row items-center justify-between gap-3 bg-slate-600 p-4 text-white'>
             <h2 className='truncate text-nowrap text-sm'>
-              마피아 게임을 좋아하는 누구나 환영합니다.
+              {'TODO: 제목 받아오기'}
             </h2>
             <div className='flex flex-row items-center gap-3'>
               <div className='flex flex-row items-center gap-2 text-sm'>

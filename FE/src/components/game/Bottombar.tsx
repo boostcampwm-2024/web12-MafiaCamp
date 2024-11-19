@@ -56,9 +56,11 @@ const Bottombar = ({
     <div
       className={`${isOpen ? 'right-80' : 'right-0'} absolute bottom-0 left-0 flex h-16 flex-row items-center gap-4 text-nowrap bg-slate-600/50 pl-6 text-sm text-slate-200 transition-all duration-500 ease-out`}
     >
-      <h1 className={`${situation === null && 'hidden'} text-lg text-white`}>
-        {situation} / 남은 시간 / {timeLeft}
-      </h1>
+      {situation !== null && (
+        <h1 className='text-lg text-white'>
+          {situation} / 남은 시간 / {timeLeft}
+        </h1>
+      )}
       <div
         className='flex w-full flex-row items-center justify-between gap-4 overflow-x-auto p-1 pr-6'
         ref={listRef}

@@ -8,7 +8,7 @@ import VideoViewer from './VideoViewer';
 import { useEffect, useState } from 'react';
 import { useSocketStore } from '@/stores/socketStore';
 import { ROLE, Role } from '@/constants/role';
-import { Bounce, toast, ToastContainer } from 'react-toastify';
+import { Slide, toast, ToastContainer } from 'react-toastify';
 import { Situation, SITUATION_MESSAGE } from '@/constants/situation';
 
 interface GameViewerProps {
@@ -50,7 +50,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       draggable: false,
       progress: undefined,
       theme: 'light',
-      transition: Bounce,
+      transition: Slide,
     });
 
   useEffect(() => {

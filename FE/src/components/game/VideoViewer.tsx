@@ -108,7 +108,7 @@ const VideoViewer = ({
         <div
           className={[
             `${isOpen ? 'right-[21.5rem]' : 'right-6'}`,
-            'fixed bottom-3 left-6 z-20 h-[3.75rem] transition-all duration-500 ease-out',
+            'fixed bottom-3 z-20 h-20 w-40 transition-all duration-500 ease-out',
           ].join(' ')}
         >
           <button
