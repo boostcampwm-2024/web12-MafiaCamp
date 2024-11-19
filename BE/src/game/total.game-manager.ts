@@ -170,7 +170,7 @@ export class TotalGameManager
     const maxVotedUsers = this.findMostVotedUser(ballotBox);
 
     if (
-      (maxVotedUsers.length === 1 && maxVotedUsers[0] !== null) ||
+      (maxVotedUsers.length === 1 && maxVotedUsers[0] !== 'INVALIDITY') ||
       maxVotedUsers.length > 1
     ) {
       /*
