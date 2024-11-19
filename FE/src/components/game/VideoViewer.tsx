@@ -13,7 +13,7 @@ interface VideoViewerProps {
   roomId: string;
   isGameStarted: boolean;
   situation: Situation | null;
-  gamePublisher: GamePublisher | null;
+  gamePublisher: GamePublisher;
   gameSubscribers: GameSubscriber[];
   target: string | null;
   invalidityCount: number;
@@ -45,14 +45,14 @@ const VideoViewer = ({
   const totalSurvivors = useMemo(
     () =>
       isGameStarted
-        ? (gamePublisher?.participant ? 1 : 0) +
+        ? (gamePublisher.participant ? 1 : 0) +
           gameSubscribers.reduce(
             (total, gameSubscriber) =>
               total + (gameSubscriber.participant ? 1 : 0),
             0,
           )
         : gameSubscribers.length + 1,
-    [gamePublisher?.participant, gameSubscribers, isGameStarted],
+    [gamePublisher.participant, gameSubscribers, isGameStarted],
   );
 
   const handleInvalityButtonClick = () => {
@@ -95,7 +95,8 @@ const VideoViewer = ({
     >
       {(situation === 'VOTE' ||
         situation === 'ARGUMENT' ||
-        (situation === 'POLICE' && gamePublisher?.role === 'POLICE')) && (
+        (situation === 'MAFIA' && gamePublisher.role === 'MAFIA') ||
+        (situation === 'POLICE' && gamePublisher.role === 'POLICE')) && (
         <div className='pointer-events-none absolute bottom-0 left-0 z-10 h-full w-full bg-slate-800/75' />
       )}
       {situation === 'VOTE' && (
@@ -116,12 +117,10 @@ const VideoViewer = ({
           'grid h-full min-w-[67.5rem] gap-6',
         ].join(' ')}
       >
-        {(!isGameStarted || gamePublisher?.participant) && (
+        {(!isGameStarted || gamePublisher.participant) && (
           <VideoItem
             roomId={roomId}
-            playerRole={gamePublisher?.role}
-            gameParticipantNickname={nickname}
-            gameParticipantRole={gamePublisher?.role}
+            playerRole={gamePublisher.role}
             gameParticipant={gamePublisher}
             situation={situation}
             target={target}
@@ -136,9 +135,7 @@ const VideoViewer = ({
             <VideoItem
               key={gameSubscriber.nickname}
               roomId={roomId}
-              playerRole={gamePublisher?.role}
-              gameParticipantNickname={gameSubscriber.nickname}
-              gameParticipantRole={gameSubscriber.role}
+              playerRole={gamePublisher.role}
               gameParticipant={gameSubscriber}
               situation={situation}
               target={target}

@@ -183,14 +183,23 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       },
     );
 
+    // 실시간 마피아 타겟 확인
+    if (gamePublisher.role === 'MAFIA') {
+      socket?.on('mafia-current-target', (target: string) => {
+        setTarget(target);
+      });
+    }
+
     // 경찰 조사 결과 확인
-    socket?.on(
-      'police-investigation-result',
-      (data: { criminal: string; criminalJob: Role }) => {
-        changeSubscriberStatus(data.criminal, { role: data.criminalJob });
-        notifyInfo(`${data.criminal} 님은 ${ROLE[data.criminalJob]}입니다.`);
-      },
-    );
+    if (gamePublisher.role === 'POLICE') {
+      socket?.on(
+        'police-investigation-result',
+        (data: { criminal: string; criminalJob: Role }) => {
+          changeSubscriberStatus(data.criminal, { role: data.criminalJob });
+          notifyInfo(`${data.criminal} 님은 ${ROLE[data.criminalJob]}입니다.`);
+        },
+      );
+    }
 
     return () => {
       socket?.off('countdown');
@@ -206,6 +215,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     changeSubscriberStatus,
     eliminatePublisher,
     gamePublisher.nickname,
+    gamePublisher.role,
     initializeVotes,
     setAllParticipantsAsCandidates,
     situation,
