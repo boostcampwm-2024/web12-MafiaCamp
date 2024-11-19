@@ -3,6 +3,7 @@ import { v4 as uuid } from 'uuid';
 import { CreateRoomRequest } from '../dto/create-room.request';
 import { GameRoomStatus } from './game-room.status';
 import { GameClient } from './game-client.model';
+import { MAFIA_ROLE } from '../../game/mafia-role';
 
 export class GameRoom {
   private _roomId: string = uuid();
@@ -40,14 +41,22 @@ export class GameRoom {
     this.sendAll('participants', participants);
   }
 
-  sendAll(event : string, ...args) {
+  sendAll(event: string, ...args) {
     this._clients.forEach((c) => c.send(event, ...args));
+  }
+
+  sendToRole(role: MAFIA_ROLE, event: string, ...args) {
+    this._clients
+      .filter((c) => c.job === role)
+      .forEach((c) => {
+        c.send(event, ...args);
+      });
   }
 
   isFull() {
     return this.participants === this.capacity;
   }
-  
+
   toResponse() {
     return {
       roomId: this._roomId,
