@@ -12,13 +12,16 @@ export class MafiaKillService implements MafiaKillUsecase {
   async mafiaSelectTarget(
     gameRoom: GameRoom,
     from: string,
-    target: string,
+    killTarget: string,
   ): Promise<void> {
-    await this.mafiaManager.selectMafiaTarget(gameRoom, from, target);
+    await this.mafiaManager.selectMafiaTarget(gameRoom, from, killTarget);
   }
 
-  async sendCurrentTarget(target: string, gameRoom: GameRoom): Promise<void> {
-    await this.mafiaManager.sendCurrentMafiaTarget(target, gameRoom);
+  async sendCurrentTarget(
+    killTarget: string,
+    gameRoom: GameRoom,
+  ): Promise<void> {
+    await this.mafiaManager.sendCurrentMafiaTarget(killTarget, gameRoom);
   }
 
   async initMafia(gameRoom: GameRoom): Promise<void> {

@@ -282,13 +282,13 @@ export class TotalGameManager
   async selectMafiaTarget(
     gameRoom: GameRoom,
     from: string,
-    target: string,
+    killTarget: string,
   ): Promise<void> {
     const gameInfo = await this.games.get(gameRoom.roomId);
     if (!gameInfo) {
       throw new NotFoundGameRoomException();
     }
-    const targetInfo = gameInfo.get(target);
+    const targetInfo = gameInfo.get(killTarget);
     const fromClientInfo = gameInfo.get(from);
 
     if (
@@ -307,15 +307,15 @@ export class TotalGameManager
       throw new CanNotSelectMafiaException();
     }
 
-    await this.mafiaCurrentTarget.set(gameRoom.roomId, target);
-    await this.sendCurrentMafiaTarget(target, gameRoom);
+    await this.mafiaCurrentTarget.set(gameRoom.roomId, killTarget);
+    await this.sendCurrentMafiaTarget(killTarget, gameRoom);
   }
 
   async sendCurrentMafiaTarget(
-    target: string,
+    killTarget: string,
     gameRoom: GameRoom,
   ): Promise<void> {
-    gameRoom.sendToRole(MAFIA_ROLE.MAFIA, 'mafia-current-target', target);
+    gameRoom.sendToRole(MAFIA_ROLE.MAFIA, 'mafia-current-target', killTarget);
   }
 
   async initMafia(gameRoom: GameRoom): Promise<void> {

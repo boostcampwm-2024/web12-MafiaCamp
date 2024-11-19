@@ -30,7 +30,7 @@ import { POLICE_MANAGER } from './usecase/role-playing/police-manager';
 import { POLICE_INVESTIGATE_USECASE } from './usecase/role-playing/police.investigate.usecase';
 import { PoliceInvestigateService } from './usecase/role-playing/police.investigate.service';
 import { MAFIA_KILL_USECASE } from './usecase/role-playing/mafia.kill.usecase';
-import { MafiaKillService } from './usecase/role-playing/mafia-kill.service';
+import { MafiaKillService } from './usecase/role-playing/mafia.kill.service';
 import { MAFIA_MANAGER } from './usecase/role-playing/mafia-manager';
 
 @Module({
