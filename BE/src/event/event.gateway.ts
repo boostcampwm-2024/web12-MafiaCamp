@@ -195,7 +195,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     await this.mafiaKillUseCase.selectMafiaTarget(
       room,
       selectMafiaTargetRequest.from,
-      selectMafiaTargetRequest.killTarget,
+      selectMafiaTargetRequest.target,
     );
   }
 
@@ -208,7 +208,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     await this.doctorSaveUsecase.selectDoctorTarget(
       room,
       selectDoctorTarget.from,
-      selectDoctorTarget.saveTarget,
+      selectDoctorTarget.target,
     );
   }
 
