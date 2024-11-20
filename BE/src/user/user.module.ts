@@ -12,7 +12,7 @@ import { UPDATE_USER_USECASE } from './usecase/update.user.usecase';
 import { UserController } from './controller/user.controller';
 
 @Module({
-  controllers: [AuthController,UserController],
+  controllers: [AuthController, UserController],
   imports: [TypeOrmModule.forFeature([UserEntity])],
   providers: [
     {
@@ -29,12 +29,12 @@ import { UserController } from './controller/user.controller';
     },
     {
       provide: LOGIN_USER_USECASE,
-      useClass: UserService
+      useClass: UserService,
     },
     {
       provide: UPDATE_USER_USECASE,
-      useClass: UserService
-    }
+      useClass: UserService,
+    },
   ],
   exports: [FIND_USER_USECASE, REGISTER_USER_USECASE],
 })

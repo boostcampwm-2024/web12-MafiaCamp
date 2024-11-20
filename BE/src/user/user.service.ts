@@ -67,7 +67,7 @@ export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginU
       await this.register(new RegisterUserRequest(userInfo.data.kakao_account.email, nickname, userInfo.data.id));
       return new RegisterUserResponse(nickname, userEntity.userId);
     }
-
+    return new RegisterUserResponse(userEntity.nickname, userEntity.userId);
   }
 
   @Transactional()
