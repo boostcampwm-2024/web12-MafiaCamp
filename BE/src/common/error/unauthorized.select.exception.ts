@@ -2,13 +2,13 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 import { EXCEPTION_CODE } from './exception.code';
 import { EXCEPTION_MESSAGE } from './exception.message';
 
-export class CanNotSelectMafiaException extends HttpException {
+export class UnauthorizedSelectException extends HttpException {
   constructor() {
     super(
       {
-        code: EXCEPTION_CODE.CANNOT_SELECT_MAFIA_EXCEPTION,
-        message: EXCEPTION_MESSAGE.CANNOT_SELECT_MAFIA_EXCEPTION,
-        error: 'CanNotSelectMafiaException',
+        code: EXCEPTION_CODE.UNAUTHORIZED_USER_SELECT_EXCEPTION,
+        message: EXCEPTION_MESSAGE.UNAUTHORIZED_USER_SELECT_EXCEPTION,
+        error: 'UnauthorizedSelectException',
         statusCode: HttpStatus.BAD_REQUEST,
       },
       HttpStatus.BAD_REQUEST,

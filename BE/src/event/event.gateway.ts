@@ -28,11 +28,16 @@ import {
   POLICE_INVESTIGATE_USECASE,
   PoliceInvestigateUsecase,
 } from '../game/usecase/role-playing/police.investigate.usecase';
-import { MafiaSelectTargetRequest } from '../game/dto/mafia.select.target.request';
+import { SelectMafiaTargetRequest } from '../game/dto/select.mafia.target.request';
 import {
   MAFIA_KILL_USECASE,
   MafiaKillUsecase,
 } from '../game/usecase/role-playing/mafia.kill.usecase';
+import { SelectDoctorTargetRequest } from '../game/dto/select.doctor.target.request';
+import {
+  DOCTOR_SAVE_USECASE,
+  DoctorSaveUsecase,
+} from '../game/usecase/role-playing/doctor.save.usecase';
 
 // @UseInterceptors(WebsocketLoggerInterceptor)
 @WebSocketGateway({
@@ -56,6 +61,8 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly policeInvestigateUsecase: PoliceInvestigateUsecase,
     @Inject(MAFIA_KILL_USECASE)
     private readonly mafiaKillUseCase: MafiaKillUsecase,
+    @Inject(DOCTOR_SAVE_USECASE)
+    private readonly doctorSaveUsecase: DoctorSaveUsecase,
   ) {}
 
   handleConnection(socket: Socket) {
@@ -180,15 +187,28 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('select-mafia-target')
   async selectMafiaTarget(
-    @MessageBody() mafiaSelectTargetRequest: MafiaSelectTargetRequest,
+    @MessageBody() selectMafiaTargetRequest: SelectMafiaTargetRequest,
   ) {
     const room = this.gameRoomService.findRoomById(
-      mafiaSelectTargetRequest.roomId,
+      selectMafiaTargetRequest.roomId,
     );
-    await this.mafiaKillUseCase.mafiaSelectTarget(
+    await this.mafiaKillUseCase.selectMafiaTarget(
       room,
-      mafiaSelectTargetRequest.from,
-      mafiaSelectTargetRequest.target,
+      selectMafiaTargetRequest.from,
+      selectMafiaTargetRequest.target,
+    );
+  }
+
+  @SubscribeMessage('select-doctor-target')
+  async selectDoctorTarget(
+    @MessageBody() selectDoctorTarget: SelectDoctorTargetRequest,
+  ) {
+    const room = this.gameRoomService.findRoomById(selectDoctorTarget.roomId);
+
+    await this.doctorSaveUsecase.selectDoctorTarget(
+      room,
+      selectDoctorTarget.from,
+      selectDoctorTarget.target,
     );
   }
 
