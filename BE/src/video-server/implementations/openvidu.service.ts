@@ -4,6 +4,16 @@ import { ConfigService } from '@nestjs/config';
 import { VideoServerUsecase } from '../usecase/video-server.usecase';
 import { SessionParticipant } from '../types/session-participant.type';
 import { OpenViduRoleType } from '../types/openvidu.type';
+import {
+  OpenviduSessionCloseFailedException,
+  OpenviduSessionCreateFailedException,
+  OpenviduSessionNotFoundException,
+} from '../../common/error/openvidu.session.exception';
+import { OpenViduTokenGenerationFailedException } from '../../common/error/openvidu.token.exception';
+import {
+  OpenViduParticipantDisconnectFailedException,
+  OpenViduParticipantListFetchFailedException,
+} from '../../common/error/openvidu.participant.exception';
 
 @Injectable()
 export class OpenviduService implements VideoServerUsecase {
@@ -26,7 +36,7 @@ export class OpenviduService implements VideoServerUsecase {
       return session.sessionId;
     } catch (error) {
       console.error(`Failed to create session: ${error.message}`);
-      throw new Error('세션 생성에 실패했습니다.');
+      throw new OpenviduSessionCreateFailedException();
     }
   }
 
@@ -52,7 +62,7 @@ export class OpenviduService implements VideoServerUsecase {
       console.log(`Session ${roomId} successfully closed and cleaned up`);
     } catch (error) {
       console.error(`Failed to close session: ${error.message}`);
-      throw new Error('세션 닫기에 실패했습니다.');
+      throw new OpenviduSessionCloseFailedException();
     }
   }
 
@@ -64,7 +74,7 @@ export class OpenviduService implements VideoServerUsecase {
   ): Promise<string> {
     try {
       const session = this.sessions.get(roomId);
-      if (!session) throw new Error('세션을 찾을 수 없습니다.');
+      if (!session) throw new OpenviduSessionNotFoundException();
 
       const openViduRole = OpenViduRole[role];
       const connection = await session.createConnection({
@@ -75,14 +85,14 @@ export class OpenviduService implements VideoServerUsecase {
       return connection.token;
     } catch (error) {
       console.error(`Failed to generate token: ${error.message}`);
-      throw new Error('토큰 생성에 실패했습니다.');
+      throw new OpenViduTokenGenerationFailedException();
     }
   }
 
   async handleLeaveParticipant(roomId: string, userId: string): Promise<void> {
     try {
       const session = this.sessions.get(roomId);
-      if (!session) throw new Error('세션을 찾을 수 없습니다.');
+      if (!session) throw new OpenviduSessionNotFoundException();
 
       await session.fetch();
       const connection = session.activeConnections.find(
@@ -95,14 +105,14 @@ export class OpenviduService implements VideoServerUsecase {
       }
     } catch (error) {
       console.error(`Failed to handle participant leave: ${error.message}`);
-      throw new Error('참가자 연결 해제에 실패했습니다.');
+      throw new OpenViduParticipantDisconnectFailedException();
     }
   }
 
   async getActiveParticipants(roomId: string): Promise<SessionParticipant[]> {
     try {
       const session = this.sessions.get(roomId);
-      if (!session) throw new Error('세션을 찾을 수 없습니다.');
+      if (!session) throw new OpenviduSessionNotFoundException();
 
       await session.fetch();
       return session.activeConnections.map((connection) => ({
@@ -114,7 +124,7 @@ export class OpenviduService implements VideoServerUsecase {
       }));
     } catch (error) {
       console.error(`Failed to get participants: ${error.message}`);
-      throw new Error('참가자 목록 조회에 실패했습니다.');
+      throw new OpenViduParticipantListFetchFailedException();
     }
   }
 }
