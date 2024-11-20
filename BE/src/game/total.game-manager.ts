@@ -1,5 +1,5 @@
 import { VoteManager } from './usecase/vote-manager/vote-manager';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { GameRoom } from '../game-room/entity/game-room.model';
 import { GameClient } from '../game-room/entity/game-client.model';
 import { MAFIA_ROLE } from './mafia-role';
@@ -17,6 +17,8 @@ import { CanNotSelectMafiaException } from '../common/error/can-not.select.mafia
 import { UnauthorizedMafiaSelectException } from '../common/error/unauthorized.mafia.select.exception';
 import { FinishGameManager } from './usecase/finish-game/finish-game.manager';
 import { GAME_USER_RESULT } from 'src/game-user/entity/game-user.result';
+import { GAME_HISTORY_REPOSITORY, GameHistoryRepository } from './repository/game-history.repository';
+import { GameHistoryEntity } from './entity/game-history.entity';
 
 interface PlayerInfo {
   role: MAFIA_ROLE;
@@ -32,6 +34,12 @@ export class TotalGameManager
   private readonly policeInvestigationMap = new MutexMap<string, boolean>();
   private readonly mafiaCurrentTarget = new MutexMap<string, string>();
   private readonly mafiaKillLogs = new MutexMap<string, string[]>();
+
+  constructor(
+    @Inject(GAME_HISTORY_REPOSITORY)
+    private readonly gameHistoryRepository: GameHistoryRepository<GameHistoryEntity, number>,
+  ) {
+  }
 
   async register(
     gameRoom: GameRoom,
@@ -375,10 +383,11 @@ export class TotalGameManager
   }
 
   async finishGame(gameRoom: GameRoom): Promise<void> {
-    await this.sendResult(gameRoom);
+    await this.sendResultToClient(gameRoom);
+    await this.saveGameResult(gameRoom);
   }
 
-  private async sendResult(gameRoom: GameRoom) {
+  private async sendResultToClient(gameRoom: GameRoom) {
     const gameInfo = await this.games.get(gameRoom.roomId);
     if (!gameInfo) {
       throw new NotFoundGameRoomException();
@@ -417,4 +426,9 @@ export class TotalGameManager
     //   ]
     // }
   }
+
+  private async saveGameResult(gameRoom: GameRoom) {
+    // this.gameHistoryRepository.update(); // 게임 상태 업데이트
+  }
+
 }

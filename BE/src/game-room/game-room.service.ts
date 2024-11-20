@@ -21,6 +21,10 @@ export class GameRoomService {
     this.findRoomById(roomId).enter(new GameClient(client));
   }
 
+  leaveRoom(nickname: string, roomId: string) {
+    this.findRoomById(roomId).leave(nickname);
+  }
+
   findRoomById(roomId: string) {
     const room = this.rooms.find((room) => room.roomId === roomId);
     if (!room) {

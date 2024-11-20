@@ -11,7 +11,7 @@ export class GameRoom {
   private _status: GameRoomStatus = GameRoomStatus.READY;
   private createdAt: number = Date.now();
   private _result: GAME_HISTORY_RESULT = null;
-  private readonly _clients: GameClient[] = [];
+  private _clients: GameClient[] = [];
   private readonly _mafias: GameClient[] = [];
 
   constructor(private title: string, private capacity: number) {}
@@ -46,6 +46,12 @@ export class GameRoom {
     }
     this.participants++;
     this._clients.push(client);
+    this.sendParticipantInfo();
+  }
+
+  leave(nickname: string) {
+    this._clients = this.clients.filter(c => c.nickname !== nickname);
+    this.participants--;
     this.sendParticipantInfo();
   }
 
