@@ -10,6 +10,8 @@ import { VOTE_MAFIA_USECASE, VoteMafiaUsecase } from '../../usecase/vote-manager
 import { MafiaState } from './mafia.state';
 import { CitizenWinState } from './citizen-win.state';
 import { FINISH_GAME_USECASE, FinishGameUsecase } from 'src/game/usecase/finish-game/finish-game.usecase';
+import { GAME_HISTORY_RESULT } from 'src/game/entity/game-history.result';
+import { MafiaWinState } from './mafia-win.state';
 
 @Injectable()
 export class FinalVoteState extends GameState {
@@ -20,6 +22,8 @@ export class FinalVoteState extends GameState {
     private readonly mafiaState: MafiaState,
     @Inject(forwardRef(() => CitizenWinState))
     private readonly citizenWinState: CitizenWinState,
+    @Inject(forwardRef(() => MafiaWinState))
+    private readonly mafiaWinState: MafiaWinState,
     @Inject(VOTE_MAFIA_USECASE)
     private readonly voteMafiaUsecase: VoteMafiaUsecase,
     @Inject(FINISH_GAME_USECASE)
@@ -36,8 +40,11 @@ export class FinalVoteState extends GameState {
     );
 
     await this.voteMafiaUsecase.finalVoteResult(room);
-    if (await this.finishGameUsecase.checkFinishCondition(room)) {
-      // 마피아 승리가 되는 경우도 있음.
+    const result = await this.finishGameUsecase.checkFinishCondition(room);
+    if (result === GAME_HISTORY_RESULT.MAFIA) {
+      return next(this.mafiaWinState);
+    }
+    if (result === GAME_HISTORY_RESULT.CITIZEN) {
       return next(this.citizenWinState);
     }
     next(this.mafiaState);

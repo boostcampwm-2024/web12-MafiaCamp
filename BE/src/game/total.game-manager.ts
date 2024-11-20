@@ -359,7 +359,7 @@ export class TotalGameManager
     ]);
   }
 
-  async checkFinishCondition(gameRoom: GameRoom): Promise<boolean> {
+  async checkFinishCondition(gameRoom: GameRoom): Promise<GAME_HISTORY_RESULT> {
     const gameInfo = await this.games.get(gameRoom.roomId);
     if (!gameInfo) {
       throw new NotFoundGameRoomException();
@@ -378,12 +378,12 @@ export class TotalGameManager
     });
     
     if (mafiaCount === 0) {
-      return true;
+      return GAME_HISTORY_RESULT.CITIZEN;
     }
     if (mafiaCount >= citienCount) {
-      return true;
+      return GAME_HISTORY_RESULT.MAFIA;
     }
-    return false;
+    return null;
   }
 
   async finishGame(gameRoom: GameRoom): Promise<void> {

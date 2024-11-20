@@ -5,6 +5,9 @@ import { GameClient } from './game-client.model';
 import { GAME_HISTORY_RESULT } from 'src/game/entity/game-history.result';
 import { MAFIA_ROLE } from '../../game/mafia-role';
 
+/**
+ * 게임 참여자들의 소켓을 관리하며 게임 진행에 관련된 정보를 저장하는 세션 역할을 하는 클래스
+ */
 export class GameRoom {
   private _roomId: string = uuid();
   private _gameId: number = null;
