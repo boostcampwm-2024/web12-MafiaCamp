@@ -9,9 +9,9 @@ export class NotFoundGameUserException extends HttpException {
         code: EXCEPTION_CODE.NOT_FOUND_GAME_USER_EXCEPTION,
         message: EXCEPTION_MESSAGE.NOT_FOUND_GAME_USER_EXCEPTION,
         error: 'NotFoundGameUserException',
-        statusCode: HttpStatus.BAD_REQUEST,
+        statusCode: HttpStatus.NOT_FOUND,
       },
-      HttpStatus.BAD_REQUEST,
+      HttpStatus.NOT_FOUND,
     );
   }
 }

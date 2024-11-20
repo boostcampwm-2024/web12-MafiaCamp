@@ -32,11 +32,15 @@ import { PoliceInvestigateService } from './usecase/role-playing/police.investig
 import { FINISH_GAME_USECASE } from './usecase/finish-game/finish-game.usecase';
 import { FinishGameService } from './usecase/finish-game/finish-game.service';
 import { MAFIA_KILL_USECASE } from './usecase/role-playing/mafia.kill.usecase';
-import { MafiaKillService } from './usecase/role-playing/mafia-kill.service';
+import { MafiaKillService } from './usecase/role-playing/mafia.kill.service';
 import { MAFIA_MANAGER } from './usecase/role-playing/mafia-manager';
 import { FINISH_GAME_MANAGER } from './usecase/finish-game/finish-game.manager';
 import { CitizenWinState } from './fsm/states/citizen-win.state';
 import { MafiaWinState } from './fsm/states/mafia-win.state';
+import { DOCTOR_MANAGER } from './usecase/role-playing/doctor-manager';
+import { DOCTOR_CURE_USECASE } from './usecase/role-playing/doctor.cure.usecase';
+import { DoctorCureService } from './usecase/role-playing/doctor.cure.service';
+import { KILL_DECISION_MANAGER } from './usecase/role-playing/killDecision-manager';
 
 @Module({
   imports: [TypeOrmModule.forFeature([GameHistoryEntity]), VideoServerModule],
@@ -98,6 +102,18 @@ import { MafiaWinState } from './fsm/states/mafia-win.state';
       provide: MAFIA_KILL_USECASE,
       useClass: MafiaKillService,
     },
+    {
+      provide: DOCTOR_MANAGER,
+      useExisting: TotalGameManager,
+    },
+    {
+      provide: DOCTOR_CURE_USECASE,
+      useClass: DoctorCureService,
+    },
+    {
+      provide: KILL_DECISION_MANAGER,
+      useExisting: TotalGameManager,
+    },
     ArgumentState,
     DiscussionState,
     DoctorState,
@@ -116,6 +132,7 @@ import { MafiaWinState } from './fsm/states/mafia-win.state';
     VOTE_MAFIA_USECASE,
     POLICE_INVESTIGATE_USECASE,
     MAFIA_KILL_USECASE,
+    DOCTOR_CURE_USECASE,
   ],
 })
 export class GameModule {}
