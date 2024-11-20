@@ -64,7 +64,7 @@ export class GameRoom {
   leave(nickname: string) {
     this._clients = this.clients.filter(c => c.nickname !== nickname);
     this.participants--;
-    this.sendParticipantInfo();
+    this.sendAll('leave-user-nickname', nickname);
   }
 
   sendAll(event: string, ...args) {

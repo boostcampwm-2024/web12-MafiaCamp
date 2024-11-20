@@ -37,6 +37,7 @@ export class FinalVoteState extends GameState {
 
     await this.voteMafiaUsecase.finalVoteResult(room);
     if (await this.finishGameUsecase.checkFinishCondition(room)) {
+      // 마피아 승리가 되는 경우도 있음.
       return next(this.citizenWinState);
     }
     next(this.mafiaState);

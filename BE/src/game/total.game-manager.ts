@@ -377,7 +377,10 @@ export class TotalGameManager
       }
     });
     
-    if (mafiaCount === 0 || mafiaCount >= citienCount) {
+    if (mafiaCount === 0) {
+      return true;
+    }
+    if (mafiaCount >= citienCount) {
       return true;
     }
     return false;
