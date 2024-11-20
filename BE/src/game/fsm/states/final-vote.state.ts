@@ -8,7 +8,8 @@ import { GameState, TransitionHandler } from './state';
 import { GameContext } from '../game-context';
 import { VOTE_MAFIA_USECASE, VoteMafiaUsecase } from '../../usecase/vote-manager/vote.mafia.usecase';
 import { MafiaState } from './mafia.state';
-import { FinishState } from './finish.state';
+import { CitizenWinState } from './citizen-win.state';
+import { FINISH_GAME_USECASE, FinishGameUsecase } from 'src/game/usecase/finish-game/finish-game.usecase';
 
 @Injectable()
 export class FinalVoteState extends GameState {
@@ -17,10 +18,12 @@ export class FinalVoteState extends GameState {
     private readonly countdownTimeoutUsecase: CountdownTimeoutUsecase,
     @Inject(forwardRef(() => MafiaState))
     private readonly mafiaState: MafiaState,
-    @Inject(forwardRef(() => FinishState))
-    private readonly finishState: FinishState,
+    @Inject(forwardRef(() => CitizenWinState))
+    private readonly citizenWinState: CitizenWinState,
     @Inject(VOTE_MAFIA_USECASE)
     private readonly voteMafiaUsecase: VoteMafiaUsecase,
+    @Inject(FINISH_GAME_USECASE)
+    private readonly finishGameUsecase: FinishGameUsecase,
   ) {
     super();
   }
@@ -33,8 +36,8 @@ export class FinalVoteState extends GameState {
     );
 
     await this.voteMafiaUsecase.finalVoteResult(room);
-    if (room.result) {
-      return next(this.finishState);
+    if (await this.finishGameUsecase.checkFinishCondition(room)) {
+      return next(this.citizenWinState);
     }
     next(this.mafiaState);
   }

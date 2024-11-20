@@ -29,12 +29,14 @@ import { FinalVoteState } from './fsm/states/final-vote.state';
 import { POLICE_MANAGER } from './usecase/role-playing/police-manager';
 import { POLICE_INVESTIGATE_USECASE } from './usecase/role-playing/police.investigate.usecase';
 import { PoliceInvestigateService } from './usecase/role-playing/police.investigate.service';
-import { FinishState } from './fsm/states/finish.state';
 import { FINISH_GAME_USECASE } from './usecase/finish-game/finish-game.usecase';
 import { FinishGameService } from './usecase/finish-game/finish-game.service';
 import { MAFIA_KILL_USECASE } from './usecase/role-playing/mafia.kill.usecase';
 import { MafiaKillService } from './usecase/role-playing/mafia-kill.service';
 import { MAFIA_MANAGER } from './usecase/role-playing/mafia-manager';
+import { FINISH_GAME_MANAGER } from './usecase/finish-game/finish-game.manager';
+import { CitizenWinState } from './fsm/states/citizen-win.state';
+import { MafiaWinState } from './fsm/states/mafia-win.state';
 
 @Module({
   imports: [TypeOrmModule.forFeature([GameHistoryEntity]), VideoServerModule],
@@ -73,6 +75,10 @@ import { MAFIA_MANAGER } from './usecase/role-playing/mafia-manager';
       useClass: StartGameService,
     },
     {
+      provide: FINISH_GAME_MANAGER,
+      useExisting: TotalGameManager,
+    },
+    {
       provide: FINISH_GAME_USECASE,
       useClass: FinishGameService,
     },
@@ -100,7 +106,8 @@ import { MAFIA_MANAGER } from './usecase/role-playing/mafia-manager';
     SetUpState,
     PrimaryVoteState,
     FinalVoteState,
-    FinishState
+    CitizenWinState,
+    MafiaWinState,
   ],
   exports: [
     START_GAME_USECASE,

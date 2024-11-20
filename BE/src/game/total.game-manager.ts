@@ -15,6 +15,8 @@ import { MafiaManager } from './usecase/role-playing/mafia-manager';
 import { NotFoundUserException } from '../common/error/not.found.user.exception';
 import { CanNotSelectMafiaException } from '../common/error/can-not.select.mafia.exception';
 import { UnauthorizedMafiaSelectException } from '../common/error/unauthorized.mafia.select.exception';
+import { FinishGameManager } from './usecase/finish-game/finish-game.manager';
+import { GAME_USER_RESULT } from 'src/game-user/entity/game-user.result';
 
 interface PlayerInfo {
   role: MAFIA_ROLE;
@@ -23,7 +25,7 @@ interface PlayerInfo {
 
 @Injectable()
 export class TotalGameManager
-  implements VoteManager, PoliceManager, MafiaManager
+  implements VoteManager, PoliceManager, MafiaManager, FinishGameManager
 {
   private readonly games = new MutexMap<string, Map<string, PlayerInfo>>();
   private readonly ballotBoxs = new MutexMap<string, Map<string, string[]>>();
@@ -228,7 +230,6 @@ export class TotalGameManager
 
     if (mostVotedUser.length === 1 && mostVotedUser[0] !== 'INVALIDITY') {
       await this.killUser(gameRoom, mostVotedUser[0]);
-      await this.checkFinishCondition(gameRoom);
     } else {
       gameRoom.sendAll('vote-kill-user', null);
     }
@@ -283,33 +284,6 @@ export class TotalGameManager
 
   async initPolice(gameRoom: GameRoom): Promise<void> {
     await this.policeInvestigationMap.set(gameRoom.roomId, false);
-  }
-
-  private async checkFinishCondition(gameRoom: GameRoom) {
-    const gameInfo = await this.games.get(gameRoom.roomId);
-    if (!gameInfo) {
-      throw new NotFoundGameRoomException();
-    }
-    let mafiaCount = 0;
-    let citienCount = 0;
-    gameInfo.forEach((playerInfo) => {
-      if (playerInfo.status === USER_STATUS.DEAD) {
-        return;
-      }
-      if (playerInfo.role === MAFIA_ROLE.MAFIA) {
-        mafiaCount++;
-      } else {
-        citienCount++;
-      }
-    });
-    
-    
-    if (mafiaCount === 0) {
-      gameRoom.result = GAME_HISTORY_RESULT.CITIZEN;
-    }
-    if (mafiaCount >= citienCount) {
-      gameRoom.result = GAME_HISTORY_RESULT.MAFIA;
-    }
   }
 
   async selectMafiaTarget(
@@ -374,5 +348,73 @@ export class TotalGameManager
       this.mafiaKillLogs.set(gameRoom.roomId, updateKillLogs),
       this.mafiaCurrentTarget.delete(gameRoom.roomId),
     ]);
+  }
+
+  async checkFinishCondition(gameRoom: GameRoom): Promise<boolean> {
+    const gameInfo = await this.games.get(gameRoom.roomId);
+    if (!gameInfo) {
+      throw new NotFoundGameRoomException();
+    }
+    let mafiaCount = 0;
+    let citienCount = 0;
+    gameInfo.forEach((playerInfo) => {
+      if (playerInfo.status === USER_STATUS.DEAD) {
+        return;
+      }
+      if (playerInfo.role === MAFIA_ROLE.MAFIA) {
+        mafiaCount++;
+      } else {
+        citienCount++;
+      }
+    });
+    
+    if (mafiaCount === 0 || mafiaCount >= citienCount) {
+      return true;
+    }
+    return false;
+  }
+
+  async finishGame(gameRoom: GameRoom): Promise<void> {
+    await this.sendResult(gameRoom);
+  }
+
+  private async sendResult(gameRoom: GameRoom) {
+    const gameInfo = await this.games.get(gameRoom.roomId);
+    if (!gameInfo) {
+      throw new NotFoundGameRoomException();
+    }
+    const playerInfo = [];
+    for (const entry of gameInfo.entries()) {
+      playerInfo.push({
+        nickname: entry[0],
+        ...entry[1]
+      });
+    }
+    const result = gameRoom.result;
+    const clients = gameRoom.clients;
+    clients.forEach(c => {
+      const winOrLose = result === GAME_HISTORY_RESULT.MAFIA ? c.job === MAFIA_ROLE.MAFIA : c.job !== MAFIA_ROLE.MAFIA;
+      c.send('game-result', {
+        result: winOrLose ? GAME_USER_RESULT.WIN : GAME_USER_RESULT.LOSE,
+        playerInfo
+      });
+    });
+
+    // {
+    //   result: 'WIN', // 'WIN' or 'LOSE'
+    //   playerInfo: [
+    //     {
+    //       nickname: 'user1',
+    //       role: 'MAFIA',
+    //       status: 'ALIVE'
+    //     },
+    //     {
+    //       nickname: 'user2',
+    //       role: 'CITIZEN',
+    //       status: 'DEAD'
+    //     },
+    //     ...
+    //   ]
+    // }
   }
 }

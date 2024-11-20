@@ -1,24 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { GameRoom } from 'src/game-room/entity/game-room.model';
 import { FinishGameUsecase } from './finish-game.usecase';
-import { GAME_HISTORY_RESULT } from 'src/game/entity/game-history.result';
-import { MAFIA_ROLE } from 'src/game/mafia-role';
+import { FINISH_GAME_MANAGER, FinishGameManager } from './finish-game.manager';
 
 @Injectable()
 export class FinishGameService implements FinishGameUsecase {
-  finish(room: GameRoom): void {
-    this.sendResult(room);
-    return;
+  constructor(
+    @Inject(FINISH_GAME_MANAGER)
+    private readonly gameManager: FinishGameManager,
+  ) {
   }
 
-  private sendResult(room: GameRoom) {
-    const result = room.result;
-    const clients = room.clients;
-    clients.forEach(c => {
-      const flag = result === GAME_HISTORY_RESULT.MAFIA ? c.job === MAFIA_ROLE.MAFIA : c.job !== MAFIA_ROLE.MAFIA;
-      c.send('game-result', {
-        win: flag
-      })
-    });
+  async finishGame(gameRoom: GameRoom): Promise<void> {
+    await this.gameManager.finishGame(gameRoom);
+  }
+
+  async checkFinishCondition(gameRoom: GameRoom): Promise<boolean> {
+    return await this.gameManager.checkFinishCondition(gameRoom);
   }
 }
