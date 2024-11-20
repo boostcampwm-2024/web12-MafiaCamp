@@ -33,8 +33,8 @@ import { MAFIA_KILL_USECASE } from './usecase/role-playing/mafia.kill.usecase';
 import { MafiaKillService } from './usecase/role-playing/mafia.kill.service';
 import { MAFIA_MANAGER } from './usecase/role-playing/mafia-manager';
 import { DOCTOR_MANAGER } from './usecase/role-playing/doctor-manager';
-import { DOCTOR_SAVE_USECASE } from './usecase/role-playing/doctor.save.usecase';
-import { DoctorSaveService } from './usecase/role-playing/doctor.save.service';
+import { DOCTOR_CURE_USECASE } from './usecase/role-playing/doctor.cure.usecase';
+import { DoctorCureService } from './usecase/role-playing/doctor.cure.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([GameHistoryEntity]), VideoServerModule],
@@ -93,8 +93,8 @@ import { DoctorSaveService } from './usecase/role-playing/doctor.save.service';
       useExisting: TotalGameManager,
     },
     {
-      provide: DOCTOR_SAVE_USECASE,
-      useClass: DoctorSaveService,
+      provide: DOCTOR_CURE_USECASE,
+      useClass: DoctorCureService,
     },
     ArgumentState,
     DiscussionState,
@@ -112,7 +112,7 @@ import { DoctorSaveService } from './usecase/role-playing/doctor.save.service';
     VOTE_MAFIA_USECASE,
     POLICE_INVESTIGATE_USECASE,
     MAFIA_KILL_USECASE,
-    DOCTOR_SAVE_USECASE,
+    DOCTOR_CURE_USECASE,
   ],
 })
 export class GameModule {}

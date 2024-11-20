@@ -8,7 +8,7 @@ export class UnauthorizedSelectException extends HttpException {
       {
         code: EXCEPTION_CODE.UNAUTHORIZED_USER_SELECT_EXCEPTION,
         message: EXCEPTION_MESSAGE.UNAUTHORIZED_USER_SELECT_EXCEPTION,
-        error: 'UnauthorizedSelectException',
+        error: 'UnauthorizedUserSelectException',
         statusCode: HttpStatus.BAD_REQUEST,
       },
       HttpStatus.BAD_REQUEST,
