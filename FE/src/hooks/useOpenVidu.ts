@@ -12,169 +12,101 @@ import { Reducer, useEffect, useReducer } from 'react';
 
 type State = {
   isGameStarted: boolean;
-  gamePublisher: GamePublisher | null;
+  gamePublisher: GamePublisher;
   gameSubscribers: GameSubscriber[];
 };
 
 type Action =
-  | { type: 'DISCONNECT' }
+  | { type: 'PARTICIPATE'; payload: { participantList: string[] } }
   | { type: 'START_GAME'; payload: { publisher: Publisher } }
   | { type: 'SUBSCRIBE'; payload: { subscriber: Subscriber } }
   | { type: 'UNSUBSCRIBE'; payload: { streamManager: StreamManager } }
-  | { type: 'CHANGE_PUBLISHER_AUDIO'; payload: { audioEnabled: boolean } }
-  | { type: 'CHANGE_PUBLISHER_VIDEO'; payload: { videoEnabled: boolean } }
-  | { type: 'CHANGE_PUBLISHER_VOTES'; payload: { votes: number } }
+  | { type: 'CHANGE_PUBLISHER_STATUS'; payload: Partial<GamePublisher> }
   | {
-      type: 'CHANGE_PUBLISHER_CANDIDATE_STATUS';
-      payload: { isCandidate: boolean };
+      type: 'CHANGE_SUBSCRIBER_STATUS';
+      payload: { nickname: string; data: Partial<GameSubscriber> };
     }
-  | { type: 'ELIMINATE_PUBLISHER' }
-  | {
-      type: 'CHANGE_SUBSCRIBER_AUDIO';
-      payload: { index: number; audioEnabled: boolean };
-    }
-  | {
-      type: 'CHANGE_SUBSCRIBER_VIDEO';
-      payload: { index: number; videoEnabled: boolean };
-    }
-  | {
-      type: 'CHANGE_SUBSCRIBER_VOTES';
-      payload: { nickname: string; votes: number };
-    }
-  | {
-      type: 'CHANGE_SUBSCRIBER_CANDIDATE_STATUS';
-      payload: { nickname: string; isCandidate: boolean };
-    }
-  | { type: 'INITIALIZE_VOTES' };
+  | { type: 'INITIALIZE_VOTES' }
+  | { type: 'SET_All_PARTICIPANTS_AS_CANDIDATES' };
 
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
-    case 'DISCONNECT':
-      return { isGameStarted: false, gamePublisher: null, gameSubscribers: [] };
+    case 'PARTICIPATE':
+      return {
+        ...state,
+        gameSubscribers: action.payload.participantList.map((participant) => ({
+          participant: null,
+          nickname: participant,
+          role: null,
+          audioEnabled: false,
+          videoEnabled: false,
+          votes: 0,
+          isCandidate: false,
+        })),
+      };
 
     case 'START_GAME':
       return {
         ...state,
         isGameStarted: true,
         gamePublisher: {
+          ...state.gamePublisher,
           participant: action.payload.publisher,
-          nickname:
-            action.payload.publisher.stream.connection.data.split('%/%')[0],
           audioEnabled: true,
           videoEnabled: true,
-          votes: 0,
-          isCandidate: false,
         },
       };
 
-    case 'SUBSCRIBE':
-      return {
-        ...state,
-        gameSubscribers: [
-          ...state.gameSubscribers,
-          {
-            participant: action.payload.subscriber,
-            nickname:
-              action.payload.subscriber.stream.connection.data.split('%/%')[0],
-            audioEnabled: true,
-            videoEnabled: true,
-            votes: 0,
-            isCandidate: false,
-          },
-        ],
-      };
-
-    case 'UNSUBSCRIBE':
-      return {
-        ...state,
-        gameSubscribers: state.gameSubscribers.filter(
-          (gameSubscriber) =>
-            gameSubscriber.participant !== action.payload.streamManager,
-        ),
-      };
-
-    case 'CHANGE_PUBLISHER_AUDIO':
-      return {
-        ...state,
-        gamePublisher: {
-          ...state.gamePublisher!,
-          audioEnabled: action.payload.audioEnabled,
-        },
-      };
-
-    case 'CHANGE_PUBLISHER_VIDEO':
-      return {
-        ...state,
-        gamePublisher: {
-          ...state.gamePublisher!,
-          videoEnabled: action.payload.videoEnabled,
-        },
-      };
-
-    case 'CHANGE_PUBLISHER_VOTES':
-      return {
-        ...state,
-        gamePublisher: {
-          ...state.gamePublisher!,
-          votes: action.payload.votes,
-        },
-      };
-
-    case 'CHANGE_PUBLISHER_CANDIDATE_STATUS':
-      return {
-        ...state,
-        gamePublisher: {
-          ...state.gamePublisher!,
-          isCandidate: action.payload.isCandidate,
-        },
-      };
-
-    case 'ELIMINATE_PUBLISHER':
-      return {
-        ...state,
-        gamePublisher: null,
-      };
-
-    case 'CHANGE_SUBSCRIBER_AUDIO':
-      return {
-        ...state,
-        gameSubscribers: state.gameSubscribers.map((gameSubscriber, index) =>
-          index === action.payload.index
-            ? { ...gameSubscriber, audioEnabled: action.payload.audioEnabled }
-            : gameSubscriber,
-        ),
-      };
-
-    case 'CHANGE_SUBSCRIBER_VIDEO':
-      return {
-        ...state,
-        gameSubscribers: state.gameSubscribers.map((gameSubscriber, index) =>
-          index === action.payload.index
-            ? { ...gameSubscriber, videoEnabled: action.payload.videoEnabled }
-            : gameSubscriber,
-        ),
-      };
-
-    case 'CHANGE_SUBSCRIBER_VOTES': {
+    case 'SUBSCRIBE': {
       const index = state.gameSubscribers.findIndex(
-        (gameSubscriber) => gameSubscriber.nickname === action.payload.nickname,
+        (gameSubscriber) =>
+          gameSubscriber.nickname ===
+          action.payload.subscriber.stream.connection.data.split('%/%')[0],
       );
 
       if (index === -1) {
         return state;
       }
 
+      /* eslint-disable indent */
       return {
         ...state,
         gameSubscribers: state.gameSubscribers.map((gameSubscriber, idx) =>
           idx === index
-            ? { ...gameSubscriber, votes: action.payload.votes }
+            ? {
+                ...gameSubscriber,
+                participant: action.payload.subscriber,
+                audioEnabled: true,
+                videoEnabled: true,
+              }
             : gameSubscriber,
         ),
       };
     }
 
-    case 'CHANGE_SUBSCRIBER_CANDIDATE_STATUS': {
+    case 'UNSUBSCRIBE':
+      return {
+        ...state,
+        gameSubscribers: state.gameSubscribers.map((gameSubscriber) =>
+          gameSubscriber.participant === action.payload.streamManager
+            ? {
+                ...gameSubscriber,
+                participant: null,
+                audioEnabled: false,
+                videoEnabled: false,
+              }
+            : gameSubscriber,
+        ),
+      };
+    /* eslint-enable indent */
+
+    case 'CHANGE_PUBLISHER_STATUS':
+      return {
+        ...state,
+        gamePublisher: { ...state.gamePublisher, ...action.payload },
+      };
+
+    case 'CHANGE_SUBSCRIBER_STATUS': {
       const index = state.gameSubscribers.findIndex(
         (gameSubscriber) => gameSubscriber.nickname === action.payload.nickname,
       );
@@ -187,7 +119,7 @@ const reducer = (state: State, action: Action): State => {
         ...state,
         gameSubscribers: state.gameSubscribers.map((gameSubscriber, idx) =>
           idx === index
-            ? { ...gameSubscriber, isCandidate: action.payload.isCandidate }
+            ? { ...gameSubscriber, ...action.payload.data }
             : gameSubscriber,
         ),
       };
@@ -196,17 +128,24 @@ const reducer = (state: State, action: Action): State => {
     case 'INITIALIZE_VOTES':
       return {
         ...state,
-        gamePublisher: {
-          ...state.gamePublisher!,
-          votes: 0,
-          isCandidate: false,
-        },
+        gamePublisher: { ...state.gamePublisher, votes: 0, isCandidate: false },
         gameSubscribers: state.gameSubscribers.map((gameSubscriber) => ({
           ...gameSubscriber,
           votes: 0,
           isCandidate: false,
         })),
       };
+
+    case 'SET_All_PARTICIPANTS_AS_CANDIDATES': {
+      return {
+        ...state,
+        gamePublisher: { ...state.gamePublisher, isCandidate: true },
+        gameSubscribers: state.gameSubscribers.map((gameSubscriber) => ({
+          ...gameSubscriber,
+          isCandidate: true,
+        })),
+      };
+    }
 
     default:
       throw new Error('Unknown action type');
@@ -217,24 +156,32 @@ export const useOpenVidu = () => {
   const { nickname, socket, session, setState } = useSocketStore();
   const [state, dispatch] = useReducer<Reducer<State, Action>>(reducer, {
     isGameStarted: false,
-    gamePublisher: null,
+    gamePublisher: {
+      participant: null,
+      nickname: nickname,
+      role: null,
+      audioEnabled: false,
+      videoEnabled: false,
+      votes: 0,
+      isCandidate: false,
+    },
     gameSubscribers: [],
   });
 
   const toggleAudio = () => {
-    if (!state.gamePublisher) {
+    if (!state.gamePublisher.participant) {
       return;
     }
 
     if (state.gamePublisher.audioEnabled) {
       dispatch({
-        type: 'CHANGE_PUBLISHER_AUDIO',
+        type: 'CHANGE_PUBLISHER_STATUS',
         payload: { audioEnabled: false },
       });
       state.gamePublisher.participant.publishAudio(false);
     } else {
       dispatch({
-        type: 'CHANGE_PUBLISHER_AUDIO',
+        type: 'CHANGE_PUBLISHER_STATUS',
         payload: { audioEnabled: true },
       });
       state.gamePublisher.participant.publishAudio(true);
@@ -242,62 +189,67 @@ export const useOpenVidu = () => {
   };
 
   const toggleVideo = () => {
-    if (!state.gamePublisher) {
+    if (!state.gamePublisher.participant) {
       return;
     }
 
     if (state.gamePublisher.videoEnabled) {
       dispatch({
-        type: 'CHANGE_PUBLISHER_VIDEO',
+        type: 'CHANGE_PUBLISHER_STATUS',
         payload: { videoEnabled: false },
       });
       state.gamePublisher.participant.publishVideo(false);
     } else {
       dispatch({
-        type: 'CHANGE_PUBLISHER_VIDEO',
+        type: 'CHANGE_PUBLISHER_STATUS',
         payload: { videoEnabled: true },
       });
       state.gamePublisher.participant.publishVideo(true);
     }
   };
 
-  const changePublisherVotes = (votes: number) => {
-    dispatch({ type: 'CHANGE_PUBLISHER_VOTES', payload: { votes } });
+  const changePublisherStatus = (data: Partial<GamePublisher>) => {
+    dispatch({ type: 'CHANGE_PUBLISHER_STATUS', payload: data });
   };
 
-  const changeSubscriberVotes = (nickname: string, votes: number) => {
-    dispatch({ type: 'CHANGE_SUBSCRIBER_VOTES', payload: { nickname, votes } });
-  };
-
-  const changePublisherCandidateStatus = (isCandidate: boolean) => {
-    dispatch({
-      type: 'CHANGE_PUBLISHER_CANDIDATE_STATUS',
-      payload: { isCandidate },
-    });
-  };
-
-  const changeSubscriberCandidateStatus = (
+  const changeSubscriberStatus = (
     nickname: string,
-    isCandidate: boolean,
+    data: Partial<GameSubscriber>,
   ) => {
-    dispatch({
-      type: 'CHANGE_SUBSCRIBER_CANDIDATE_STATUS',
-      payload: { nickname, isCandidate },
-    });
-  };
-
-  const eliminatePublisher = () => {
-    state.gamePublisher?.participant.publishAudio(false);
-    state.gamePublisher?.participant.publishVideo(false);
-    session?.unpublish(state.gamePublisher!.participant);
-    dispatch({ type: 'ELIMINATE_PUBLISHER' });
+    dispatch({ type: 'CHANGE_SUBSCRIBER_STATUS', payload: { nickname, data } });
   };
 
   const initializeVotes = () => {
     dispatch({ type: 'INITIALIZE_VOTES' });
   };
 
+  const setAllParticipantsAsCandidates = () => {
+    dispatch({ type: 'SET_All_PARTICIPANTS_AS_CANDIDATES' });
+  };
+
+  const eliminatePublisher = () => {
+    state.gamePublisher?.participant?.publishAudio(false);
+    state.gamePublisher?.participant?.publishVideo(false);
+    session?.unpublish(state.gamePublisher.participant!);
+    dispatch({
+      type: 'CHANGE_PUBLISHER_STATUS',
+      payload: { participant: null, audioEnabled: false, videoEnabled: false },
+    });
+  };
+
   useEffect(() => {
+    // 게임 참가
+    socket?.on('participants', (participants: string[]) => {
+      dispatch({
+        type: 'PARTICIPATE',
+        payload: {
+          participantList: participants.filter(
+            (participant) => participant !== nickname,
+          ),
+        },
+      });
+    });
+
     (async () => {
       try {
         // OpenVidu 객체 생성
@@ -353,6 +305,7 @@ export const useOpenVidu = () => {
     })();
 
     return () => {
+      socket?.off('participants');
       socket?.off('video-info');
     };
   }, [nickname, setState, socket]);
@@ -362,7 +315,6 @@ export const useOpenVidu = () => {
       if (session) {
         session.disconnect();
         setState({ session: null });
-        dispatch({ type: 'DISCONNECT' });
       }
     };
   }, [session, setState]);
@@ -381,26 +333,23 @@ export const useOpenVidu = () => {
 
       // 다른 참가자의 오디오/비디오 상태가 변경될 때
       session.on('streamPropertyChanged', (event) => {
-        const index = state.gameSubscribers.findIndex(
-          (gameSubscriber) =>
-            gameSubscriber.participant === event.stream.streamManager,
-        );
-
-        if (index === -1) {
-          return;
-        }
-
         switch (event.changedProperty) {
           case 'audioActive':
             dispatch({
-              type: 'CHANGE_SUBSCRIBER_AUDIO',
-              payload: { index, audioEnabled: event.newValue as boolean },
+              type: 'CHANGE_SUBSCRIBER_STATUS',
+              payload: {
+                nickname: event.stream.connection.data.split('%/%')[0],
+                data: { audioEnabled: event.newValue as boolean },
+              },
             });
             break;
           case 'videoActive':
             dispatch({
-              type: 'CHANGE_SUBSCRIBER_VIDEO',
-              payload: { index, videoEnabled: event.newValue as boolean },
+              type: 'CHANGE_SUBSCRIBER_STATUS',
+              payload: {
+                nickname: event.stream.connection.data.split('%/%')[0],
+                data: { videoEnabled: event.newValue as boolean },
+              },
             });
             break;
           default:
@@ -432,11 +381,10 @@ export const useOpenVidu = () => {
     gameSubscribers: state.gameSubscribers,
     toggleAudio,
     toggleVideo,
-    changePublisherVotes,
-    changeSubscriberVotes,
-    changePublisherCandidateStatus,
-    changeSubscriberCandidateStatus,
-    eliminatePublisher,
+    changePublisherStatus,
+    changeSubscriberStatus,
     initializeVotes,
+    setAllParticipantsAsCandidates,
+    eliminatePublisher,
   };
 };

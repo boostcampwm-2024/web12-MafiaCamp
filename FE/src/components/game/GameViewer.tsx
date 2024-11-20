@@ -7,7 +7,7 @@ import ChattingList from './ChattingList';
 import VideoViewer from './VideoViewer';
 import { useEffect, useState } from 'react';
 import { useSocketStore } from '@/stores/socketStore';
-import { Role } from '@/constants/role';
+import { ROLE, Role } from '@/constants/role';
 import { Bounce, toast, ToastContainer } from 'react-toastify';
 import { Situation } from '@/constants/situation';
 
@@ -25,17 +25,13 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     gameSubscribers,
     toggleAudio,
     toggleVideo,
-    changePublisherVotes,
-    changeSubscriberVotes,
-    changePublisherCandidateStatus,
-    changeSubscriberCandidateStatus,
-    eliminatePublisher,
+    changePublisherStatus,
+    changeSubscriberStatus,
     initializeVotes,
+    setAllParticipantsAsCandidates,
+    eliminatePublisher,
   } = useOpenVidu();
 
-  const [participantList, setParticipantList] = useState<string[]>([]);
-  const [role, setRole] = useState<Role | null>(null);
-  const [otherMafiaList, setOtherMafiaList] = useState<string[] | null>(null);
   const [situation, setSituation] = useState<Situation | null>(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [target, setTarget] = useState<string | null>(null);
@@ -45,7 +41,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     toast.info(message, {
       toastId: message,
       position: 'top-center',
-      autoClose: 3000,
+      autoClose: 5000,
       closeButton: false,
       hideProgressBar: false,
       closeOnClick: false,
@@ -62,11 +58,6 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
   }, [roomId, socket]);
 
   useEffect(() => {
-    // 게임 참가
-    socket?.on('participants', (participants: string[]) => {
-      setParticipantList(participants);
-    });
-
     // 카운트 다운
     socket?.on(
       'countdown',
@@ -100,16 +91,22 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
         }
 
         if (data.situation === 'MAFIA' && data.timeLeft === 30) {
+          setTarget(null);
+          setAllParticipantsAsCandidates();
           notifyInfo('마피아들은 제거할 플레이어 한 명을 선택해 주세요.');
         }
 
         if (data.situation === 'DOCTOR' && data.timeLeft === 20) {
+          setTarget(null);
+          setAllParticipantsAsCandidates();
           notifyInfo(
             '의사는 마피아로부터 보호하고 싶은 플레이어 한 명을 선택해 주세요.',
           );
         }
 
         if (data.situation === 'POLICE' && data.timeLeft === 20) {
+          setTarget(null);
+          setAllParticipantsAsCandidates();
           notifyInfo('경찰은 정체를 알고 싶은 플레이어 한 명을 선택해 주세요.');
         }
 
@@ -130,15 +127,12 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     // 직업 확인
     socket?.once(
       'player-role',
-      ({
-        role,
-        another,
-      }: {
-        role: Role | null;
-        another: string[][] | null;
-      }) => {
-        setRole(role);
-        setOtherMafiaList(another?.map((value) => value[0]) ?? []);
+      (data: { role: Role; another: [string, Role][] | null }) => {
+        changePublisherStatus({ role: data.role });
+
+        data.another?.forEach((value) => {
+          changeSubscriberStatus(value[0], { role: value[1] });
+        });
       },
     );
 
@@ -150,9 +144,9 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
 
       for (const nickname in candidates) {
         if (nickname === gamePublisher?.nickname) {
-          changePublisherCandidateStatus(true);
+          changePublisherStatus({ isCandidate: true });
         } else {
-          changeSubscriberCandidateStatus(nickname, true);
+          changeSubscriberStatus(nickname, { isCandidate: true });
         }
       }
     });
@@ -163,9 +157,9 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
         if (nickname === 'INVALIDITY') {
           setInvalidityCount(votes);
         } else if (nickname === gamePublisher?.nickname) {
-          changePublisherVotes(votes);
+          changePublisherStatus({ votes });
         } else {
-          changeSubscriberVotes(nickname, votes);
+          changeSubscriberStatus(nickname, { votes });
         }
       }
     });
@@ -180,56 +174,56 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
           if (nickname === 'INVALIDITY') {
             setInvalidityCount(votes);
           } else if (nickname === gamePublisher?.nickname) {
-            changePublisherVotes(votes);
+            changePublisherStatus({ votes });
           } else {
-            changeSubscriberVotes(nickname, votes);
+            changeSubscriberStatus(nickname, { votes });
           }
         }
       },
     );
 
-    // 최종 투표 결과
-    socket?.on('final-vote-result', (data: { [nickname: string]: number }) => {
-      setTarget(null);
-
-      for (const [nickname, votes] of Object.entries(data)) {
-        if (nickname === 'INVALIDITY') {
-          setInvalidityCount(votes);
-        } else if (nickname === gamePublisher?.nickname) {
-          changePublisherVotes(votes);
-        } else {
-          changeSubscriberVotes(nickname, votes);
-        }
-      }
-    });
-
     // 투표 수가 제일 많은 플레이어 제거
-    socket?.on('vote-kill-user', (nickname: string) => {
-      if (nickname === gamePublisher?.nickname) {
-        eliminatePublisher();
-      }
+    socket?.on(
+      'vote-kill-user',
+      (data: { player: string; job: Role } | null) => {
+        if (!data) {
+          notifyInfo('처형이 보류되었습니다.');
+          return;
+        }
 
-      notifyInfo(`${nickname} 님이 사망하였습니다.`);
-    });
+        if (data.player === gamePublisher?.nickname) {
+          eliminatePublisher();
+        }
+
+        notifyInfo(`${ROLE[data.job]} ${data.player} 님이 사망하였습니다.`);
+      },
+    );
+
+    // 경찰 조사 결과 확인
+    socket?.on(
+      'police-investigation-result',
+      (data: { criminal: string; criminalJob: Role }) => {
+        changeSubscriberStatus(data.criminal, { role: data.criminalJob });
+        notifyInfo(`${data.criminal} 님은 ${ROLE[data.criminalJob]}입니다.`);
+      },
+    );
 
     return () => {
-      socket?.off('participants');
       socket?.off('countdown');
       socket?.off('countdown-exit');
       socket?.off('player-role');
       socket?.off('vote-current-state');
       socket?.off('primary-vote-result');
-      socket?.off('final-vote-result');
       socket?.off('vote-kill-user');
+      socket?.off('police-investigation-result');
     };
   }, [
-    changePublisherCandidateStatus,
-    changePublisherVotes,
-    changeSubscriberCandidateStatus,
-    changeSubscriberVotes,
+    changePublisherStatus,
+    changeSubscriberStatus,
     eliminatePublisher,
     gamePublisher?.nickname,
     initializeVotes,
+    setAllParticipantsAsCandidates,
     situation,
     socket,
   ]);
@@ -240,9 +234,6 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       <VideoViewer
         roomId={roomId}
         isGameStarted={isGameStarted}
-        participantList={participantList}
-        playerRole={role}
-        otherMafiaList={otherMafiaList}
         situation={situation}
         gamePublisher={gamePublisher}
         gameSubscribers={gameSubscribers}
@@ -252,17 +243,21 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       />
       <Bottombar
         roomId={roomId}
-        totalParticipants={participantList.length}
+        totalParticipants={gameSubscribers.length + 1}
         situation={situation}
         timeLeft={timeLeft}
-        audioEnabled={gamePublisher?.audioEnabled}
-        videoEnabled={gamePublisher?.videoEnabled}
+        audioEnabled={
+          gamePublisher.participant ? gamePublisher.audioEnabled : null
+        }
+        videoEnabled={
+          gamePublisher.participant ? gamePublisher.videoEnabled : null
+        }
         toggleAudio={toggleAudio}
         toggleVideo={toggleVideo}
       />
       <ChattingList
         roomId={roomId}
-        totalParticipants={participantList.length}
+        totalParticipants={gameSubscribers.length + 1}
       />
     </div>
   );

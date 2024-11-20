@@ -6,15 +6,12 @@ import { useDragScroll } from '@/hooks/useDragScroll';
 import { useSocketStore } from '@/stores/socketStore';
 import { GamePublisher } from '@/types/gamePublisher';
 import { GameSubscriber } from '@/types/gameSubscriber';
-import { Role } from '@/constants/role';
 import { Situation } from '@/constants/situation';
+import { useMemo } from 'react';
 
 interface VideoViewerProps {
   roomId: string;
   isGameStarted: boolean;
-  participantList: string[];
-  playerRole: Role | null;
-  otherMafiaList: string[] | null;
   situation: Situation | null;
   gamePublisher: GamePublisher | null;
   gameSubscribers: GameSubscriber[];
@@ -26,9 +23,6 @@ interface VideoViewerProps {
 const VideoViewer = ({
   roomId,
   isGameStarted,
-  participantList,
-  playerRole,
-  otherMafiaList,
   situation,
   gamePublisher,
   gameSubscribers,
@@ -48,9 +42,48 @@ const VideoViewer = ({
     onTouchEnd,
   } = useDragScroll();
 
+  const totalSurvivors = useMemo(
+    () =>
+      isGameStarted
+        ? (gamePublisher?.participant ? 1 : 0) +
+          gameSubscribers.reduce(
+            (total, gameSubscriber) =>
+              total + (gameSubscriber.participant ? 1 : 0),
+            0,
+          )
+        : gameSubscribers.length + 1,
+    [gamePublisher?.participant, gameSubscribers, isGameStarted],
+  );
+
+  const handleInvalityButtonClick = () => {
+    if (target !== null) {
+      socket?.emit('cancel-vote-candidate', {
+        roomId,
+        from: nickname,
+        to: target,
+      });
+    }
+
+    if (target === 'INVALIDITY') {
+      setTarget(null);
+      return;
+    }
+
+    socket?.emit('vote-candidate', {
+      roomId,
+      from: nickname,
+      to: 'INVALIDITY',
+    });
+
+    setTarget('INVALIDITY');
+  };
+
   return (
     <div
-      className={`${isOpen ? 'right-[21.5rem]' : 'right-6'} absolute bottom-[6.5rem] left-6 top-6 max-h-screen overflow-auto transition-all duration-500 ease-out`}
+      className={[
+        `${isOpen ? 'right-[21.5rem]' : 'right-6'}`,
+        'absolute bottom-[6.5rem] left-6 top-6 max-h-screen overflow-auto transition-all duration-500 ease-out',
+      ].join(' ')}
       ref={listRef}
       onMouseDown={onDragStart}
       onMouseMove={onDragMove}
@@ -60,89 +93,58 @@ const VideoViewer = ({
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
-      {situation === 'VOTE' && (
+      {(situation === 'VOTE' ||
+        (situation === 'POLICE' && gamePublisher?.role === 'POLICE')) && (
         <div className='pointer-events-none absolute bottom-0 left-0 z-10 h-full w-full bg-slate-800/75' />
       )}
       {situation === 'VOTE' && (
         <button
-          className={`${target === 'INVALIDITY' ? 'border-2 bg-slate-600 text-white' : 'bg-white font-bold text-slate-800'} absolute right-0 top-0 z-20 h-[3.75rem] w-[11.25rem] rounded-2xl border border-slate-400 font-bold hover:bg-slate-600 hover:text-white`}
-          onClick={() => {
-            if (target !== null) {
-              socket?.emit('cancel-vote-candidate', {
-                roomId,
-                from: nickname,
-                to: target,
-              });
-            }
-
-            if (target === 'INVALIDITY') {
-              setTarget(null);
-              return;
-            }
-
-            socket?.emit('vote-candidate', {
-              roomId,
-              from: nickname,
-              to: 'INVALIDITY',
-            });
-
-            setTarget('INVALIDITY');
-          }}
+          className={[
+            `${target === 'INVALIDITY' ? 'border-2 bg-slate-600 text-white' : 'bg-white font-bold text-slate-800'}`,
+            'absolute right-0 top-0 z-20 h-[3.75rem] w-[11.25rem] rounded-2xl border border-slate-400 font-bold hover:bg-slate-600 hover:text-white',
+          ].join(' ')}
+          onClick={handleInvalityButtonClick}
         >
           {`기권 ${invalidityCount}`}
         </button>
       )}
-      {/* TODO: key 값으로 index 사용하지 않기 + 코드 리팩토링 */}
-      {isGameStarted ? (
-        <div
-          className={`${gameSubscribers.length <= 1 ? 'grid-rows-1' : 'grid-rows-2'} ${gameSubscribers.length <= 3 ? 'grid-cols-2' : gameSubscribers.length <= 5 ? 'grid-cols-3' : 'grid-cols-4'} grid h-full min-w-[67.5rem] gap-6`}
-        >
-          {gamePublisher && (
+      <div
+        className={[
+          `${totalSurvivors <= 2 ? 'grid-rows-1' : 'grid-rows-2'}`,
+          `${totalSurvivors <= 4 ? 'grid-cols-2' : totalSurvivors <= 6 ? 'grid-cols-3' : 'grid-cols-4'}`,
+          'grid h-full min-w-[67.5rem] gap-6',
+        ].join(' ')}
+      >
+        {(!isGameStarted || gamePublisher?.participant) && (
+          <VideoItem
+            roomId={roomId}
+            playerRole={gamePublisher?.role}
+            gameParticipantNickname={nickname}
+            gameParticipantRole={gamePublisher?.role}
+            gameParticipant={gamePublisher}
+            situation={situation}
+            target={target}
+            setTarget={setTarget}
+          />
+        )}
+        {gameSubscribers
+          .filter(
+            (gameSubscriber) => !isGameStarted || gameSubscriber.participant,
+          )
+          .map((gameSubscriber) => (
             <VideoItem
+              key={gameSubscriber.nickname}
               roomId={roomId}
-              playerNickname={nickname}
-              role={playerRole}
-              gameParticipant={gamePublisher}
-              situation={situation}
-              target={target}
-              setTarget={setTarget}
-            />
-          )}
-          {gameSubscribers.map((gameSubscriber, index) => (
-            <VideoItem
-              key={index}
-              roomId={roomId}
-              playerNickname={gameSubscriber.nickname}
-              role={
-                otherMafiaList?.includes(gameSubscriber.nickname)
-                  ? 'MAFIA'
-                  : null
-              }
+              playerRole={gamePublisher?.role}
+              gameParticipantNickname={gameSubscriber.nickname}
+              gameParticipantRole={gameSubscriber.role}
               gameParticipant={gameSubscriber}
               situation={situation}
               target={target}
               setTarget={setTarget}
             />
           ))}
-        </div>
-      ) : (
-        <div
-          className={`${participantList.length <= 2 ? 'grid-rows-1' : 'grid-rows-2'} ${participantList.length <= 4 ? 'grid-cols-2' : participantList.length <= 6 ? 'grid-cols-3' : 'grid-cols-4'} grid h-full min-w-[67.5rem] gap-6`}
-        >
-          {participantList.map((participant, index) => (
-            <VideoItem
-              key={index}
-              roomId={roomId}
-              playerNickname={participant}
-              role={null}
-              gameParticipant={null}
-              situation={situation}
-              target={target}
-              setTarget={setTarget}
-            />
-          ))}
-        </div>
-      )}
+      </div>
     </div>
   );
 };
