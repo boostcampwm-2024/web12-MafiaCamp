@@ -1,15 +1,9 @@
-import {
-  BaseEntity,
-  Column,
-  Entity,
-  Index,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { BaseEntity, Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { GameUserEntity } from '../../game-user/entity/game-user.entity';
+import { NotFoundUserException } from '../../common/error/not.found.user.exception';
 
 @Entity('user')
-export class UserEntity extends BaseEntity{
+export class UserEntity extends BaseEntity {
   @PrimaryGeneratedColumn('increment', {
     type: 'bigint',
     name: 'user_id',
@@ -27,9 +21,17 @@ export class UserEntity extends BaseEntity{
 
   @Column({
     type: 'varchar',
+    name: 'password',
+    nullable: true,
+  })
+  password: string;
+
+  @Column({
+    type: 'varchar',
     name: 'nickname',
     nullable: false,
   })
+  @Index('idx_nickname', { unique: true })
   nickname: string;
 
   @Column({
@@ -37,6 +39,7 @@ export class UserEntity extends BaseEntity{
     name: 'oauth_id',
     nullable: false,
   })
+  @Index('idx_oauth_id')
   oAuthId: string;
 
   @Column({
@@ -60,6 +63,7 @@ export class UserEntity extends BaseEntity{
   private constructor(
     email: string,
     nickname: string,
+    password: string,
     oAuthId: string,
     score: number,
     createdAt: Date,
@@ -67,17 +71,28 @@ export class UserEntity extends BaseEntity{
     super();
     this.email = email;
     this.nickname = nickname;
+    this.password = password;
     this.oAuthId = oAuthId;
     this.score = score;
     this.createdAt = createdAt;
   }
 
+
   static createUser(email: string, nickname: string, oAuthId: string): UserEntity {
-    return new UserEntity(email, nickname, oAuthId, 0, new Date());
+    return new UserEntity(email, nickname, null, oAuthId, 0, new Date());
   }
-  sta
+
+  static createAdmin(email: string, password: string, nickname: string, oAuthId: string): UserEntity {
+    return new UserEntity(email, nickname, password, oAuthId, 0, new Date());
+  }
+
+  verifyPassword(password: string) {
+    if (this.password !== password) {
+      throw new NotFoundUserException();
+    }
+  }
+
   updateNickname(newNickname: string) {
     this.nickname = newNickname;
-    this.createdAt = new Date();
   }
 }

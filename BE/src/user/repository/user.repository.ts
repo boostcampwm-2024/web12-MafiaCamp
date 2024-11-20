@@ -11,5 +11,7 @@ export interface UserRepository<T, TID> {
 
   findByNickname(nickname: string): Promise<UserEntity>;
 
+  findByEmail(email: string): Promise<UserEntity>;
+
   updateNickname(nickname: string, userId: number): Promise<void>;
 }

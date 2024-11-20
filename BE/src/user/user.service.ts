@@ -15,9 +15,14 @@ import { UpdateNicknameRequest } from './dto/update-nickname.request';
 import { DuplicateNicknameException } from '../common/error/duplicate.nickname.exception';
 import { RegisterUserResponse } from './dto/register-user.response';
 import { TOKEN_PROVIDE_USECASE, TokenProvideUsecase } from '../auth/usecase/token.provide.usecase';
+import { LoginAdminUsecase } from './usecase/login.admin.usecase';
+import { AdminLoginRequest } from './dto/admin-login.request';
+import { RegisterAdminUsecase } from './usecase/register.admin.usecase';
+import { RegisterAdminRequest } from './dto/register-admin.request';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
-export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginUserUsecase, UpdateUserUsecase {
+export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginUserUsecase, UpdateUserUsecase, LoginAdminUsecase, RegisterAdminUsecase {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository<UserEntity, number>,
@@ -93,4 +98,18 @@ export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginU
     }
     await this.userRepository.updateNickname(updateNicknameRequest.nickname, updateNicknameRequest.userId);
   }
+
+  async loginAdmin(adminLoginRequest: AdminLoginRequest): Promise<Record<string, any>> {
+    const userEntity = await this.userRepository.findByEmail(adminLoginRequest.email);
+
+    return undefined;
+  }
+
+  async registerAdmin(registerAdminRequest: RegisterAdminRequest): Promise<void> {
+    const hashPassword = await bcrypt.hash(registerAdminRequest.password, 50);
+    const userEntity = UserEntity.createAdmin(registerAdminRequest.email, hashPassword, registerAdminRequest.nickname, registerAdminRequest.oAuthId);
+    await this.userRepository.save(userEntity);
+  }
+
+
 }

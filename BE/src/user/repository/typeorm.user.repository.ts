@@ -42,4 +42,10 @@ export class TypeormUserRepository
     await this._repository.update({ userId }, { nickname });
   }
 
+  async findByEmail(email: string): Promise<UserEntity> {
+    return await this._repository.findOneBy({
+      email: email,
+    });
+  }
+
 }

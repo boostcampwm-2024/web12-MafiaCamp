@@ -1,7 +1,8 @@
-import { Controller, Get, Inject, Query, Res } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Post, Query, Res } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { LOGIN_USER_USECASE, LoginUserUsecase } from '../usecase/login.user.usecase';
+import { AdminLoginRequest } from '../dto/admin-login.request';
 
 @Controller('api/login')
 export class AuthController {
@@ -9,6 +10,11 @@ export class AuthController {
   constructor(private readonly configService: ConfigService,
               @Inject(LOGIN_USER_USECASE)
               private readonly loginUserUsecase: LoginUserUsecase) {
+  }
+
+  @Post('admin')
+  adminLogin(@Body() adminLoginRequest: AdminLoginRequest, @Res() res: Response) {
+
   }
 
   @Get('kakao')
