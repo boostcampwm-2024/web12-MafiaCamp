@@ -12,23 +12,40 @@ import { VOTE_STATE } from './vote-state';
 import { PoliceManager } from './usecase/role-playing/police-manager';
 import { MafiaManager } from './usecase/role-playing/mafia-manager';
 import { NotFoundUserException } from '../common/error/not.found.user.exception';
-import { CanNotSelectMafiaException } from '../common/error/can-not.select.mafia.exception';
-import { UnauthorizedMafiaSelectException } from '../common/error/unauthorized.mafia.select.exception';
+import { CanNotSelectUserException } from '../common/error/can-not.select.exception';
+import { UnauthorizedSelectException } from '../common/error/unauthorized.select.exception';
+import { DoctorManager } from './usecase/role-playing/doctor-manager';
+import { KILL_OPTION } from './killOption-status';
+import { NotFoundMafiaSelectLogException } from '../common/error/not.found.mafia.select.log.exception';
+import { KillDecisionManager } from './usecase/role-playing/killDecision-manager';
 
 interface PlayerInfo {
   role: MAFIA_ROLE;
   status: USER_STATUS;
 }
 
+interface MafiaSelectLogEntry {
+  target: string;
+  shouldBeKilled: boolean;
+}
+
 @Injectable()
 export class TotalGameManager
-  implements VoteManager, PoliceManager, MafiaManager
+  implements
+    VoteManager,
+    PoliceManager,
+    MafiaManager,
+    DoctorManager,
+    KillDecisionManager
 {
   private readonly games = new MutexMap<string, Map<string, PlayerInfo>>();
   private readonly ballotBoxs = new MutexMap<string, Map<string, string[]>>();
   private readonly policeInvestigationMap = new MutexMap<string, boolean>();
   private readonly mafiaCurrentTarget = new MutexMap<string, string>();
-  private readonly mafiaKillLogs = new MutexMap<string, string[]>();
+  private readonly mafiaSelectLogs = new MutexMap<
+    string,
+    MafiaSelectLogEntry[]
+  >();
 
   async register(
     gameRoom: GameRoom,
@@ -43,7 +60,11 @@ export class TotalGameManager
     }
   }
 
-  private async killUser(gameRoom: GameRoom, player: string): Promise<void> {
+  private async killUser(
+    gameRoom: GameRoom,
+    player: string,
+    option: KILL_OPTION = KILL_OPTION.VOTE,
+  ): Promise<void> {
     const gameInfo = await this.games.get(gameRoom.roomId);
     if (!gameInfo) {
       throw new NotFoundGameRoomException();
@@ -54,7 +75,11 @@ export class TotalGameManager
     playerInfo.status = USER_STATUS.DEAD;
     gameInfo.set(player, playerInfo);
 
-    gameRoom.sendAll('vote-kill-user', { player, job: playerInfo.role });
+    if (option === KILL_OPTION.VOTE)
+      gameRoom.sendAll('vote-kill-user', { player, job: playerInfo.role });
+
+    if (option === KILL_OPTION.MAFIA_KILL)
+      gameRoom.sendAll('mafia-kill-result', { player, job: playerInfo.role });
   }
 
   async registerBallotBox(gameRoom: GameRoom): Promise<void> {
@@ -229,6 +254,19 @@ export class TotalGameManager
     return VOTE_STATE.FINAL;
   }
 
+  async isPoliceAlive(gameRoom: GameRoom): Promise<boolean> {
+    const gameInfo = await this.games.get(gameRoom.roomId);
+    if (!gameInfo) {
+      throw new NotFoundGameRoomException();
+    }
+
+    return Array.from(gameInfo.values()).some(
+      (playerInfo) =>
+        playerInfo.role === MAFIA_ROLE.POLICE &&
+        playerInfo.status === USER_STATUS.ALIVE,
+    );
+  }
+
   async executePolice(
     gameRoom: GameRoom,
     police: string,
@@ -282,52 +320,55 @@ export class TotalGameManager
   async selectMafiaTarget(
     gameRoom: GameRoom,
     from: string,
-    target: string,
+    killTarget: string,
   ): Promise<void> {
     const gameInfo = await this.games.get(gameRoom.roomId);
     if (!gameInfo) {
       throw new NotFoundGameRoomException();
     }
-    const targetInfo = gameInfo.get(target);
+    const targetInfo = gameInfo.get(killTarget);
     const fromClientInfo = gameInfo.get(from);
+
+    if (!targetInfo || !fromClientInfo) {
+      throw new NotFoundUserException();
+    }
+
+    if (targetInfo.status !== USER_STATUS.ALIVE) {
+      throw new CanNotSelectUserException();
+    }
+
+    if (targetInfo.role === MAFIA_ROLE.MAFIA) {
+      throw new CanNotSelectUserException('마피아는 선택할 수 없습니다.');
+    }
 
     if (
       fromClientInfo.status !== USER_STATUS.ALIVE ||
       fromClientInfo.role !== MAFIA_ROLE.MAFIA
     ) {
-      throw new UnauthorizedMafiaSelectException();
-    }
-    if (!targetInfo) {
-      throw new NotFoundUserException();
-    }
-    if (
-      targetInfo.status !== USER_STATUS.ALIVE ||
-      targetInfo.role === MAFIA_ROLE.MAFIA
-    ) {
-      throw new CanNotSelectMafiaException();
+      throw new UnauthorizedSelectException();
     }
 
-    await this.mafiaCurrentTarget.set(gameRoom.roomId, target);
-    await this.sendCurrentMafiaTarget(target, gameRoom);
+    await this.mafiaCurrentTarget.set(gameRoom.roomId, killTarget);
+    await this.sendCurrentMafiaTarget(killTarget, gameRoom);
   }
 
   async sendCurrentMafiaTarget(
-    target: string,
+    killTarget: string,
     gameRoom: GameRoom,
   ): Promise<void> {
-    gameRoom.sendToRole(MAFIA_ROLE.MAFIA, 'mafia-current-target', target);
+    gameRoom.sendToRole(MAFIA_ROLE.MAFIA, 'mafia-current-target', killTarget);
   }
 
   async initMafia(gameRoom: GameRoom): Promise<void> {
     await Promise.all([
       this.mafiaCurrentTarget.set(gameRoom.roomId, 'NO_SELECTION'),
-      this.mafiaKillLogs.set(gameRoom.roomId, []),
+      this.mafiaSelectLogs.set(gameRoom.roomId, []),
     ]);
   }
 
   async decisionMafiaTarget(gameRoom: GameRoom): Promise<void> {
-    const [logs, finalTarget] = await Promise.all([
-      this.mafiaKillLogs.get(gameRoom.roomId),
+    const [selectLog, finalTarget] = await Promise.all([
+      this.mafiaSelectLogs.get(gameRoom.roomId),
       this.mafiaCurrentTarget.get(gameRoom.roomId),
     ]);
 
@@ -335,11 +376,100 @@ export class TotalGameManager
       throw new NotFoundUserException();
     }
 
-    const updateKillLogs = [...(logs || []), finalTarget];
+    if (!selectLog) {
+      throw new NotFoundMafiaSelectLogException();
+    }
+
+    const updateSelectLogs: MafiaSelectLogEntry[] = [
+      ...(selectLog || []),
+      { target: finalTarget, shouldBeKilled: true },
+    ];
 
     await Promise.all([
-      this.mafiaKillLogs.set(gameRoom.roomId, updateKillLogs),
+      this.mafiaSelectLogs.set(gameRoom.roomId, updateSelectLogs),
       this.mafiaCurrentTarget.delete(gameRoom.roomId),
     ]);
+  }
+
+  async isDoctorAlive(gameRoom: GameRoom): Promise<boolean> {
+    const gameInfo = await this.games.get(gameRoom.roomId);
+    if (!gameInfo) {
+      throw new NotFoundGameRoomException();
+    }
+
+    return Array.from(gameInfo.values()).some(
+      (playerInfo) =>
+        playerInfo.role === MAFIA_ROLE.DOCTOR &&
+        playerInfo.status === USER_STATUS.ALIVE,
+    );
+  }
+
+  async selectDoctorTarget(
+    gameRoom: GameRoom,
+    from: string,
+    saveTarget: string,
+  ): Promise<void> {
+    const gameInfo = await this.games.get(gameRoom.roomId);
+    if (!gameInfo) {
+      throw new NotFoundGameRoomException();
+    }
+
+    const targetInfo = gameInfo.get(saveTarget);
+    const fromClientInfo = gameInfo.get(from);
+
+    if (!targetInfo || !fromClientInfo) {
+      throw new NotFoundUserException();
+    }
+
+    if (targetInfo.status !== USER_STATUS.ALIVE) {
+      throw new CanNotSelectUserException();
+    }
+
+    if (
+      fromClientInfo.status !== USER_STATUS.ALIVE ||
+      fromClientInfo.role !== MAFIA_ROLE.DOCTOR
+    ) {
+      throw new UnauthorizedSelectException();
+    }
+    await this.decisionSurvivorByDoctor(gameRoom, saveTarget);
+  }
+
+  async decisionSurvivorByDoctor(
+    gameRoom: GameRoom,
+    saveTarget: string,
+  ): Promise<void> {
+    const mafiaSelectLog = await this.mafiaSelectLogs.get(gameRoom.roomId);
+
+    if (!mafiaSelectLog || mafiaSelectLog.length === 0) {
+      throw new NotFoundMafiaSelectLogException();
+    }
+
+    if (mafiaSelectLog[mafiaSelectLog.length - 1].target === saveTarget) {
+      const lastLog = mafiaSelectLog[mafiaSelectLog.length - 1];
+      if (lastLog.shouldBeKilled) {
+        lastLog.shouldBeKilled = false;
+        await this.mafiaSelectLogs.set(gameRoom.roomId, mafiaSelectLog);
+      }
+    }
+  }
+
+  async determineKillTarget(gameRoom: GameRoom): Promise<void> {
+    const mafiaSelectLog = await this.mafiaSelectLogs.get(gameRoom.roomId);
+    const lastLog = mafiaSelectLog[mafiaSelectLog.length - 1];
+
+    if (
+      !mafiaSelectLog ||
+      mafiaSelectLog.length === 0 ||
+      !lastLog ||
+      !lastLog.target
+    ) {
+      throw new NotFoundMafiaSelectLogException();
+    }
+
+    if (lastLog.shouldBeKilled) {
+      await this.killUser(gameRoom, lastLog.target, KILL_OPTION.MAFIA_KILL);
+    } else {
+      gameRoom.sendAll('mafia-kill-result', null);
+    }
   }
 }
