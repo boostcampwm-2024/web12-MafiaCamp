@@ -1,9 +1,12 @@
 'use client';
 
+import 'react-toastify/dist/ReactToastify.css';
 import { AccountCreateFormSchema } from '@/libs/zod/accountCreateFormSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FormEvent, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast, ToastContainer } from 'react-toastify';
+import { TOAST_OPTION } from '@/constants/toastOption';
 
 const AdminPanel = () => {
   const [isSignIn, setIsSignIn] = useState(true);
@@ -24,6 +27,14 @@ const AdminPanel = () => {
     mode: 'onChange',
   });
 
+  const notifySuccess = (message: string) => {
+    toast.success(message, TOAST_OPTION);
+  };
+
+  const notifyError = (message: string) => {
+    toast.error(message, TOAST_OPTION);
+  };
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -33,26 +44,23 @@ const AdminPanel = () => {
         return;
       }
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/login/admin`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email: methods.getValues('email'),
-            password: methods.getValues('password'),
-          }),
+      const response = await fetch('/api/login/admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
+        body: JSON.stringify({
+          email: methods.getValues('email'),
+          password: methods.getValues('password'),
+        }),
+      });
 
       if (!response.ok) {
-        alert('로그인에 실패하였습니다.');
+        notifyError('로그인에 실패하였습니다.');
         throw new Error(response.statusText);
       }
 
-      alert('로그인 성공');
+      notifySuccess('로그인에 성공하였습니다.');
     } else {
       await methods.trigger();
       if (!methods.formState.isValid) {
@@ -73,16 +81,18 @@ const AdminPanel = () => {
       );
 
       if (!response.ok) {
-        alert('회원가입에 실패하였습니다.');
+        notifyError('회원가입에 실패하였습니다.');
         throw new Error(response.statusText);
       }
 
-      alert('회원가입 성공');
+      notifySuccess('회원가입에 성공하였습니다.');
+      setIsSignIn(true);
     }
   };
 
   return (
     <div className='flex w-[30rem] flex-col items-center rounded-3xl bg-white p-10 max-[512px]:w-full'>
+      <ToastContainer />
       <h2 className='flex items-center gap-x-2 pt-5 text-3xl font-bold text-slate-800 max-[512px]:flex-col max-[400px]:text-xl'>
         Admin {isSignIn ? '로그인' : '회원가입'}
       </h2>
