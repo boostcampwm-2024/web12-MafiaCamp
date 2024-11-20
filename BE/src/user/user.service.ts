@@ -101,15 +101,19 @@ export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginU
 
   async loginAdmin(adminLoginRequest: AdminLoginRequest): Promise<Record<string, any>> {
     const userEntity = await this.userRepository.findByEmail(adminLoginRequest.email);
-
-    return undefined;
+    await userEntity.verifyPassword(adminLoginRequest.password);
+    const accessToken = this.tokenProvideUsecase.generateToken({
+      userId: userEntity.userId,
+    });
+    return {
+      token: accessToken,
+      response: new RegisterUserResponse(userEntity.nickname, userEntity.userId),
+    };
   }
 
   async registerAdmin(registerAdminRequest: RegisterAdminRequest): Promise<void> {
-    const hashPassword = await bcrypt.hash(registerAdminRequest.password, 50);
+    const hashPassword = await bcrypt.hash(registerAdminRequest.password, 10);
     const userEntity = UserEntity.createAdmin(registerAdminRequest.email, hashPassword, registerAdminRequest.nickname, registerAdminRequest.oAuthId);
     await this.userRepository.save(userEntity);
   }
-
-
 }

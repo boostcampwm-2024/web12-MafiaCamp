@@ -3,18 +3,23 @@ import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { LOGIN_USER_USECASE, LoginUserUsecase } from '../usecase/login.user.usecase';
 import { AdminLoginRequest } from '../dto/admin-login.request';
+import { LOGIN_ADMIN_USECASE, LoginAdminUsecase } from '../usecase/login.admin.usecase';
 
 @Controller('api/login')
 export class AuthController {
 
   constructor(private readonly configService: ConfigService,
               @Inject(LOGIN_USER_USECASE)
-              private readonly loginUserUsecase: LoginUserUsecase) {
+              private readonly loginUserUsecase: LoginUserUsecase,
+              @Inject(LOGIN_ADMIN_USECASE)
+              private readonly loginAdminUsecase: LoginAdminUsecase) {
   }
 
   @Post('admin')
-  adminLogin(@Body() adminLoginRequest: AdminLoginRequest, @Res() res: Response) {
-
+  async adminLogin(@Body() adminLoginRequest: AdminLoginRequest, @Res({passthrough: true}) res: Response) {
+    const { token, response } = await this.loginAdminUsecase.loginAdmin(adminLoginRequest);
+    res.setHeader('X-ACCESS-TOKEN', token);
+    return response;
   }
 
   @Get('kakao')

@@ -1,6 +1,7 @@
 import { BaseEntity, Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { GameUserEntity } from '../../game-user/entity/game-user.entity';
 import { NotFoundUserException } from '../../common/error/not.found.user.exception';
+import * as bcrypt from 'bcrypt';
 
 @Entity('user')
 export class UserEntity extends BaseEntity {
@@ -39,7 +40,7 @@ export class UserEntity extends BaseEntity {
     name: 'oauth_id',
     nullable: false,
   })
-  @Index('idx_oauth_id')
+  @Index('idx_oauth_id', { unique: true })
   oAuthId: string;
 
   @Column({
@@ -86,13 +87,9 @@ export class UserEntity extends BaseEntity {
     return new UserEntity(email, nickname, password, oAuthId, 0, new Date());
   }
 
-  verifyPassword(password: string) {
-    if (this.password !== password) {
+  async verifyPassword(password: string) {
+    if (!await bcrypt.compare(password, this.password)) {
       throw new NotFoundUserException();
     }
-  }
-
-  updateNickname(newNickname: string) {
-    this.nickname = newNickname;
   }
 }

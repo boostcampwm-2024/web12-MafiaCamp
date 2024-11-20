@@ -14,16 +14,16 @@ export class UserController {
               private readonly registerAdminUseCase: RegisterAdminUsecase) {
   }
 
-  @Patch('user/nickname')
   @HttpCode(HttpStatus.OK)
+  @Patch('user/nickname')
   @UseGuards(UserDetailJwtGuard)
   async updateNickname(@Body() updateNicknameRequest: UpdateNicknameRequest) {
     await this.updateUserUsecase.updateNickname(updateNicknameRequest);
     return;
   }
 
-  @Post('admin/register')
   @HttpCode(HttpStatus.OK)
+  @Post('admin/register')
   async registerAdmin(@Body() registerAdminRequest: RegisterAdminRequest) {
     await this.registerAdminUseCase.registerAdmin(registerAdminRequest);
     return;
