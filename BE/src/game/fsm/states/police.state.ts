@@ -12,7 +12,6 @@ import { POLICE_INVESTIGATE_USECASE, PoliceInvestigateUsecase } from 'src/game/u
 import { GameRoom } from 'src/game-room/entity/game-room.model';
 import { MAFIA_ROLE } from 'src/game/mafia-role';
 import { PoliceInvestigationRequest } from 'src/game/dto/police.investigation.request';
-import { GameClient } from 'src/game-room/entity/game-client.model';
 
 @Injectable()
 export class PoliceState extends GameState {

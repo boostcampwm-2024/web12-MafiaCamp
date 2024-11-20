@@ -17,11 +17,6 @@ import { Event } from './event.const';
 import { START_GAME_USECASE, StartGameUsecase } from 'src/game/usecase/start-game/start-game.usecase';
 import { VOTE_MAFIA_USECASE, VoteMafiaUsecase } from '../game/usecase/vote-manager/vote.mafia.usecase';
 import { VoteCandidateRequest } from '../game/dto/vote.candidate.request';
-import { PoliceInvestigationRequest } from '../game/dto/police.investigation.request';
-import {
-  POLICE_INVESTIGATE_USECASE,
-  PoliceInvestigateUsecase,
-} from '../game/usecase/role-playing/police.investigate.usecase';
 
 // @UseInterceptors(WebsocketLoggerInterceptor)
 @WebSocketGateway({
@@ -41,8 +36,6 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly startGameUsecase: StartGameUsecase,
     @Inject(VOTE_MAFIA_USECASE)
     private readonly voteMafiaUsecase: VoteMafiaUsecase,
-    @Inject(POLICE_INVESTIGATE_USECASE)
-    private readonly policeInvestigateUsecase: PoliceInvestigateUsecase,
   ) {
   }
 
