@@ -3,9 +3,26 @@
 import LottieFile from '@/../public/lottie/welcome.json';
 import Lottie from 'lottie-react';
 import Image from 'next/image';
-import { FaLock } from 'react-icons/fa';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 const SigninPanel = () => {
+  const router = useRouter();
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === '.') {
+        router.replace('/signin/admin');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [router]);
+
   return (
     <div className='flex w-[30rem] flex-col items-center rounded-3xl bg-slate-600/50 p-10 max-[512px]:w-full'>
       <Lottie animationData={LottieFile} className='h-[6.25rem]' />
@@ -26,13 +43,6 @@ const SigninPanel = () => {
             height={40}
           />
           <p>카카오로 로그인</p>
-        </button>
-        <button className='relative h-[2.875rem] w-[17.25rem] rounded-3xl bg-white hover:scale-105'>
-          <FaLock
-            className='absolute left-[1.125rem] top-3 text-blue-500'
-            size='1.25rem'
-          />
-          <p>Admin</p>
         </button>
       </div>
     </div>
