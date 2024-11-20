@@ -3,6 +3,7 @@
 import LottieFile from '@/../public/lottie/welcome.json';
 import Lottie from 'lottie-react';
 import Image from 'next/image';
+import { FaLock } from 'react-icons/fa';
 
 const SigninPanel = () => {
   return (
@@ -27,14 +28,11 @@ const SigninPanel = () => {
           <p>카카오로 로그인</p>
         </button>
         <button className='relative h-[2.875rem] w-[17.25rem] rounded-3xl bg-white hover:scale-105'>
-          <Image
-            className='absolute left-[1.125rem] top-3'
-            src='/common/google-icon.png'
-            alt='google-icon'
-            width={20}
-            height={20}
+          <FaLock
+            className='absolute left-[1.125rem] top-3 text-blue-500'
+            size='1.25rem'
           />
-          <p>구글로 로그인</p>
+          <p>Admin</p>
         </button>
       </div>
     </div>
