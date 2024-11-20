@@ -27,7 +27,7 @@ import { TOKEN_VERIFY_USECASE } from './usecase/token.verify.usecase';
       useClass: AuthService,
     },
   ],
-  exports: [TOKEN_PROVIDE_USECASE],
+  exports: [TOKEN_PROVIDE_USECASE, TOKEN_VERIFY_USECASE],
 })
 export class AuthModule {
 }
