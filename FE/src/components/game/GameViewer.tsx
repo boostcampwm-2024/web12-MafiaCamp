@@ -30,6 +30,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     initializeVotes,
     setAllParticipantsAsCandidates,
     setTargetsOfMafia,
+    setTargetsOfPolice,
     eliminatePublisher,
   } = useOpenVidu();
 
@@ -96,7 +97,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
 
         if (data.situation === 'POLICE' && data.timeLeft === 20) {
           setTarget(null);
-          setAllParticipantsAsCandidates();
+          setTargetsOfPolice();
           notifyInfo(SITUATION_MESSAGE.POLICE);
         }
 
@@ -220,6 +221,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     initializeVotes,
     setAllParticipantsAsCandidates,
     setTargetsOfMafia,
+    setTargetsOfPolice,
     situation,
     socket,
   ]);
