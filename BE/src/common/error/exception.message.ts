@@ -27,4 +27,16 @@ export const EXCEPTION_MESSAGE = {
     '살아있는 사용자만 선택할 수 있습니다. 다시 시도해주세요.',
   NOT_FOUND_MAFIA_SELECT_LOG:
     '마피아의 타겟 기록이 비어 있습니다. 게임 상태를 다시 확인해주세요.',
+  NOT_FOUND_OPENVIDU_SESSION:
+    '해당하는 OpenVidu 세션을 찾을 수 없습니다. 다시 시도해주세요.',
+  FAILED_TO_CLOSE_OPENVIDU_SESSION:
+    'OpenVidu 세션을 닫는 데 실패했습니다. 다시 시도해주세요.',
+  FAILED_TO_CREATE_OPENVIDU_SESSION:
+    'OpenVidu 세션을 생성하는 데 실패했습니다. 다시 시도해주세요.',
+  FAILED_TO_GENERATE_OPENVIDU_TOKEN:
+    'OpenVidu 토큰을 생성하는 데 실패했습니다. 다시 시도해주세요.',
+  FAILED_TO_DISCONNECT_OPENVIDU_PARTICIPANT:
+    '참가자 연결 해제에 실패했습니다. 다시 시도해주세요.',
+  FAILED_TO_FETCH_OPENVIDU_PARTICIPANT_LIST:
+    '참가자 목록을 조회하는 데 실패했습니다. 다시 시도해주세요.',
 } as const;
