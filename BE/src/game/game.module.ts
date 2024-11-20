@@ -35,6 +35,7 @@ import { MAFIA_MANAGER } from './usecase/role-playing/mafia-manager';
 import { DOCTOR_MANAGER } from './usecase/role-playing/doctor-manager';
 import { DOCTOR_CURE_USECASE } from './usecase/role-playing/doctor.cure.usecase';
 import { DoctorCureService } from './usecase/role-playing/doctor.cure.service';
+import { KILL_DECISION_MANAGER } from './usecase/role-playing/killDecision-manager';
 
 @Module({
   imports: [TypeOrmModule.forFeature([GameHistoryEntity]), VideoServerModule],
@@ -95,6 +96,10 @@ import { DoctorCureService } from './usecase/role-playing/doctor.cure.service';
     {
       provide: DOCTOR_CURE_USECASE,
       useClass: DoctorCureService,
+    },
+    {
+      provide: KILL_DECISION_MANAGER,
+      useExisting: TotalGameManager,
     },
     ArgumentState,
     DiscussionState,
