@@ -2,10 +2,8 @@
 
 import { AccountCreateFormSchema } from '@/libs/zod/accountCreateFormSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
-import Link from 'next/link';
 import { FormEvent, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { FaLock } from 'react-icons/fa';
 
 const AdminPanel = () => {
   const [isSignIn, setIsSignIn] = useState(true);
@@ -29,17 +27,40 @@ const AdminPanel = () => {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    await methods.trigger();
-    if (!methods.formState.isValid) {
-      methods.trigger();
-      return;
-    }
-
     if (isSignIn) {
-      // const response = fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/admin/`)
-    } else {
+      await methods.trigger(['email', 'password']);
+      if (methods.formState.errors.email && methods.formState.errors.password) {
+        return;
+      }
+
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/admin/`,
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/login/admin`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: methods.getValues('email'),
+            password: methods.getValues('password'),
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        alert('로그인에 실패하였습니다.');
+        throw new Error(response.statusText);
+      }
+
+      alert('로그인 성공');
+    } else {
+      await methods.trigger();
+      if (!methods.formState.isValid) {
+        return;
+      }
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/admin/register`,
         {
           method: 'POST',
           headers: {
@@ -55,6 +76,8 @@ const AdminPanel = () => {
         alert('회원가입에 실패하였습니다.');
         throw new Error(response.statusText);
       }
+
+      alert('회원가입 성공');
     }
   };
 
@@ -173,7 +196,6 @@ const AdminPanel = () => {
             </div>
           )}
         </div>
-
         <button
           className='h-[2.875rem] w-[17.25rem] rounded-3xl bg-slate-800 text-white hover:scale-105'
           type='submit'
@@ -181,15 +203,6 @@ const AdminPanel = () => {
           {isSignIn ? '로그인' : '회원가입'}
         </button>
       </form>
-      <div className='flex flex-col items-center gap-3 pt-10 text-sm font-semibold text-slate-800'>
-        <Link
-          className='relative flex h-[2.875rem] w-[17.25rem] items-center justify-center rounded-3xl bg-slate-800 text-white hover:scale-105'
-          href='/signin/admin'
-        >
-          <FaLock className='absolute left-[1.125rem] top-3' size='1.25rem' />
-          <p>OAuth</p>
-        </Link>
-      </div>
     </div>
   );
 };

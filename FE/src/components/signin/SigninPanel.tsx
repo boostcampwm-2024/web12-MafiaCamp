@@ -34,7 +34,10 @@ const SigninPanel = () => {
         <span>온라인 화상 마피아 게임입니다.</span>
       </p>
       <div className='flex flex-col items-center gap-3 pt-10 text-sm font-semibold text-slate-800'>
-        <button className='relative h-[2.875rem] w-[17.25rem] rounded-3xl bg-[#FFEB3B] hover:scale-105'>
+        <button
+          className='relative h-[2.875rem] w-[17.25rem] rounded-3xl bg-[#FFEB3B] hover:scale-105'
+          onClick={() => alert('TODO: 구현 예정')}
+        >
           <Image
             className='absolute left-2 top-1 rounded-full'
             src='/common/kakao-talk-icon.png'

@@ -27,7 +27,6 @@ const CreateRoomModal = ({ close }: CreateRoomModalProps) => {
 
     await methods.trigger();
     if (!methods.formState.isValid) {
-      methods.trigger();
       return;
     }
 
