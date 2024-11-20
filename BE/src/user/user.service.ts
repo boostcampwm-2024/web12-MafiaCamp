@@ -73,7 +73,7 @@ export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginU
     const userEntity = await this.userRepository.findByOAuthId(userInfo.data.id);
     if (!userEntity) {
       const newUserEntity = await this.register(new RegisterUserRequest(userInfo.data.kakao_account.email, nickname, userInfo.data.id));
-      const accessToken = this.tokenProvideUsecase.generateToken({
+      const accessToken = this.tokenProvideUsecase.provide({
         userId: newUserEntity.userId,
       });
       return {
@@ -81,7 +81,7 @@ export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginU
         response: new RegisterUserResponse(nickname, newUserEntity.userId),
       };
     }
-    const accessToken = this.tokenProvideUsecase.generateToken({
+    const accessToken = this.tokenProvideUsecase.provide({
       userId: userEntity.userId,
     });
     return {
@@ -102,7 +102,7 @@ export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginU
   async loginAdmin(adminLoginRequest: AdminLoginRequest): Promise<Record<string, any>> {
     const userEntity = await this.userRepository.findByEmail(adminLoginRequest.email);
     await userEntity.verifyPassword(adminLoginRequest.password);
-    const accessToken = this.tokenProvideUsecase.generateToken({
+    const accessToken = this.tokenProvideUsecase.provide({
       userId: userEntity.userId,
     });
     return {

@@ -10,7 +10,7 @@ export class AuthService implements TokenProvideUsecase, TokenVerifyUsecase {
   constructor(private readonly jwtService: JwtService) {
   }
 
-  generateToken(payload: Record<string, string>): string {
+  provide(payload: Record<string, string>): string {
     return this.jwtService.sign(payload);
   }
 
