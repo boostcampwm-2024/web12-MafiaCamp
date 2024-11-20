@@ -119,9 +119,7 @@ describe('MafiaCountdownTest 테스트', () => {
 
     //when & then
     for (let time = maxTime; time > 0; time--) {
-      mockClients.forEach(mockClient => {
         jest.clearAllMocks();
-      });
 
       jest.advanceTimersByTime(1000);
 

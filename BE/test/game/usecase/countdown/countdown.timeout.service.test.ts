@@ -3,7 +3,6 @@ import { COUNTDOWN_TIMER, CountdownTimer } from '../../../../src/game/usecase/co
 import { GameRoom } from '../../../../src/game-room/entity/game-room.model';
 import { Test, TestingModule } from '@nestjs/testing';
 import { StartCountdownRequest } from '../../../../src/game/dto/start.countdown.request';
-import { DuplicateTimerException } from '../../../../src/common/error/duplicate.timer.exception';
 import { StopCountdownRequest } from '../../../../src/game/dto/stop.countdown.request';
 
 describe('CountdownTimeoutService', () => {
@@ -32,7 +31,7 @@ describe('CountdownTimeoutService', () => {
   });
 
   it.each(['DISCUSSION', 'ARGUMENT', 'VOTE', 'MAFIA', 'DOCTOR', 'POLICE', 'INTERMISSION'])
-  ('%s CountdownTimer의 start 메서드를 호출해야 한다', async (situation:string)=> {
+  ('%s CountdownTimer의 start 메서드를 호출해야 한다', async (situation: string) => {
     //given
     const startCountdownRequest = new StartCountdownRequest(gameRoom, situation);
 
@@ -45,7 +44,7 @@ describe('CountdownTimeoutService', () => {
   });
 
   it.each(['DISCUSSION', 'ARGUMENT', 'VOTE', 'MAFIA', 'DOCTOR', 'POLICE', 'INTERMISSION'])
-  ('%s CountdownTimer의 stop 메소드를 호출해야 한다', async (situation:string)=> {
+  ('%s CountdownTimer의 stop 메소드를 호출해야 한다', async (situation: string) => {
     //given
     const stopRequest = new StopCountdownRequest(gameRoom);
 
