@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { LOGIN_USER_USECASE, LoginUserUsecase } from '../usecase/login.user.usecase';
 
-@Controller('api/login')
+@Controller('login')
 export class AuthController {
 
   constructor(private readonly configService: ConfigService,
