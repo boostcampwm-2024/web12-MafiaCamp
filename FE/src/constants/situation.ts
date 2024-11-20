@@ -8,7 +8,7 @@ export type Situation =
   | 'POLICE';
 
 export const SITUATION = {
-  INTERMISSION: 5,
+  INTERMISSION: 10,
   DISCUSSION: 150,
   ARGUMENT: 90,
   VOTE: 15,

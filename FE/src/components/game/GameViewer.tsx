@@ -62,10 +62,6 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     socket?.on(
       'countdown',
       (data: { situation: Situation; timeLeft: number }) => {
-        if (data.situation === 'INTERMISSION' && data.timeLeft === 5) {
-          notifyInfo('잠시 후 게임이 시작됩니다.');
-        }
-
         if (data.situation === 'DISCUSSION' && data.timeLeft === 150) {
           notifyInfo(
             '낮이 되었습니다. 모든 플레이어들은 토론을 진행해 주세요.',
@@ -129,10 +125,11 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       'player-role',
       (data: { role: Role; another: [string, Role][] | null }) => {
         changePublisherStatus({ role: data.role });
-
         data.another?.forEach((value) => {
           changeSubscriberStatus(value[0], { role: value[1] });
         });
+
+        notifyInfo('잠시 후 게임이 시작됩니다.');
       },
     );
 
@@ -142,8 +139,8 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       setInvalidityCount(0);
       setTarget(null);
 
-      for (const nickname in candidates) {
-        if (nickname === gamePublisher?.nickname) {
+      for (const nickname of candidates) {
+        if (nickname === gamePublisher.nickname) {
           changePublisherStatus({ isCandidate: true });
         } else {
           changeSubscriberStatus(nickname, { isCandidate: true });
@@ -156,7 +153,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       for (const [nickname, votes] of Object.entries(data)) {
         if (nickname === 'INVALIDITY') {
           setInvalidityCount(votes);
-        } else if (nickname === gamePublisher?.nickname) {
+        } else if (nickname === gamePublisher.nickname) {
           changePublisherStatus({ votes });
         } else {
           changeSubscriberStatus(nickname, { votes });
@@ -173,7 +170,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
         for (const [nickname, votes] of Object.entries(data)) {
           if (nickname === 'INVALIDITY') {
             setInvalidityCount(votes);
-          } else if (nickname === gamePublisher?.nickname) {
+          } else if (nickname === gamePublisher.nickname) {
             changePublisherStatus({ votes });
           } else {
             changeSubscriberStatus(nickname, { votes });
@@ -191,7 +188,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
           return;
         }
 
-        if (data.player === gamePublisher?.nickname) {
+        if (data.player === gamePublisher.nickname) {
           eliminatePublisher();
         }
 
@@ -221,7 +218,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     changePublisherStatus,
     changeSubscriberStatus,
     eliminatePublisher,
-    gamePublisher?.nickname,
+    gamePublisher.nickname,
     initializeVotes,
     setAllParticipantsAsCandidates,
     situation,

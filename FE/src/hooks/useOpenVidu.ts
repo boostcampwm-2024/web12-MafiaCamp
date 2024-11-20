@@ -4,7 +4,6 @@ import { GameSubscriber } from '@/types/gameSubscriber';
 import {
   OpenVidu,
   Publisher,
-  StreamManager,
   Subscriber,
   VideoInsertMode,
 } from 'openvidu-browser';
@@ -20,7 +19,7 @@ type Action =
   | { type: 'PARTICIPATE'; payload: { participantList: string[] } }
   | { type: 'START_GAME'; payload: { publisher: Publisher } }
   | { type: 'SUBSCRIBE'; payload: { subscriber: Subscriber } }
-  | { type: 'UNSUBSCRIBE'; payload: { streamManager: StreamManager } }
+  | { type: 'UNSUBSCRIBE'; payload: { nickname: string } }
   | { type: 'CHANGE_PUBLISHER_STATUS'; payload: Partial<GamePublisher> }
   | {
       type: 'CHANGE_SUBSCRIBER_STATUS';
@@ -88,7 +87,7 @@ const reducer = (state: State, action: Action): State => {
       return {
         ...state,
         gameSubscribers: state.gameSubscribers.map((gameSubscriber) =>
-          gameSubscriber.participant === action.payload.streamManager
+          gameSubscriber.nickname === action.payload.nickname
             ? {
                 ...gameSubscriber,
                 participant: null,
@@ -361,7 +360,7 @@ export const useOpenVidu = () => {
       session.on('streamDestroyed', (event) => {
         dispatch({
           type: 'UNSUBSCRIBE',
-          payload: { streamManager: event.stream.streamManager },
+          payload: { nickname: event.stream.connection.data.split('%/%')[0] },
         });
       });
     }
