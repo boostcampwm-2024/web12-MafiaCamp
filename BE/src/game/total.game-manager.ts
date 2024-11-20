@@ -19,6 +19,7 @@ import { FinishGameManager } from './usecase/finish-game/finish-game.manager';
 import { GAME_USER_RESULT } from 'src/game-user/entity/game-user.result';
 import { GAME_HISTORY_REPOSITORY, GameHistoryRepository } from './repository/game-history.repository';
 import { GameHistoryEntity } from './entity/game-history.entity';
+import { GAME_STATUS } from './entity/game-status';
 
 interface PlayerInfo {
   role: MAFIA_ROLE;
@@ -428,7 +429,11 @@ export class TotalGameManager
   }
 
   private async saveGameResult(gameRoom: GameRoom) {
-    // this.gameHistoryRepository.update(); // 게임 상태 업데이트
+    const gameId = gameRoom.gameId;
+    const endTime = new Date();
+    const gameHistoryResult = gameRoom.result;
+    const gameStatus = GAME_STATUS.END;
+    this.gameHistoryRepository.saveGameResult(gameId, { endTime, gameHistoryResult, gameStatus }); // 게임 상태 업데이트
   }
 
 }

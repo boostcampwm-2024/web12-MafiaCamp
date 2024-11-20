@@ -7,6 +7,7 @@ import { MAFIA_ROLE } from '../../game/mafia-role';
 
 export class GameRoom {
   private _roomId: string = uuid();
+  private _gameId: number = null;
   private participants = 0;
   private _status: GameRoomStatus = GameRoomStatus.READY;
   private createdAt: number = Date.now();
@@ -18,6 +19,17 @@ export class GameRoom {
 
   get roomId() {
     return this._roomId;
+  }
+
+  get gameId() {
+    return this._gameId;
+  }
+
+  set gameId(gameId: number) {
+    if (this._gameId) {
+      throw new Error();
+    }
+    this._gameId = gameId;
   }
 
   get clients(): GameClient[] {
