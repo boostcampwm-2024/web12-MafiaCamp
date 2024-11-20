@@ -7,8 +7,12 @@ import { FormEvent, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast, ToastContainer } from 'react-toastify';
 import { TOAST_OPTION } from '@/constants/toastOption';
+import { useRouter } from 'next/navigation';
+import { useSocketStore } from '@/stores/socketStore';
 
 const AdminPanel = () => {
+  const router = useRouter();
+  const { setState } = useSocketStore();
   const [isSignIn, setIsSignIn] = useState(true);
 
   const methods = useForm<{
@@ -60,6 +64,11 @@ const AdminPanel = () => {
         throw new Error(response.statusText);
       }
 
+      const result: { nickname: string; userId: string } =
+        await response.json();
+
+      setState({ nickname: result.nickname });
+      router.push('/lobby');
       notifySuccess('로그인에 성공하였습니다.');
     } else {
       await methods.trigger();
