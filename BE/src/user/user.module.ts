@@ -10,10 +10,11 @@ import { AuthController } from './controller/auth.controller';
 import { LOGIN_USER_USECASE } from './usecase/login.user.usecase';
 import { UPDATE_USER_USECASE } from './usecase/update.user.usecase';
 import { UserController } from './controller/user.controller';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   controllers: [AuthController, UserController],
-  imports: [TypeOrmModule.forFeature([UserEntity])],
+  imports: [TypeOrmModule.forFeature([UserEntity]), AuthModule],
   providers: [
     {
       provide: USER_REPOSITORY,

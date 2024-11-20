@@ -14,12 +14,15 @@ import { UpdateUserUsecase } from './usecase/update.user.usecase';
 import { UpdateNicknameRequest } from './dto/update-nickname.request';
 import { DuplicateNicknameException } from '../common/error/duplicate.nickname.exception';
 import { RegisterUserResponse } from './dto/register-user.response';
+import { TOKEN_PROVIDE_USECASE, TokenProvideUsecase } from '../auth/usecase/token.provide.usecase';
 
 @Injectable()
 export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginUserUsecase, UpdateUserUsecase {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository<UserEntity, number>,
+    @Inject(TOKEN_PROVIDE_USECASE)
+    private readonly tokenProvideUsecase: TokenProvideUsecase,
     private readonly configService: ConfigService,
   ) {
   }
@@ -41,7 +44,7 @@ export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginU
     return userEntity;
   }
 
-  async login(code: string): Promise<RegisterUserResponse> {
+  async login(code: string): Promise<Record<string, any>> {
     const clientId = this.configService.get<string>('CLIENT_ID');
     const redirectUrl = this.configService.get<string>('REDIRECT_URL');
     const response = await axios.post('https://kauth.kakao.com/oauth/token', new URLSearchParams({
@@ -64,10 +67,22 @@ export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginU
     const nickname = uuid();
     const userEntity = await this.userRepository.findByOAuthId(userInfo.data.id);
     if (!userEntity) {
-      await this.register(new RegisterUserRequest(userInfo.data.kakao_account.email, nickname, userInfo.data.id));
-      return new RegisterUserResponse(nickname, userEntity.userId);
+      const newUserEntity = await this.register(new RegisterUserRequest(userInfo.data.kakao_account.email, nickname, userInfo.data.id));
+      const accessToken = this.tokenProvideUsecase.generateToken({
+        userId: newUserEntity.userId,
+      });
+      return {
+        token: accessToken,
+        response: new RegisterUserResponse(nickname, newUserEntity.userId),
+      };
     }
-    return new RegisterUserResponse(userEntity.nickname, userEntity.userId);
+    const accessToken = this.tokenProvideUsecase.generateToken({
+      userId: userEntity.userId,
+    });
+    return {
+      token: accessToken,
+      response: new RegisterUserResponse(userEntity.nickname, userEntity.userId),
+    };
   }
 
   @Transactional()

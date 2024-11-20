@@ -12,7 +12,7 @@ export class AuthController {
   }
 
   @Get('kakao')
-  kakaoLogin(@Res({ passthrough: true }) res: Response) {
+  kakaoLogin(@Res() res: Response) {
     const clientId = this.configService.get<string>('CLIENT_ID');
     const redirectUrl = this.configService.get<string>('REDIRECT_URL');
     const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUrl}&response_type=code`;
@@ -22,7 +22,9 @@ export class AuthController {
   }
 
   @Get('kakao/callback')
-  async kakaoCallback(@Query('code') code: string) {
-    return await this.loginUserUsecase.login(code);
+  async kakaoCallback(@Query('code') code: string, @Res({ passthrough: true }) res: Response) {
+    const { token, response } = await this.loginUserUsecase.login(code);
+    res.setHeader('X-ACCESS-TOKEN', token);
+    return response;
   }
 }
