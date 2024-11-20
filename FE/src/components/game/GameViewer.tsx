@@ -68,6 +68,9 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
         }
 
         if (data.situation === 'ARGUMENT' && data.timeLeft === 90) {
+          initializeVotes();
+          setTarget(null);
+          setInvalidityCount(0);
           notifyInfo(SITUATION_MESSAGE.ARGUMENT);
         }
 
@@ -154,10 +157,6 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
 
     // 1차 투표 결과 확인
     socket?.on('primary-vote-result', (candidates: string[]) => {
-      initializeVotes();
-      setTarget(null);
-      setInvalidityCount(0);
-
       for (const nickname of candidates) {
         if (nickname === gamePublisher.nickname) {
           changePublisherStatus({ isCandidate: true });

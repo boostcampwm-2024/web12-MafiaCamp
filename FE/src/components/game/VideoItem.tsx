@@ -68,6 +68,16 @@ const VideoItem = ({
           });
         }
         break;
+      case 'DOCTOR':
+        if (gamePublisherRole === 'DOCTOR') {
+          setTarget(gameParticipant.nickname);
+          socket?.emit('select-doctor-target', {
+            roomId,
+            from: nickname,
+            target: gameParticipant.nickname,
+          });
+        }
+        break;
       case 'POLICE':
         if (gamePublisherRole === 'POLICE') {
           socket?.emit('police-investigate', {
@@ -91,7 +101,7 @@ const VideoItem = ({
   return (
     <div
       className={[
-        `${isPublisherAlive && (situation === 'VOTE' || (situation === 'MAFIA' && gamePublisherRole === 'MAFIA') || (situation === 'POLICE' && gamePublisherRole === 'POLICE')) && gameParticipant.isCandidate && 'cursor-pointer hover:z-10'}`,
+        `${isPublisherAlive && (situation === 'VOTE' || (situation === 'MAFIA' && gamePublisherRole === 'MAFIA') || (situation === 'DOCTOR' && gamePublisherRole === 'DOCTOR') || (situation === 'POLICE' && gamePublisherRole === 'POLICE')) && gameParticipant.isCandidate && 'cursor-pointer hover:z-10'}`,
         `${(target === gameParticipant.nickname || situation === 'ARGUMENT') && gameParticipant.isCandidate && 'z-10 border-2'}`,
         'relative flex h-full w-full flex-col items-center rounded-3xl border border-slate-200 bg-black',
       ].join(' ')}
