@@ -32,6 +32,9 @@ import { PoliceInvestigateService } from './usecase/role-playing/police.investig
 import { FinishState } from './fsm/states/finish.state';
 import { FINISH_GAME_USECASE } from './usecase/finish-game/finish-game.usecase';
 import { FinishGameService } from './usecase/finish-game/finish-game.service';
+import { MAFIA_KILL_USECASE } from './usecase/role-playing/mafia.kill.usecase';
+import { MafiaKillService } from './usecase/role-playing/mafia-kill.service';
+import { MAFIA_MANAGER } from './usecase/role-playing/mafia-manager';
 
 @Module({
   imports: [TypeOrmModule.forFeature([GameHistoryEntity]), VideoServerModule],
@@ -81,11 +84,31 @@ import { FinishGameService } from './usecase/finish-game/finish-game.service';
       provide: POLICE_INVESTIGATE_USECASE,
       useClass: PoliceInvestigateService,
     },
-    ArgumentState, DiscussionState, DoctorState, MafiaState, PoliceState, SetUpState, PrimaryVoteState, FinalVoteState, FinishState
+    {
+      provide: MAFIA_MANAGER,
+      useExisting: TotalGameManager,
+    },
+    {
+      provide: MAFIA_KILL_USECASE,
+      useClass: MafiaKillService,
+    },
+    ArgumentState,
+    DiscussionState,
+    DoctorState,
+    MafiaState,
+    PoliceState,
+    SetUpState,
+    PrimaryVoteState,
+    FinalVoteState,
+    FinishState
   ],
   exports: [
-    START_GAME_USECASE, ALLOCATE_USER_ROLE_USECASE, COUNTDOWN_TIMEOUT_USECASE, VOTE_MAFIA_USECASE, POLICE_INVESTIGATE_USECASE,
+    START_GAME_USECASE,
+    ALLOCATE_USER_ROLE_USECASE,
+    COUNTDOWN_TIMEOUT_USECASE,
+    VOTE_MAFIA_USECASE,
+    POLICE_INVESTIGATE_USECASE,
+    MAFIA_KILL_USECASE,
   ],
 })
-export class GameModule {
-}
+export class GameModule {}
