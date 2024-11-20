@@ -43,11 +43,6 @@ export class RandomJobFactory implements JobFactory {
         mafiaUsers.push([players[idx], role]);
       } else {
         this.assignRole(players[idx], role);
-        // players[idx].job = role;
-        // players[idx].send('player-role', {
-        //   role: role,
-        //   another: null,
-        // });
       }
       userRoles.set(players[idx], role);
     });
@@ -60,11 +55,6 @@ export class RandomJobFactory implements JobFactory {
         .map(([player, role]) => [player.nickname, role]);
 
       this.assignRole(currentPlayer, currentRole, otherMafias);
-      // currentPlayer.job = currentRole;
-      // currentPlayer.send('player-role', {
-      //   role: currentRole,
-      //   another: otherMafias,
-      // });
     });
     return userRoles;
   }
