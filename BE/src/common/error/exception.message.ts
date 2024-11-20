@@ -25,4 +25,6 @@ export const EXCEPTION_MESSAGE = {
     '마피아는 살아있는 시민들만 선택할 수 있습니다. 다시 시도해주세요.',
   DUPLICATE_NICKNAME_EXCEPTION:
     '해당 닉네임을 사용하는 유저가 있습니다. 다른 닉네임으로 시도해주세요',
+  UNAUTHORIZED_USER_EXCEPTION:
+    '권한이 없는 유저입니다. 다시 시도해주세요.',
 } as const;

@@ -3,6 +3,7 @@ import { JwtModule, JwtModuleAsyncOptions } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { TOKEN_PROVIDE_USECASE } from './usecase/token.provide.usecase';
+import { TOKEN_VERIFY_USECASE } from './usecase/token.verify.usecase';
 
 @Module({
   imports: [
@@ -16,13 +17,17 @@ import { TOKEN_PROVIDE_USECASE } from './usecase/token.provide.usecase';
       }),
     } as JwtModuleAsyncOptions),
   ],
-  providers:[
+  providers: [
     {
       provide: TOKEN_PROVIDE_USECASE,
-      useClass: AuthService
-    }
+      useClass: AuthService,
+    },
+    {
+      provide: TOKEN_VERIFY_USECASE,
+      useClass: AuthService,
+    },
   ],
-  exports:[TOKEN_PROVIDE_USECASE]
+  exports: [TOKEN_PROVIDE_USECASE],
 })
 export class AuthModule {
 }
