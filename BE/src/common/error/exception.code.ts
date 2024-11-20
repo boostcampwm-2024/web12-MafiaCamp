@@ -1,5 +1,3 @@
-import { NotFoundMafiaSelectLogException } from './not.found.mafia.select.log.exception';
-
 export const EXCEPTION_CODE = {
   GAME_INVALID_PLAYER_COUNT_EXCEPTION: 1000,
   ROLE_COUNT_NEGATIVE_EXCEPTION: 1001,

@@ -9,9 +9,9 @@ export class NotFoundGameRoomException extends HttpException {
         code: EXCEPTION_CODE.NOT_FOUND_GAME_ROOM_EXCEPTION,
         message: EXCEPTION_MESSAGE.NOT_FOUND_GAME_ROOM_EXCEPTION,
         error: 'NotFoundGameRoomException',
-        statusCode: HttpStatus.BAD_REQUEST,
+        statusCode: HttpStatus.NOT_FOUND,
       },
-      HttpStatus.BAD_REQUEST,
+      HttpStatus.NOT_FOUND,
     );
   }
 }

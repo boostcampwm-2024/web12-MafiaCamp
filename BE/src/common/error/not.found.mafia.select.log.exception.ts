@@ -9,9 +9,9 @@ export class NotFoundMafiaSelectLogException extends HttpException {
         code: EXCEPTION_CODE.NOT_FOUND_MAFIA_SELECT_LOG,
         message: EXCEPTION_MESSAGE.NOT_FOUND_MAFIA_SELECT_LOG,
         error: 'NotFoundMafiaSelectLogException',
-        statusCode: HttpStatus.BAD_REQUEST,
+        statusCode: HttpStatus.NOT_FOUND,
       },
-      HttpStatus.BAD_REQUEST,
+      HttpStatus.NOT_FOUND,
     );
   }
 }

@@ -9,9 +9,9 @@ export class UnauthorizedUserBallotException extends HttpException {
         code: EXCEPTION_CODE.UNAUTHORIZED_USER_BALLOT_EXCEPTION,
         message: EXCEPTION_MESSAGE.UNAUTHORIZED_USER_BALLOT_EXCEPTION,
         error: 'UnauthorizedUserBallotException',
-        statusCode: HttpStatus.BAD_REQUEST,
+        statusCode: HttpStatus.UNAUTHORIZED,
       },
-      HttpStatus.BAD_REQUEST,
+      HttpStatus.UNAUTHORIZED,
     );
   }
 }

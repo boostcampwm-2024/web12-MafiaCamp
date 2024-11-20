@@ -7,11 +7,11 @@ export class NotFoundGameHistoryException extends HttpException {
     super(
       {
         code: EXCEPTION_CODE.NOT_FOUND_GAME_HISTORY_EXCEPTION,
-        message: EXCEPTION_MESSAGE.GAME_INVALID_PLAYER_COUNT_EXCEPTION,
+        message: EXCEPTION_MESSAGE.NOT_FOUND_GAME_HISTORY_EXCEPTION,
         error: 'NotFoundGameHistoryException',
-        statusCode: HttpStatus.BAD_REQUEST,
+        statusCode: HttpStatus.NOT_FOUND,
       },
-      HttpStatus.BAD_REQUEST,
+      HttpStatus.NOT_FOUND,
     );
   }
 }
