@@ -190,7 +190,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       'vote-kill-user',
       (data: { player: string; job: Role } | null) => {
         if (!data) {
-          notifyInfo('처형이 보류되었습니다.');
+          notifyInfo('투표 결과, 아무도 죽지 않았습니다.');
           return;
         }
 
@@ -198,7 +198,9 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
           eliminatePublisher();
         }
 
-        notifyInfo(`${ROLE[data.job]} ${data.player} 님이 사망하였습니다.`);
+        notifyInfo(
+          `투표 결과, ${ROLE[data.job]} ${data.player} 님이 사망하였습니다.`,
+        );
       },
     );
 
@@ -220,6 +222,43 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       );
     }
 
+    socket?.on(
+      'mafia-kill-result',
+      (data: { player: string; job: Role } | null) => {
+        if (!data) {
+          notifyInfo('지난밤, 아무도 죽지 않았습니다.');
+          return;
+        }
+
+        if (data.player === gamePublisher.nickname) {
+          eliminatePublisher();
+        }
+
+        notifyInfo(
+          `지난밤, 마피아에 의해 ${ROLE[data.job]} ${data.player} 님이 사망하였습니다.`,
+        );
+      },
+    );
+
+    socket?.on(
+      'game-result',
+      (data: {
+        result: 'WIN' | 'LOSE';
+        playerInfo: {
+          nickname: string;
+          role: Role;
+          status: 'ALIVE' | 'DEAD';
+        }[];
+      }) => {
+        // TODO: 수정 필요
+        if (data.result === 'WIN') {
+          notifyInfo('게임에서 승리하였습니다.');
+        } else {
+          notifyInfo('게임에서 패배하였습니다.');
+        }
+      },
+    );
+
     return () => {
       socket?.off('countdown');
       socket?.off('countdown-exit');
@@ -229,6 +268,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       socket?.off('vote-kill-user');
       socket?.off('mafia-current-target');
       socket?.off('police-investigation-result');
+      socket?.off('mafia-kill-result');
     };
   }, [
     changePublisherStatus,

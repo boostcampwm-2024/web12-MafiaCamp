@@ -28,7 +28,6 @@ export const useChatting = (roomId: string, isMafia: boolean) => {
     } else {
       socket?.emit('send-chat', { roomId, message });
     }
-
     setMessage('');
   };
 
