@@ -1,7 +1,8 @@
 import { BaseEntity, Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { GameUserEntity } from '../../game-user/entity/game-user.entity';
-import { NotFoundUserException } from '../../common/error/not.found.user.exception';
 import * as bcrypt from 'bcrypt';
+import { UnauthorizedUserException } from '../../common/error/unauthorized.user.exception';
+import { InvalidPasswordException } from '../../common/error/invalid.password.exception';
 
 @Entity('user')
 export class UserEntity extends BaseEntity {
@@ -89,7 +90,7 @@ export class UserEntity extends BaseEntity {
 
   async verifyPassword(password: string) {
     if (!await bcrypt.compare(password, this.password)) {
-      throw new NotFoundUserException();
+      throw new InvalidPasswordException();
     }
   }
 }

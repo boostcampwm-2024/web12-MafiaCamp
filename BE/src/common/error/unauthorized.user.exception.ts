@@ -9,9 +9,9 @@ export class UnauthorizedUserException extends HttpException {
         code: EXCEPTION_CODE.UNAUTHORIZED_USER_EXCEPTION,
         message: EXCEPTION_MESSAGE.UNAUTHORIZED_USER_EXCEPTION,
         error: 'UnauthorizedUserException',
-        statusCode: HttpStatus.BAD_REQUEST,
+        statusCode: HttpStatus.UNAUTHORIZED,
       },
-      HttpStatus.BAD_REQUEST,
+      HttpStatus.UNAUTHORIZED,
     );
   }
 }
