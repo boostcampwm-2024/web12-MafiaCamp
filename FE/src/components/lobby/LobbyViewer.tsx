@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 
 const LobbyViewer = () => {
   const { nickname, setState } = useSocketStore();
-  const [hasNickname, setHasNickname] = useState(nickname !== '');
+  const [hasNickname, setHasNickname] = useState(false);
   const router = useRouter();
 
   useEffect(() => {

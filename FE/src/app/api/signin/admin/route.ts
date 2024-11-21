@@ -10,6 +10,7 @@ export async function POST(request: NextRequest) {
     body: JSON.stringify(body),
   });
 
+  // TODO: 수정 필요
   if (!response.ok) {
     return new NextResponse('Failed to sign in.', { status: 400 });
   }

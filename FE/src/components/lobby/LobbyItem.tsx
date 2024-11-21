@@ -19,7 +19,7 @@ const LobbyItem = ({ room }: LobbyItemProps) => {
       </div>
       <div className='flex flex-col gap-3'>
         <h2 className='line-clamp-2 text-lg text-white'>{room.title}</h2>
-        <p className='text-sm text-slate-200'>{'TODO: 닉네임 가져오기'}</p>
+        <p className='text-sm text-slate-200'>{room.owner}</p>
         <div className='flex flex-row items-center justify-between'>
           <div className='flex flex-row items-center gap-2'>
             <UsersIcon />

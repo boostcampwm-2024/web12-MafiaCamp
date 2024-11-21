@@ -74,7 +74,6 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
         }
 
         if (data.situation === 'ARGUMENT' && data.timeLeft === 90) {
-          initializeVotes();
           setTarget(null);
           setInvalidityCount(0);
           notifyInfo(SITUATION_MESSAGE.ARGUMENT);
@@ -114,7 +113,6 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
           } else {
             initializeVotes();
           }
-
           setTarget(null);
           notifyInfo(SITUATION_MESSAGE.POLICE);
         }
