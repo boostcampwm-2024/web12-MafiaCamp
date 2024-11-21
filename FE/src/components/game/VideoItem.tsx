@@ -60,32 +60,26 @@ const VideoItem = ({
         });
         break;
       case 'MAFIA':
-        if (gamePublisherRole === 'MAFIA') {
-          socket?.emit('select-mafia-target', {
-            roomId,
-            from: nickname,
-            target: gameParticipant.nickname,
-          });
-        }
+        socket?.emit('select-mafia-target', {
+          roomId,
+          from: nickname,
+          target: gameParticipant.nickname,
+        });
         break;
       case 'DOCTOR':
-        if (gamePublisherRole === 'DOCTOR') {
-          setTarget(gameParticipant.nickname);
-          socket?.emit('select-doctor-target', {
-            roomId,
-            from: nickname,
-            target: gameParticipant.nickname,
-          });
-        }
+        setTarget(gameParticipant.nickname);
+        socket?.emit('select-doctor-target', {
+          roomId,
+          from: nickname,
+          target: gameParticipant.nickname,
+        });
         break;
       case 'POLICE':
-        if (gamePublisherRole === 'POLICE') {
-          socket?.emit('police-investigate', {
-            roomId,
-            police: nickname,
-            criminal: gameParticipant.nickname,
-          });
-        }
+        socket?.emit('police-investigate', {
+          roomId,
+          police: nickname,
+          criminal: gameParticipant.nickname,
+        });
         break;
       default:
         break;

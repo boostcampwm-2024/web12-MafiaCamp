@@ -56,7 +56,12 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
 
   useEffect(() => {
     // 방 입장
-    socket?.emit('enter-room', { roomId: roomId });
+    socket?.emit('enter-room', { roomId });
+
+    return () => {
+      // 방 나가기
+      socket?.emit('leave-room', { roomId });
+    };
   }, [roomId, socket]);
 
   useEffect(() => {
@@ -84,20 +89,33 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
         }
 
         if (data.situation === 'MAFIA' && data.timeLeft === 30) {
+          if (gamePublisher.role === 'MAFIA') {
+            setTargetsOfMafia();
+          } else {
+            initializeVotes();
+          }
           setTarget(null);
-          setTargetsOfMafia();
           notifyInfo(SITUATION_MESSAGE.MAFIA);
         }
 
         if (data.situation === 'DOCTOR' && data.timeLeft === 20) {
+          if (gamePublisher.role === 'DOCTOR') {
+            setAllParticipantsAsCandidates();
+          } else {
+            initializeVotes();
+          }
           setTarget(null);
-          setAllParticipantsAsCandidates();
           notifyInfo(SITUATION_MESSAGE.DOCTOR);
         }
 
         if (data.situation === 'POLICE' && data.timeLeft === 20) {
+          if (gamePublisher.role === 'POLICE') {
+            setTargetsOfPolice();
+          } else {
+            initializeVotes();
+          }
+
           setTarget(null);
-          setTargetsOfPolice();
           notifyInfo(SITUATION_MESSAGE.POLICE);
         }
 
