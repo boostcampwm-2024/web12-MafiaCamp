@@ -12,10 +12,9 @@ import { FaMicrophone, FaMicrophoneSlash } from 'react-icons/fa';
 
 interface VideoItemProps {
   roomId: string;
-  playerRole?: Role | null;
-  gameParticipantNickname: string;
-  gameParticipantRole?: Role | null;
-  gameParticipant: GamePublisher | GameSubscriber | null;
+  isPublisherAlive: boolean;
+  gamePublisherRole: Role | null;
+  gameParticipant: GamePublisher | GameSubscriber;
   situation: Situation | null;
   target: string | null;
   setTarget: (nickname: string | null) => void;
@@ -23,9 +22,8 @@ interface VideoItemProps {
 
 const VideoItem = ({
   roomId,
-  playerRole,
-  gameParticipantNickname,
-  gameParticipantRole,
+  isPublisherAlive,
+  gamePublisherRole,
   gameParticipant,
   situation,
   target,
@@ -35,7 +33,7 @@ const VideoItem = ({
   const { nickname, socket } = useSocketStore();
 
   const handleClick = () => {
-    if (!situation || !gameParticipant?.isCandidate) {
+    if (!situation || !gameParticipant.isCandidate) {
       return;
     }
 
@@ -49,24 +47,33 @@ const VideoItem = ({
           });
         }
 
-        if (target === gameParticipantNickname) {
+        if (target === gameParticipant.nickname) {
           setTarget(null);
           return;
         }
 
-        setTarget(gameParticipantNickname);
+        setTarget(gameParticipant.nickname);
         socket?.emit('vote-candidate', {
           roomId,
           from: nickname,
-          to: gameParticipantNickname,
+          to: gameParticipant.nickname,
         });
         break;
+      case 'MAFIA':
+        if (gamePublisherRole === 'MAFIA') {
+          socket?.emit('select-mafia-target', {
+            roomId,
+            from: nickname,
+            target: gameParticipant.nickname,
+          });
+        }
+        break;
       case 'POLICE':
-        if (playerRole === 'POLICE') {
+        if (gamePublisherRole === 'POLICE') {
           socket?.emit('police-investigate', {
             roomId,
             police: nickname,
-            criminal: gameParticipantNickname,
+            criminal: gameParticipant.nickname,
           });
         }
         break;
@@ -76,28 +83,31 @@ const VideoItem = ({
   };
 
   useEffect(() => {
-    if (videoRef.current && gameParticipant && gameParticipant.participant) {
+    if (videoRef.current && gameParticipant.participant) {
       gameParticipant.participant.addVideoElement(videoRef.current);
     }
-  }, [gameParticipant]);
+  }, [gameParticipant.participant]);
 
   return (
     <div
       className={[
-        `${(situation === 'VOTE' || (situation === 'POLICE' && playerRole === 'POLICE')) && gameParticipant?.isCandidate && 'cursor-pointer hover:z-10'}`,
-        `${target === gameParticipantNickname && 'z-10 border-2'}`,
+        `${isPublisherAlive && (situation === 'VOTE' || (situation === 'MAFIA' && gamePublisherRole === 'MAFIA') || (situation === 'POLICE' && gamePublisherRole === 'POLICE')) && gameParticipant.isCandidate && 'cursor-pointer hover:z-10'}`,
+        `${(target === gameParticipant.nickname || situation === 'ARGUMENT') && gameParticipant.isCandidate && 'z-10 border-2'}`,
         'relative flex h-full w-full flex-col items-center rounded-3xl border border-slate-200 bg-black',
       ].join(' ')}
       onClick={handleClick}
     >
       <div
-        className={`${gameParticipantRole === null && 'hidden'} absolute left-4 top-4 z-10 flex h-8 w-20 items-center justify-center rounded-2xl border border-blue-200 bg-blue-50 text-xs text-blue-800`}
+        className={[
+          `${gameParticipant.role === null && 'hidden'}`,
+          'absolute left-4 top-4 z-10 flex h-8 w-20 items-center justify-center rounded-2xl border border-blue-200 bg-blue-50 text-xs text-blue-800',
+        ].join(' ')}
       >
-        {ROLE[gameParticipantRole ?? 'CITIZEN']}
+        {ROLE[gameParticipant.role ?? 'CITIZEN']}
       </div>
-      {situation === 'VOTE' && gameParticipant?.isCandidate && (
+      {situation === 'VOTE' && gameParticipant.isCandidate && (
         <p className='absolute top-0 z-10 flex h-full w-full items-center justify-center text-5xl text-white'>
-          {gameParticipant?.votes ?? 0}
+          {gameParticipant.votes}
         </p>
       )}
       <video
@@ -108,15 +118,15 @@ const VideoItem = ({
       />
       <div className='flex w-full flex-row items-center justify-between gap-3 rounded-b-3xl bg-slate-600/50 px-4 py-3'>
         <p className='z-10 truncate text-nowrap text-sm text-white'>
-          {gameParticipantNickname}
+          {gameParticipant.nickname}
         </p>
         <div className='flex flex-row items-center gap-3'>
-          {gameParticipant?.audioEnabled ? (
+          {gameParticipant.audioEnabled ? (
             <FaMicrophone className='text-white' />
           ) : (
             <FaMicrophoneSlash className='scale-125 text-white' />
           )}
-          {gameParticipant?.videoEnabled ? (
+          {gameParticipant.videoEnabled ? (
             <VideoCameraIcon className='scale-90 fill-white' />
           ) : (
             <VideoCameraSlashIcon className='scale-90 fill-white' />

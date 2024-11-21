@@ -13,7 +13,7 @@ interface VideoViewerProps {
   roomId: string;
   isGameStarted: boolean;
   situation: Situation | null;
-  gamePublisher: GamePublisher | null;
+  gamePublisher: GamePublisher;
   gameSubscribers: GameSubscriber[];
   target: string | null;
   invalidityCount: number;
@@ -45,14 +45,14 @@ const VideoViewer = ({
   const totalSurvivors = useMemo(
     () =>
       isGameStarted
-        ? (gamePublisher?.participant ? 1 : 0) +
+        ? (gamePublisher.participant ? 1 : 0) +
           gameSubscribers.reduce(
             (total, gameSubscriber) =>
               total + (gameSubscriber.participant ? 1 : 0),
             0,
           )
         : gameSubscribers.length + 1,
-    [gamePublisher?.participant, gameSubscribers, isGameStarted],
+    [gamePublisher.participant, gameSubscribers, isGameStarted],
   );
 
   const handleInvalityButtonClick = () => {
@@ -93,20 +93,34 @@ const VideoViewer = ({
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
-      {(situation === 'VOTE' ||
-        (situation === 'POLICE' && gamePublisher?.role === 'POLICE')) && (
-        <div className='pointer-events-none absolute bottom-0 left-0 z-10 h-full w-full bg-slate-800/75' />
-      )}
-      {situation === 'VOTE' && (
-        <button
+      {
+        gamePublisher.participant &&
+          /* eslint-disable indent */
+          (situation === 'VOTE' ||
+            situation === 'ARGUMENT' ||
+            (situation === 'MAFIA' && gamePublisher.role === 'MAFIA') ||
+            (situation === 'POLICE' && gamePublisher.role === 'POLICE')) && (
+            <div className='pointer-events-none absolute bottom-0 left-0 z-10 h-full w-full bg-slate-800/75' />
+          )
+        /* eslint-enable indent */
+      }
+      {gamePublisher.participant && situation === 'VOTE' && (
+        <div
           className={[
-            `${target === 'INVALIDITY' ? 'border-2 bg-slate-600 text-white' : 'bg-white font-bold text-slate-800'}`,
-            'absolute right-0 top-0 z-20 h-[3.75rem] w-[11.25rem] rounded-2xl border border-slate-400 font-bold hover:bg-slate-600 hover:text-white',
+            `${isOpen ? 'right-[21.5rem]' : 'right-6'}`,
+            'fixed bottom-3 z-20 h-20 w-40 transition-all duration-500 ease-out',
           ].join(' ')}
-          onClick={handleInvalityButtonClick}
         >
-          {`기권 ${invalidityCount}`}
-        </button>
+          <button
+            className={[
+              `${target === 'INVALIDITY' ? 'border-2 bg-slate-600 text-white' : 'bg-white font-bold text-slate-800'}`,
+              'h-full w-full rounded-2xl border border-slate-400 font-bold hover:bg-slate-600 hover:text-white',
+            ].join(' ')}
+            onClick={handleInvalityButtonClick}
+          >
+            {`기권 ${invalidityCount}`}
+          </button>
+        </div>
       )}
       <div
         className={[
@@ -115,12 +129,11 @@ const VideoViewer = ({
           'grid h-full min-w-[67.5rem] gap-6',
         ].join(' ')}
       >
-        {(!isGameStarted || gamePublisher?.participant) && (
+        {(!isGameStarted || gamePublisher.participant) && (
           <VideoItem
             roomId={roomId}
-            playerRole={gamePublisher?.role}
-            gameParticipantNickname={nickname}
-            gameParticipantRole={gamePublisher?.role}
+            isPublisherAlive={gamePublisher.participant ? true : false}
+            gamePublisherRole={gamePublisher.role}
             gameParticipant={gamePublisher}
             situation={situation}
             target={target}
@@ -135,9 +148,8 @@ const VideoViewer = ({
             <VideoItem
               key={gameSubscriber.nickname}
               roomId={roomId}
-              playerRole={gamePublisher?.role}
-              gameParticipantNickname={gameSubscriber.nickname}
-              gameParticipantRole={gameSubscriber.role}
+              isPublisherAlive={gamePublisher.participant ? true : false}
+              gamePublisherRole={gamePublisher.role}
               gameParticipant={gameSubscriber}
               situation={situation}
               target={target}

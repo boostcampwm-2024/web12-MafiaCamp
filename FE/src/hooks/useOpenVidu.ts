@@ -26,7 +26,8 @@ type Action =
       payload: { nickname: string; data: Partial<GameSubscriber> };
     }
   | { type: 'INITIALIZE_VOTES' }
-  | { type: 'SET_All_PARTICIPANTS_AS_CANDIDATES' };
+  | { type: 'SET_All_PARTICIPANTS_AS_CANDIDATES' }
+  | { type: 'SET_TARGETS_OF_MAFIA' };
 
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
@@ -135,7 +136,7 @@ const reducer = (state: State, action: Action): State => {
         })),
       };
 
-    case 'SET_All_PARTICIPANTS_AS_CANDIDATES': {
+    case 'SET_All_PARTICIPANTS_AS_CANDIDATES':
       return {
         ...state,
         gamePublisher: { ...state.gamePublisher, isCandidate: true },
@@ -144,7 +145,19 @@ const reducer = (state: State, action: Action): State => {
           isCandidate: true,
         })),
       };
-    }
+
+    case 'SET_TARGETS_OF_MAFIA':
+      return {
+        ...state,
+        gamePublisher: {
+          ...state.gamePublisher,
+          isCandidate: state.gamePublisher.role !== 'MAFIA',
+        },
+        gameSubscribers: state.gameSubscribers.map((gameSubscriber) => ({
+          ...gameSubscriber,
+          isCandidate: gameSubscriber.role !== 'MAFIA',
+        })),
+      };
 
     default:
       throw new Error('Unknown action type');
@@ -224,6 +237,10 @@ export const useOpenVidu = () => {
 
   const setAllParticipantsAsCandidates = () => {
     dispatch({ type: 'SET_All_PARTICIPANTS_AS_CANDIDATES' });
+  };
+
+  const setTargetsOfMafia = () => {
+    dispatch({ type: 'SET_TARGETS_OF_MAFIA' });
   };
 
   const eliminatePublisher = () => {
@@ -384,6 +401,7 @@ export const useOpenVidu = () => {
     changeSubscriberStatus,
     initializeVotes,
     setAllParticipantsAsCandidates,
+    setTargetsOfMafia,
     eliminatePublisher,
   };
 };
