@@ -13,7 +13,9 @@ export const useChatting = (roomId: string, isMafia: boolean) => {
   const [chatList, setChatList] = useState<Chat[]>([]);
   const [message, setMessage] = useState('');
   const [isMafiaOnly, setIsMafiaOnly] = useState(false);
-  const capacity = useSearchParams().get('capacity');
+  const searchParams = useSearchParams();
+  const roomName = searchParams.get('roomName');
+  const capacity = searchParams.get('capacity');
   const chatListRef = useRef<HTMLDivElement>(null);
 
   const handleSubmit = (e: FormEvent) => {
@@ -61,6 +63,7 @@ export const useChatting = (roomId: string, isMafia: boolean) => {
   return {
     isOpen,
     nickname,
+    roomName,
     capacity,
     chatList,
     message,

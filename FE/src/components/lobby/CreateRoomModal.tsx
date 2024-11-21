@@ -40,7 +40,7 @@ const CreateRoomModal = ({ close }: CreateRoomModalProps) => {
     socket?.on('create-room', (data: { success: boolean; roomId: string }) => {
       if (data.success) {
         router.push(
-          `/game/${data.roomId}?capacity=${methods.getValues('capacity')}`,
+          `/game/${data.roomId}?roomName=${methods.getValues('title')}&capacity=${methods.getValues('capacity')}`,
         );
       }
     });

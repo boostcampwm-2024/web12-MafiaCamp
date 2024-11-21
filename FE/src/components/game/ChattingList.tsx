@@ -23,6 +23,7 @@ const ChattingList = ({
   const {
     isOpen,
     nickname,
+    roomName,
     capacity,
     chatList,
     message,
@@ -45,9 +46,7 @@ const ChattingList = ({
           transition={{ bounce: false }}
         >
           <div className='flex h-16 w-full flex-row items-center justify-between gap-3 bg-slate-600 p-4 text-white'>
-            <h2 className='truncate text-nowrap text-sm'>
-              {'TODO: 제목 받아오기'}
-            </h2>
+            <h2 className='truncate text-nowrap text-sm'>{roomName}</h2>
             <div className='flex flex-row items-center gap-3'>
               <div className='flex flex-row items-center gap-2 text-sm'>
                 <UsersIcon />

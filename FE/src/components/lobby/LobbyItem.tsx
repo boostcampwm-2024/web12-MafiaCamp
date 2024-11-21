@@ -35,7 +35,7 @@ const LobbyItem = ({ room }: LobbyItemProps) => {
           ) : (
             <Link
               className='flex h-9 w-[7.5rem] items-center justify-center rounded-2xl bg-white text-sm font-semibold text-slate-800 hover:scale-105'
-              href={`/game/${room.roomId}?capacity=${room.capacity}`}
+              href={`/game/${room.roomId}?roomName=${room.title}&capacity=${room.capacity}`}
             >
               참가하기
             </Link>
