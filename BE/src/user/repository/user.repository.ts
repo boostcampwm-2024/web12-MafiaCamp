@@ -7,9 +7,11 @@ export interface UserRepository<T, TID> {
 
   findById(tid: TID): Promise<T>;
 
-  findByOAuthId(oauthId:string):Promise<UserEntity>;
+  findByOAuthId(oauthId: string): Promise<UserEntity>;
 
   findByNickname(nickname: string): Promise<UserEntity>;
+
+  findByEmail(email: string): Promise<UserEntity>;
 
   updateNickname(nickname: string, userId: number): Promise<void>;
 }

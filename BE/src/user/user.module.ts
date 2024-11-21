@@ -10,10 +10,14 @@ import { AuthController } from './controller/auth.controller';
 import { LOGIN_USER_USECASE } from './usecase/login.user.usecase';
 import { UPDATE_USER_USECASE } from './usecase/update.user.usecase';
 import { UserController } from './controller/user.controller';
+import { AuthModule } from '../auth/auth.module';
+import { REGISTER_ADMIN_USECASE } from './usecase/register.admin.usecase';
+import { LOGIN_ADMIN_USECASE } from './usecase/login.admin.usecase';
+import { FIND_USERINFO_USECASE } from './usecase/find.user-info.usecase';
 
 @Module({
-  controllers: [AuthController,UserController],
-  imports: [TypeOrmModule.forFeature([UserEntity])],
+  controllers: [AuthController, UserController],
+  imports: [TypeOrmModule.forFeature([UserEntity]), AuthModule],
   providers: [
     {
       provide: USER_REPOSITORY,
@@ -29,10 +33,22 @@ import { UserController } from './controller/user.controller';
     },
     {
       provide: LOGIN_USER_USECASE,
-      useClass: UserService
+      useClass: UserService,
     },
     {
       provide: UPDATE_USER_USECASE,
+      useClass: UserService,
+    },
+    {
+      provide: REGISTER_ADMIN_USECASE,
+      useClass: UserService,
+    },
+    {
+      provide: LOGIN_ADMIN_USECASE,
+      useClass: UserService,
+    },
+    {
+      provide: FIND_USERINFO_USECASE,
       useClass: UserService
     }
   ],

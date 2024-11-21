@@ -6,6 +6,7 @@ CREATE TABLE user(
     user_id bigint auto_increment primary key,
     email varchar(30) not null,
     nickname varchar(50) not null,
+    password varchar(255) null,
     oauth_id varchar(100) not null,
     score int not null,
     created_at datetime not null,

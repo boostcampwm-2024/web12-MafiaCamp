@@ -45,4 +45,6 @@ export const EXCEPTION_MESSAGE = {
     '참가자 연결 해제에 실패했습니다. 다시 시도해주세요.',
   FAILED_TO_FETCH_OPENVIDU_PARTICIPANT_LIST:
     '참가자 목록을 조회하는 데 실패했습니다. 다시 시도해주세요.',
+  INVALID_PASSWORD_EXCEPTION:
+    '비밀번호가 일치하지 않습니다. 다시 시도해주세요',
 } as const;
