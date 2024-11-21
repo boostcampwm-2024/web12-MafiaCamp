@@ -5,7 +5,8 @@ import { UserDetailJwtGuard } from '../../auth/guard/user-detail.jwt.guard';
 import { RegisterAdminRequest } from '../dto/register-admin.request';
 import { REGISTER_ADMIN_USECASE, RegisterAdminUsecase } from '../usecase/register.admin.usecase';
 
-@Controller('api')
+
+@Controller('user')
 export class UserController {
 
   constructor(@Inject(UPDATE_USER_USECASE)

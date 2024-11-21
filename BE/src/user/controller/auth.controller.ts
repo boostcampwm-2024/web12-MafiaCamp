@@ -5,7 +5,7 @@ import { LOGIN_USER_USECASE, LoginUserUsecase } from '../usecase/login.user.usec
 import { AdminLoginRequest } from '../dto/admin-login.request';
 import { LOGIN_ADMIN_USECASE, LoginAdminUsecase } from '../usecase/login.admin.usecase';
 
-@Controller('api/login')
+@Controller('login')
 export class AuthController {
 
   constructor(private readonly configService: ConfigService,
