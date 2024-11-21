@@ -24,7 +24,7 @@ describe('MafiaCountdownTest 테스트', () => {
   };
 
   const setupGameRoom = (playerCount: number): void => {
-    gameRoom = new GameRoom('TEST-ROOM-ABCDE-FGHY', playerCount);
+    gameRoom = new GameRoom('player','TEST-ROOM-ABCDE-FGHY', playerCount);
     mockClients = Array.from({ length: playerCount }, (_, idx) => {
       return createMockGameClient(`player${idx + 1}`);
     });

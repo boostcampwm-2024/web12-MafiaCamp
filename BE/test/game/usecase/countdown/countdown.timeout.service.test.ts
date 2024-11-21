@@ -27,7 +27,7 @@ describe('CountdownTimeoutService', () => {
     }).compile();
 
     service = module.get(CountdownTimeoutService);
-    gameRoom = new GameRoom('TEST-ROOM', 6);
+    gameRoom = new GameRoom('player','TEST-ROOM', 6);
   });
 
   it.each(['DISCUSSION', 'ARGUMENT', 'VOTE', 'MAFIA', 'DOCTOR', 'POLICE', 'INTERMISSION'])
