@@ -6,13 +6,23 @@ import { UserEntity } from './entity/user.entity';
 import { RegisterUserRequest } from './dto/register-user.request';
 import { USER_REPOSITORY, UserRepository } from './repository/user.repository';
 import { Transactional } from 'typeorm-transactional';
+import { LoginUserUsecase } from './usecase/login.user.usecase';
+import axios from 'axios';
+import { ConfigService } from '@nestjs/config';
+import { v4 as uuid } from 'uuid';
+import { UpdateUserUsecase } from './usecase/update.user.usecase';
+import { UpdateNicknameRequest } from './dto/update-nickname.request';
+import { DuplicateNicknameException } from '../common/error/duplicate.nickname.exception';
+import { RegisterUserResponse } from './dto/register-user.response';
 
 @Injectable()
-export class UserService implements FindUserUsecase, RegisterUserUsecase {
+export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginUserUsecase, UpdateUserUsecase {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository<UserEntity, number>,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+  }
 
   async findById(findUserRequest: FindUserRequest): Promise<UserEntity> {
     return await this.userRepository.findById(findUserRequest.userId);
@@ -22,12 +32,50 @@ export class UserService implements FindUserUsecase, RegisterUserUsecase {
   async register(
     registerUserRequest: RegisterUserRequest,
   ): Promise<UserEntity> {
-    const userEntity = UserEntity.create(
+    const userEntity = UserEntity.createUser(
       registerUserRequest.email,
       registerUserRequest.nickname,
       registerUserRequest.oAuthId,
     );
     await this.userRepository.save(userEntity);
     return userEntity;
+  }
+
+  async login(code: string): Promise<RegisterUserResponse> {
+    const clientId = this.configService.get<string>('CLIENT_ID');
+    const redirectUrl = this.configService.get<string>('REDIRECT_URL');
+    const response = await axios.post('https://kauth.kakao.com/oauth/token', new URLSearchParams({
+        grant_type: 'authorization_code',
+        client_id: clientId,
+        redirect_uri: redirectUrl,
+        code: code,
+      }).toString(),
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      },
+    );
+    const userInfo = await axios.get('https://kapi.kakao.com/v2/user/me', {
+      headers: {
+        Authorization: `Bearer ${response.data.access_token}`,
+      },
+    });
+    const nickname = uuid();
+    const userEntity = await this.userRepository.findByOAuthId(userInfo.data.id);
+    if (!userEntity) {
+      await this.register(new RegisterUserRequest(userInfo.data.kakao_account.email, nickname, userInfo.data.id));
+      return new RegisterUserResponse(nickname, userEntity.userId);
+    }
+
+  }
+
+  @Transactional()
+  async updateNickname(updateNicknameRequest: UpdateNicknameRequest) {
+    const userEntity = await this.userRepository.findByNickname(updateNicknameRequest.nickname);
+    if (userEntity) {
+      throw new DuplicateNicknameException();
+    }
+    await this.userRepository.updateNickname(updateNicknameRequest.nickname, updateNicknameRequest.userId);
   }
 }
