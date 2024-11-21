@@ -17,6 +17,7 @@ const AdminPanel = () => {
   const router = useRouter();
   const { setState } = useSocketStore();
   const [isSignIn, setIsSignIn] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const methods = useForm<AuthAdmin>({
     resolver: zodResolver(AccountCreateFormSchema),
@@ -45,6 +46,8 @@ const AdminPanel = () => {
       return;
     }
 
+    setLoading(true);
+
     const response = await fetch('/api/signin/admin', {
       method: 'POST',
       headers: {
@@ -57,14 +60,14 @@ const AdminPanel = () => {
     });
 
     if (!response.ok) {
+      setLoading(false);
       notifyError('로그인에 실패하였습니다.');
       throw new Error(response.statusText);
     }
 
     const result: User = await response.json();
     setState({ nickname: result.nickname });
-    router.replace('/lobby');
-    notifySuccess('로그인에 성공하였습니다.');
+    router.replace('/');
   };
 
   const handleSignUp = async (e: FormEvent<HTMLFormElement>) => {
@@ -74,6 +77,8 @@ const AdminPanel = () => {
     if (!methods.formState.isValid) {
       return;
     }
+
+    setLoading(true);
 
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/admin/register`,
@@ -87,6 +92,8 @@ const AdminPanel = () => {
         }),
       },
     );
+
+    setLoading(false);
 
     if (!response.ok) {
       notifyError('회원가입에 실패하였습니다.');
@@ -166,8 +173,12 @@ const AdminPanel = () => {
           )}
         </div>
         <button
-          className='h-[2.875rem] w-[17.25rem] rounded-3xl bg-slate-800 text-white hover:scale-105'
+          className={[
+            `${loading ? 'cursor-wait bg-transparent/10' : 'hover:scale-105'}`,
+            'h-[2.875rem] w-[17.25rem] rounded-3xl bg-slate-800 text-white',
+          ].join(' ')}
           type='submit'
+          disabled={loading}
         >
           {isSignIn ? '로그인' : '회원가입'}
         </button>
