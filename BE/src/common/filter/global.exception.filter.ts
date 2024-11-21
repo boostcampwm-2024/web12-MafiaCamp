@@ -1,17 +1,14 @@
-import {
-  ArgumentsHost,
-  Catch,
-  ExceptionFilter,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
-  constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
+  constructor(
+    private readonly httpAdapterHost: HttpAdapterHost,
+  ) {
+  }
 
-  catch(exception: any, host: ArgumentsHost): any {
+  catch(exception: unknown, host: ArgumentsHost): any {
     const { httpAdapter } = this.httpAdapterHost;
     const ctx = host.switchToHttp();
 
@@ -20,7 +17,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       path: httpAdapter.getRequestUrl(ctx.getRequest()),
     };
 
+    let httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+
     if (exception instanceof HttpException) {
+      httpStatus = exception.getStatus();
       const response = exception.getResponse() as any;
       responseBody = {
         ...responseBody,
@@ -37,6 +37,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       };
     }
 
-    httpAdapter.reply(ctx.getResponse(), responseBody, exception.getStatus());
+    httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);
   }
 }

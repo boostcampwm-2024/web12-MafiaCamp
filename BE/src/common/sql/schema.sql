@@ -5,12 +5,15 @@ DROP TABLE IF EXISTS GAME_HISTORY;
 CREATE TABLE user(
     user_id bigint auto_increment primary key,
     email varchar(30) not null,
-    nickname varchar(30) not null,
+    nickname varchar(50) not null,
+    password varchar(255) null,
     oauth_id varchar(100) not null,
     score int not null,
     created_at datetime not null,
 
     UNIQUE INDEX idx_email(email),
+    UNIQUE INDEX idx_nickname(nickname),
+    UNIQUE INDEX idx_oauth_id(oauth_id),
     INDEX idx_created_at(created_at)
 );
 

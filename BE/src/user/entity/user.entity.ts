@@ -1,14 +1,11 @@
-import {
-  Column,
-  Entity,
-  Index,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { BaseEntity, Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { GameUserEntity } from '../../game-user/entity/game-user.entity';
+import * as bcrypt from 'bcrypt';
+import { UnauthorizedUserException } from '../../common/error/unauthorized.user.exception';
+import { InvalidPasswordException } from '../../common/error/invalid.password.exception';
 
 @Entity('user')
-export class UserEntity {
+export class UserEntity extends BaseEntity {
   @PrimaryGeneratedColumn('increment', {
     type: 'bigint',
     name: 'user_id',
@@ -26,9 +23,17 @@ export class UserEntity {
 
   @Column({
     type: 'varchar',
+    name: 'password',
+    nullable: true,
+  })
+  password: string;
+
+  @Column({
+    type: 'varchar',
     name: 'nickname',
     nullable: false,
   })
+  @Index('idx_nickname', { unique: true })
   nickname: string;
 
   @Column({
@@ -36,6 +41,7 @@ export class UserEntity {
     name: 'oauth_id',
     nullable: false,
   })
+  @Index('idx_oauth_id', { unique: true })
   oAuthId: string;
 
   @Column({
@@ -59,18 +65,32 @@ export class UserEntity {
   private constructor(
     email: string,
     nickname: string,
+    password: string,
     oAuthId: string,
     score: number,
     createdAt: Date,
   ) {
+    super();
     this.email = email;
     this.nickname = nickname;
+    this.password = password;
     this.oAuthId = oAuthId;
     this.score = score;
     this.createdAt = createdAt;
   }
 
-  static create(email: string, nickname: string, oAuthId: string): UserEntity {
-    return new UserEntity(email, nickname, oAuthId, 0, new Date());
+
+  static createUser(email: string, nickname: string, oAuthId: string): UserEntity {
+    return new UserEntity(email, nickname, null, oAuthId, 0, new Date());
+  }
+
+  static createAdmin(email: string, password: string, nickname: string, oAuthId: string): UserEntity {
+    return new UserEntity(email, nickname, password, oAuthId, 0, new Date());
+  }
+
+  async verifyPassword(password: string) {
+    if (!await bcrypt.compare(password, this.password)) {
+      throw new InvalidPasswordException();
+    }
   }
 }

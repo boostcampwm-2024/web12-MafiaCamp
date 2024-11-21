@@ -23,6 +23,7 @@ async function bootstrap() {
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Accept', 'Authorization'],
     credentials: true,
+    exposedHeaders: ['X-ACCESS-TOKEN'],
   });
 
   const httpAdapter = app.get(HttpAdapterHost);

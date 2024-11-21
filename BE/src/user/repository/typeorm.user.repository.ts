@@ -5,12 +5,12 @@ import { NotFoundUserException } from '../../common/error/not.found.user.excepti
 import { InjectRepository } from '@nestjs/typeorm';
 
 export class TypeormUserRepository
-  implements UserRepository<UserEntity, number>
-{
+  implements UserRepository<UserEntity, number> {
   constructor(
     @InjectRepository(UserEntity)
     private readonly _repository: Repository<UserEntity>,
-  ) {}
+  ) {
+  }
 
   async save(userEntity: UserEntity): Promise<void> {
     await this._repository.insert(userEntity);
@@ -25,4 +25,27 @@ export class TypeormUserRepository
     }
     throw new NotFoundUserException();
   }
+
+  async findByOAuthId(oauthId: string): Promise<UserEntity> {
+    return await this._repository.findOneBy({
+      oAuthId: oauthId,
+    });
+  }
+
+  async findByNickname(nickname: string): Promise<UserEntity> {
+    return await this._repository.findOneBy({
+      nickname: nickname,
+    });
+  }
+
+  async updateNickname(nickname: string, userId: number): Promise<void> {
+    await this._repository.update({ userId }, { nickname });
+  }
+
+  async findByEmail(email: string): Promise<UserEntity> {
+    return await this._repository.findOneBy({
+      email: email,
+    });
+  }
+
 }
