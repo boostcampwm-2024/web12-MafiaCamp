@@ -25,7 +25,7 @@ describe('RandomJobFactory 테스트', () => {
   };
 
   const setupGameRoom = (playerCount: number): void => {
-    gameRoom = new GameRoom('TEST-ABCD-EFGH-1234', playerCount);
+    gameRoom = new GameRoom('player1','TEST-ABCD-EFGH-1234', playerCount);
     mockClients = Array.from({ length: playerCount }, (_, idx) => createMockGameClient(`Player${idx + 1}`));
 
     mockClients.forEach((gameClient) => {
