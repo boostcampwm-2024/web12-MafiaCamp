@@ -92,8 +92,12 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('create-room')
-  createRoom(@MessageBody() createRoomRequest: CreateRoomRequest) {
-    this.gameRoomService.createRoom(createRoomRequest);
+  createRoom(
+    @MessageBody() createRoomRequest: CreateRoomRequest,
+    @ConnectedSocket() socket: Socket,
+  ) {
+    const client = this.connectedClients.get(socket);
+    this.gameRoomService.createRoom(client, createRoomRequest);
     this.publishRoomDataChangedEvent();
 
     return {

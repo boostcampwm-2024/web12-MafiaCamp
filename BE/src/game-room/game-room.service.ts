@@ -12,9 +12,9 @@ export class GameRoomService {
     return this.rooms.map((r) => r.toResponse());
   }
 
-  createRoom(createRoomRequest: CreateRoomRequest) {
+  createRoom(client: EventClient, createRoomRequest: CreateRoomRequest) {
     const { title, capacity } = createRoomRequest;
-    this.rooms.push(GameRoom.of(title, capacity));
+    this.rooms.push(GameRoom.of(client.nickname, title, capacity));
   }
 
   enterRoom(client: EventClient, roomId: string) {
