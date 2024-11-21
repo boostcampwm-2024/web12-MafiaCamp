@@ -2,8 +2,8 @@ export const TIMEOUT_SITUATION = {
   DISCUSSION: 15,
   ARGUMENT: 9,
   VOTE: 15,
-  MAFIA: 3,
-  DOCTOR: 2,
+  MAFIA: 30,
+  DOCTOR: 20,
   POLICE: 20,
   INTERMISSION: 10,
 } as const;

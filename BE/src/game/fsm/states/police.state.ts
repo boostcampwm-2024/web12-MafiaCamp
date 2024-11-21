@@ -20,6 +20,9 @@ import {
   KILL_DECISION_MANAGER,
   KillDecisionManager,
 } from '../../usecase/role-playing/killDecision-manager';
+import { FINISH_GAME_USECASE, FinishGameUsecase } from 'src/game/usecase/finish-game/finish-game.usecase';
+import { GAME_HISTORY_RESULT } from 'src/game/entity/game-history.result';
+import { MafiaWinState } from './mafia-win.state';
 
 @Injectable()
 export class PoliceState extends GameState {
@@ -28,12 +31,16 @@ export class PoliceState extends GameState {
     private readonly countdownTimeoutUsecase: CountdownTimeoutUsecase,
     @Inject(forwardRef(() => DiscussionState))
     private readonly discussionState: DiscussionState,
+    @Inject(forwardRef(() => MafiaWinState))
+    private readonly mafiaWinState: MafiaWinState,
     @Inject(POLICE_INVESTIGATE_USECASE)
     private readonly policeInvestigateUsecase: PoliceInvestigateUsecase,
     @Inject(POLICE_MANAGER)
     private readonly policeManager: PoliceManager,
     @Inject(KILL_DECISION_MANAGER)
     private readonly killDecisionManager: KillDecisionManager,
+    @Inject(FINISH_GAME_USECASE)
+    private readonly finishGameUsecase: FinishGameUsecase,
   ) {
     super();
   }
@@ -41,20 +48,24 @@ export class PoliceState extends GameState {
   async handle(context: GameContext, next: TransitionHandler) {
     const cleanups = [];
     const room = context.room;
-    
+
+    const done = async () => {
+      const result = await this.finishGameUsecase.checkFinishCondition(room);
+      if (result === GAME_HISTORY_RESULT.MAFIA) {
+        return next(this.mafiaWinState);
+      }
+      return next(this.discussionState);
+    };
+
     if (!await this.policeManager.isPoliceAlive(room)) {
       await this.killDecisionManager.determineKillTarget(room);
-      return next(this.discussionState);
+      return done();
     }
 
     await Promise.race([this.timeout(room, cleanups), this.investigate(room, cleanups)]);
     this.cleanup(cleanups);
-
-    // todo: 게임 종료 시 마피아 선택 로그 삭제하기
     await this.killDecisionManager.determineKillTarget(room);
-
-    // todo: 경찰 상태가 끝나면 이제 낮이 되는데 바로 토론 상태로 가는 것이 아니라 게임 승리 조건을 확인해서 처리해야할 것 같습니다.
-    next(this.discussionState);
+    done();
   }
 
   private async timeout(room: GameRoom, cleanups) {

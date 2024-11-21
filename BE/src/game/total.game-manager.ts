@@ -470,22 +470,27 @@ export class TotalGameManager
 
   async determineKillTarget(gameRoom: GameRoom): Promise<void> {
     const mafiaSelectLog = await this.mafiaSelectLogs.get(gameRoom.roomId);
-    const lastLog = mafiaSelectLog[mafiaSelectLog.length - 1];
-
     if (
       !mafiaSelectLog ||
-      mafiaSelectLog.length === 0 ||
+      mafiaSelectLog.length === 0
+    ) {
+      throw new NotFoundMafiaSelectLogException();
+    }
+
+    const lastLog = mafiaSelectLog[mafiaSelectLog.length - 1];
+    if (
       !lastLog ||
       !lastLog.target
     ) {
       throw new NotFoundMafiaSelectLogException();
     }
 
-    if (lastLog.shouldBeKilled) {
-      await this.killUser(gameRoom, lastLog.target, KILL_OPTION.MAFIA_KILL);
-    } else {
-      gameRoom.sendAll('mafia-kill-result', null);
+    if (!lastLog.shouldBeKilled || lastLog.target === 'NO_SELECTION') {
+      return gameRoom.sendAll('mafia-kill-result', null);
+      
     }
+
+    await this.killUser(gameRoom, lastLog.target, KILL_OPTION.MAFIA_KILL);
   }
 
   async checkFinishCondition(gameRoom: GameRoom): Promise<GAME_HISTORY_RESULT> {
