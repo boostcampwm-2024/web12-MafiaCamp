@@ -4,7 +4,6 @@ import { ArgumentsHost, Catch, HttpException, HttpStatus } from '@nestjs/common'
 @Catch()
 export class WebsocketExceptionFilter extends BaseWsExceptionFilter {
 
-
   catch(exception: unknown, host: ArgumentsHost) {
     const client = host.switchToWs().getClient();
     const event = host.switchToWs().getPattern();

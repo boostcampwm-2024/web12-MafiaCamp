@@ -22,8 +22,9 @@ import { MAFIA_KILL_USECASE, MafiaKillUsecase } from '../game/usecase/role-playi
 import { SelectDoctorTargetRequest } from '../game/dto/select.doctor.target.request';
 import { DOCTOR_CURE_USECASE, DoctorCureUsecase } from '../game/usecase/role-playing/doctor.cure.usecase';
 import { WebsocketLoggerInterceptor } from '../common/logger/websocket.logger.interceptor';
+import { WebsocketExceptionFilter } from '../common/filter/websocket.exception.filter';
 
-@UseFilters(WebsocketLoggerInterceptor)
+@UseFilters(WebsocketExceptionFilter)
 @UseInterceptors(WebsocketLoggerInterceptor)
 @WebSocketGateway({
   namespace: 'ws',
