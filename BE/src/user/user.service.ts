@@ -20,14 +20,19 @@ import { AdminLoginRequest } from './dto/admin-login.request';
 import { RegisterAdminUsecase } from './usecase/register.admin.usecase';
 import { RegisterAdminRequest } from './dto/register-admin.request';
 import * as bcrypt from 'bcrypt';
+import { FindUserInfoUsecase } from './usecase/find.user-info.usecase';
+import { TOKEN_VERIFY_USECASE, TokenVerifyUsecase } from '../auth/usecase/token.verify.usecase';
+import { NotFoundUserException } from '../common/error/not.found.user.exception';
 
 @Injectable()
-export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginUserUsecase, UpdateUserUsecase, LoginAdminUsecase, RegisterAdminUsecase {
+export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginUserUsecase, UpdateUserUsecase, LoginAdminUsecase, RegisterAdminUsecase, FindUserInfoUsecase {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository<UserEntity, number>,
     @Inject(TOKEN_PROVIDE_USECASE)
     private readonly tokenProvideUsecase: TokenProvideUsecase,
+    @Inject(TOKEN_VERIFY_USECASE)
+    private readonly tokenVerifyUsecase: TokenVerifyUsecase,
     private readonly configService: ConfigService,
   ) {
   }
@@ -115,5 +120,18 @@ export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginU
     const hashPassword = await bcrypt.hash(registerAdminRequest.password, 10);
     const userEntity = UserEntity.createAdmin(registerAdminRequest.email, hashPassword, registerAdminRequest.nickname, registerAdminRequest.oAuthId);
     await this.userRepository.save(userEntity);
+  }
+
+  async find(token: string): Promise<Record<string, any>> {
+    const payload = this.tokenVerifyUsecase.verify(token);
+    const userId = +payload.userId;
+    const userEntity = await this.userRepository.findById(userId);
+    if (!userEntity) {
+      throw new NotFoundUserException();
+    }
+    return {
+      nickname:userEntity.nickname,
+      userId: userId,
+    };
   }
 }

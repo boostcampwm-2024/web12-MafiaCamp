@@ -13,6 +13,7 @@ import { UserController } from './controller/user.controller';
 import { AuthModule } from '../auth/auth.module';
 import { REGISTER_ADMIN_USECASE } from './usecase/register.admin.usecase';
 import { LOGIN_ADMIN_USECASE } from './usecase/login.admin.usecase';
+import { FIND_USERINFO_USECASE } from './usecase/find.user-info.usecase';
 
 @Module({
   controllers: [AuthController, UserController],
@@ -46,6 +47,10 @@ import { LOGIN_ADMIN_USECASE } from './usecase/login.admin.usecase';
       provide: LOGIN_ADMIN_USECASE,
       useClass: UserService,
     },
+    {
+      provide: FIND_USERINFO_USECASE,
+      useClass: UserService
+    }
   ],
   exports: [FIND_USER_USECASE, REGISTER_USER_USECASE],
 })

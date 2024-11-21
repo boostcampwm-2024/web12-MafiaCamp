@@ -16,20 +16,19 @@ export class AuthController {
   }
 
   @Post('admin')
-  async adminLogin(@Body() adminLoginRequest: AdminLoginRequest, @Res({passthrough: true}) res: Response) {
+  async adminLogin(@Body() adminLoginRequest: AdminLoginRequest, @Res({ passthrough: true }) res: Response) {
     const { token, response } = await this.loginAdminUsecase.loginAdmin(adminLoginRequest);
     res.setHeader('X-ACCESS-TOKEN', token);
     return response;
   }
 
   @Get('kakao')
-  kakaoLogin(@Res() res: Response) {
+  kakaoLogin(@Res({ passthrough: true }) res: Response) {
     const clientId = this.configService.get<string>('CLIENT_ID');
     const redirectUrl = this.configService.get<string>('REDIRECT_URL');
     const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUrl}&response_type=code`;
 
     res.redirect(kakaoAuthUrl);
-    return;
   }
 
   @Get('kakao/callback')
