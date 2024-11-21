@@ -100,7 +100,7 @@ export class TotalGameManager
 
   async registerBallotBox(gameRoom: GameRoom): Promise<void> {
     const ballotBox = await this.ballotBoxs.get(gameRoom.roomId);
-    const candidates: string[] = ['INVALIDITY'];
+    const candidates: string[] = [];
     if (!ballotBox) {
       const gameInfo = await this.games.get(gameRoom.roomId);
       if (!gameInfo) {
@@ -114,6 +114,7 @@ export class TotalGameManager
         }
       });
       // 무효표 추가
+      candidates.push('INVALIDITY');
       newBallotBox.set('INVALIDITY', []);
       await this.ballotBoxs.set(gameRoom.roomId, newBallotBox);
     } else {
@@ -228,6 +229,7 @@ export class TotalGameManager
       return VOTE_STATE.PRIMARY;
     }
     gameRoom.sendAll('primary-vote-result', maxVotedUsers);
+    await this.ballotBoxs.delete(gameRoom.roomId);
     return VOTE_STATE.INVALIDITY;
   }
 
