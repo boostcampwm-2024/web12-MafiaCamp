@@ -38,3 +38,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# ssl
+ssl
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

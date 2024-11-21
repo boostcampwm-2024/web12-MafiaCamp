@@ -1,0 +1,72 @@
+# workflow 이름 설정
+name: Front-end Deployment
+
+# workflow를 트리거하는 이벤트 설정
+on:
+  push:
+    # FE_develop 브랜치에 푸시할 때 실행
+    branches: ["FE_develop"]
+
+# 실행할 jobs 설정
+jobs:
+  # job 이름 설정
+  build-and-deploy:
+    # Ubuntu 환경에서 실행
+    runs-on: ubuntu-latest
+
+    steps:
+      # 코드 가져오기
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Node.js 설치하기
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          # Node.js 버전 설정
+          node-version: 20
+
+      # 의존성 설치하기
+      - name: Install dependencies
+        run: npm install --force
+        working-directory: FE
+
+      # 애플리케이션 빌드하기
+      - name: Build application
+        run: npm run build
+        working-directory: FE
+        env:
+          NEXT_PUBLIC_BACKEND_URL: ${{ secrets.BACKEND_URL }}
+
+      # 빌드된 파일을 scp로 전송하기
+      - name: Copy files via ssh using key
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          port: ${{ secrets.PORT }}
+          key: ${{ secrets.KEY }}
+          proxy_host: ${{ secrets.PROXY_HOST }}
+          proxy_username: ${{ secrets.PROXY_USERNAME }}
+          proxy_port: ${{ secrets.PROXY_PORT }}
+          proxy_key: ${{ secrets.PROXY_KEY }}
+          source: "./FE/.next, ./FE/package.json, ./FE/package-lock.json, ./FE/public"
+          target: "~/mafiacamp/mafiacamp-fe"
+          overwrite: true
+
+      # ssh 원격 접속을 통해 빌드 파일 실행하기
+      - name: Executing remote ssh commands using key
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          port: ${{ secrets.PORT }}
+          key: ${{ secrets.KEY }}
+          proxy_host: ${{ secrets.PROXY_HOST }}
+          proxy_username: ${{ secrets.PROXY_USERNAME }}
+          proxy_port: ${{ secrets.PROXY_PORT }}
+          proxy_key: ${{ secrets.PROXY_KEY }}
+          script: |
+            cd mafiacamp/mafiacamp-fe/FE
+            npm install --force
+            pm2 reload FE || pm2 start --name FE npm -- run start
