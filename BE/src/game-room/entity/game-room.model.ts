@@ -100,7 +100,7 @@ export class GameRoom {
       title: this.title,
       capacity: this.capacity,
       participants: this.participants,
-      status: this.status,
+      status: this._status,
       createdAt: this.createdAt,
     };
   }
