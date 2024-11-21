@@ -15,13 +15,4 @@ export class PoliceInvestigateService implements PoliceInvestigateUsecase {
   async executePolice(gameRoom: GameRoom, police: string, criminal: string): Promise<void> {
     await this.policeManager.executePolice(gameRoom, police, criminal);
   }
-
-  async finishPolice(gameRoom: GameRoom): Promise<void> {
-    await this.policeManager.finishPolice(gameRoom);
-  }
-
-  async initPolice(gameRoom: GameRoom): Promise<void> {
-    await this.policeManager.initPolice(gameRoom);
-  }
-
 }

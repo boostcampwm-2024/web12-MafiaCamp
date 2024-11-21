@@ -47,7 +47,6 @@ export class TotalGameManager
 {
   private readonly games = new MutexMap<string, Map<string, PlayerInfo>>();
   private readonly ballotBoxs = new MutexMap<string, Map<string, string[]>>();
-  private readonly policeInvestigationMap = new MutexMap<string, boolean>();
   private readonly mafiaCurrentTarget = new MutexMap<string, string>();
   private readonly mafiaSelectLogs = new MutexMap<
     string,
@@ -289,9 +288,6 @@ export class TotalGameManager
     police: string,
     criminal: string,
   ): Promise<void> {
-    // const investigationFlag = await this.policeInvestigationMap.get(
-    //   gameRoom.roomId,
-    // );
     let policeFlag = false;
     let criminalFlag = false;
     let criminalJob: MAFIA_ROLE;
@@ -313,7 +309,6 @@ export class TotalGameManager
       }
     });
     if (policeFlag && criminalFlag) {
-      // await this.policeInvestigationMap.set(gameRoom.roomId, true);
       const policeClient = gameRoom.clients.find(
         (client) => client.nickname === police,
       );
@@ -324,14 +319,6 @@ export class TotalGameManager
         });
       }
     }
-  }
-
-  async finishPolice(gameRoom: GameRoom): Promise<void> {
-    await this.policeInvestigationMap.delete(gameRoom.roomId);
-  }
-
-  async initPolice(gameRoom: GameRoom): Promise<void> {
-    await this.policeInvestigationMap.set(gameRoom.roomId, false);
   }
 
   async selectMafiaTarget(
