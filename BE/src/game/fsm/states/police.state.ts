@@ -7,6 +7,11 @@ import {
 import { GameState, TransitionHandler } from './state';
 import { GameContext } from '../game-context';
 import { DiscussionState } from './discussion.state';
+import { StopCountdownRequest } from 'src/game/dto/stop.countdown.request';
+import { POLICE_INVESTIGATE_USECASE, PoliceInvestigateUsecase } from 'src/game/usecase/role-playing/police.investigate.usecase';
+import { GameRoom } from 'src/game-room/entity/game-room.model';
+import { MAFIA_ROLE } from 'src/game/mafia-role';
+import { PoliceInvestigationRequest } from 'src/game/dto/police.investigation.request';
 import {
   POLICE_MANAGER,
   PoliceManager,
@@ -15,6 +20,9 @@ import {
   KILL_DECISION_MANAGER,
   KillDecisionManager,
 } from '../../usecase/role-playing/killDecision-manager';
+import { FINISH_GAME_USECASE, FinishGameUsecase } from 'src/game/usecase/finish-game/finish-game.usecase';
+import { GAME_HISTORY_RESULT } from 'src/game/entity/game-history.result';
+import { MafiaWinState } from './mafia-win.state';
 
 @Injectable()
 export class PoliceState extends GameState {
@@ -23,29 +31,71 @@ export class PoliceState extends GameState {
     private readonly countdownTimeoutUsecase: CountdownTimeoutUsecase,
     @Inject(forwardRef(() => DiscussionState))
     private readonly discussionState: DiscussionState,
+    @Inject(forwardRef(() => MafiaWinState))
+    private readonly mafiaWinState: MafiaWinState,
+    @Inject(POLICE_INVESTIGATE_USECASE)
+    private readonly policeInvestigateUsecase: PoliceInvestigateUsecase,
     @Inject(POLICE_MANAGER)
     private readonly policeManager: PoliceManager,
     @Inject(KILL_DECISION_MANAGER)
     private readonly killDecisionManager: KillDecisionManager,
+    @Inject(FINISH_GAME_USECASE)
+    private readonly finishGameUsecase: FinishGameUsecase,
   ) {
     super();
   }
 
   async handle(context: GameContext, next: TransitionHandler) {
+    const cleanups = [];
     const room = context.room;
-    //경찰의 생존 유무에 따른 카운터 함수 실행
-    if (await this.policeManager.isPoliceAlive(room)) {
-      await this.policeManager.initPolice(room);
-      await this.countdownTimeoutUsecase.countdownStart(
-        new StartCountdownRequest(room, 'POLICE'),
-      );
-      await this.policeManager.finishPolice(room);
+
+    const done = async () => {
+      const result = await this.finishGameUsecase.checkFinishCondition(room);
+      if (result === GAME_HISTORY_RESULT.MAFIA) {
+        return next(this.mafiaWinState);
+      }
+      return next(this.discussionState);
+    };
+
+    if (!await this.policeManager.isPoliceAlive(room)) {
+      await this.killDecisionManager.determineKillTarget(room);
+      return done();
     }
 
-    // todo: 게임 종료 시 마피아 선택 로그 삭제하기
+    await Promise.race([this.timeout(room, cleanups), this.investigate(room, cleanups)]);
+    this.cleanup(cleanups);
     await this.killDecisionManager.determineKillTarget(room);
+    done();
+  }
 
-    // todo: 경찰 상태가 끝나면 이제 낮이 되는데 바로 토론 상태로 가는 것이 아니라 게임 승리 조건을 확인해서 처리해야할 것 같습니다.
-    next(this.discussionState);
+  private async timeout(room: GameRoom, cleanups) {
+    cleanups.push(() => {
+      this.countdownTimeoutUsecase.countdownStop(
+        new StopCountdownRequest(room),
+      );
+    });
+    return await this.countdownTimeoutUsecase.countdownStart(
+      new StartCountdownRequest(room, 'POLICE'),
+    );
+  }
+
+  private investigate(room: GameRoom, cleanups): Promise<void> {
+    const polices = room.clients.filter(c => c.job === MAFIA_ROLE.POLICE);
+
+    return new Promise((resolve) => {
+      const listener = async (data: PoliceInvestigationRequest) => {
+        await this.policeInvestigateUsecase.executePolice(room, data.police, data.criminal);
+        resolve();
+      };
+  
+      cleanups.push(() => {
+        polices.forEach(police => police.removeListener('police-investigate', listener));
+      });
+      polices.forEach(police => police.once('police-investigate', listener));
+    });
+  }
+
+  private cleanup(cleanups) {
+    cleanups.forEach(fn => fn());
   }
 }

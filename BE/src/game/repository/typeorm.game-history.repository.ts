@@ -26,4 +26,8 @@ export class TypeormGameHistoryRepository
   async save(gameHistoryEntity: GameHistoryEntity): Promise<void> {
     await this._repository.insert(gameHistoryEntity);
   }
+
+  async saveGameResult(gameId: number, history: Partial<GameHistoryEntity>): Promise<void> {
+    await this._repository.update({ gameId }, history);
+  }
 }

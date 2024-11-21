@@ -15,6 +15,7 @@ import {
 } from 'src/game/usecase/allocate-user-role/allocate.user-role.usecase';
 import { AllocateJobRequest } from 'src/game/dto/allocate.job.request';
 import { OpenViduRoleType } from 'src/video-server/types/openvidu.type';
+import { GameRoomStatus } from 'src/game-room/entity/game-room.status';
 
 @Injectable()
 export class SetUpState extends GameState {
@@ -33,10 +34,10 @@ export class SetUpState extends GameState {
 
   async handle(context: GameContext, next: TransitionHandler) {
     const room = context.room;
+    room.status = GameRoomStatus.RUNNING;
     await this.startVideo(room);
     await this.allocateUserRole(room);
 
-    // 게임이 시작하기 전에 5초의 여유 기간을 두기 위함입니다. 프론트엔드에서는 '잠시 후 게임이 시작됩니다.'와 같은 메시지를 표시하면 좋을 것 같습니다.
     await this.countdownTimeoutUsecase.countdownStart(
       new StartCountdownRequest(room, 'INTERMISSION'),
     );
@@ -44,7 +45,7 @@ export class SetUpState extends GameState {
     next(this.discussionState);
   }
 
-  async startVideo(room: GameRoom) {
+  private async startVideo(room: GameRoom) {
     const roomId = room.roomId;
     const clients = room.clients;
 
@@ -63,7 +64,7 @@ export class SetUpState extends GameState {
     });
   }
 
-  async allocateUserRole(room: GameRoom) {
+  private async allocateUserRole(room: GameRoom) {
     await this.allocateUserRoleUsecase.allocate(new AllocateJobRequest(room));
   }
 }

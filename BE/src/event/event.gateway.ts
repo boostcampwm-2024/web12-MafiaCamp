@@ -23,11 +23,6 @@ import {
   VoteMafiaUsecase,
 } from '../game/usecase/vote-manager/vote.mafia.usecase';
 import { VoteCandidateRequest } from '../game/dto/vote.candidate.request';
-import { PoliceInvestigationRequest } from '../game/dto/police.investigation.request';
-import {
-  POLICE_INVESTIGATE_USECASE,
-  PoliceInvestigateUsecase,
-} from '../game/usecase/role-playing/police.investigate.usecase';
 import { SelectMafiaTargetRequest } from '../game/dto/select.mafia.target.request';
 import {
   MAFIA_KILL_USECASE,
@@ -57,8 +52,6 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly startGameUsecase: StartGameUsecase,
     @Inject(VOTE_MAFIA_USECASE)
     private readonly voteMafiaUsecase: VoteMafiaUsecase,
-    @Inject(POLICE_INVESTIGATE_USECASE)
-    private readonly policeInvestigateUsecase: PoliceInvestigateUsecase,
     @Inject(MAFIA_KILL_USECASE)
     private readonly mafiaKillUseCase: MafiaKillUsecase,
     @Inject(DOCTOR_CURE_USECASE)
@@ -121,16 +114,44 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.publishRoomDataChangedEvent();
   }
 
+  @SubscribeMessage('leave-room')
+  leaveRoom(
+    @MessageBody('roomId') roomId: string,
+    @ConnectedSocket() socket: Socket,
+  ) {
+    const client = this.connectedClients.get(socket);
+    this.gameRoomService.leaveRoom(client.nickname, roomId);
+    this.publishRoomDataChangedEvent();
+  }
+
   @SubscribeMessage('send-chat')
   sendChatToRoom(
     @MessageBody() data: { roomId: string; message: string },
     @ConnectedSocket() socket: Socket,
   ) {
     const { roomId, message } = data;
+    const room = this.gameRoomService.findRoomById(roomId);
     const client = this.connectedClients.get(socket);
-    this.gameRoomService.sendChat(roomId, {
+
+    room.sendAll('chat', {
       from: client.nickname,
       to: 'room',
+      message,
+    });
+  }
+
+  @SubscribeMessage('send-mafia')
+  sendMafia(
+    @MessageBody() data: { roomId: string; message: string },
+    @ConnectedSocket() socket: Socket,
+  ) {
+    const { roomId, message } = data;
+    const room = this.gameRoomService.findRoomById(roomId);
+    const client = this.connectedClients.get(socket);
+
+    room.sendMafia('chat-mafia', {
+      from: client.nickname,
+      to: 'maifa',
       message,
     });
   }
@@ -171,19 +192,6 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
   }
 
-  @SubscribeMessage('police-investigate')
-  async policeInvestigate(
-    @MessageBody() policeInvestigationRequest: PoliceInvestigationRequest,
-  ) {
-    const room = this.gameRoomService.findRoomById(
-      policeInvestigationRequest.roomId,
-    );
-    await this.policeInvestigateUsecase.executePolice(
-      room,
-      policeInvestigationRequest.police,
-      policeInvestigationRequest.criminal,
-    );
-  }
 
   @SubscribeMessage('select-mafia-target')
   async selectMafiaTarget(
