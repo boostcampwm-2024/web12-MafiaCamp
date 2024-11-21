@@ -58,6 +58,7 @@ const HeaderSidebar = ({ visible, close }: HeaderSidebarProps) => {
               <Link
                 className='flex w-full flex-row items-center gap-2 p-3 hover:bg-slate-100'
                 href='/lobby'
+                prefetch={false}
                 onClick={() => close()}
               >
                 <MdGroups />
@@ -74,6 +75,7 @@ const HeaderSidebar = ({ visible, close }: HeaderSidebarProps) => {
                 <Link
                   className='flex w-full flex-row items-center gap-2 p-3 hover:bg-slate-100'
                   href='/signin'
+                  prefetch={false}
                   onClick={() => close()}
                 >
                   <MdLogin />

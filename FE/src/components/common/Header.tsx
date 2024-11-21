@@ -83,6 +83,7 @@ const Header = () => {
               <Link
                 className={`${pathname === '/lobby' ? 'font-semibold text-white' : 'hover:text-white'}`}
                 href='/lobby'
+                prefetch={false}
               >
                 로비
               </Link>
@@ -92,6 +93,7 @@ const Header = () => {
                 <Link
                   className={`${pathname === '/signin' ? 'font-semibold text-white' : 'hover:text-white'}`}
                   href='/signin'
+                  prefetch={false}
                 >
                   로그인
                 </Link>
