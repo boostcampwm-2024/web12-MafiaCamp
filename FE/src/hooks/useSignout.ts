@@ -14,6 +14,7 @@ export const useSignout = () => {
 
     setState({ nickname: '' });
     router.replace('/');
+    router.refresh();
   };
 
   return { nickname, handleSignout };
