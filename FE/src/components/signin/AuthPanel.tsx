@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import AdminPanel from './AdminPanel';
+import AdminPanel from './admin/AdminPanel';
 import SignInPanel from './SigninPanel';
 
 export const AuthPanel = () => {
