@@ -18,7 +18,11 @@ export class GameRoom {
   private _clients: GameClient[] = [];
   private readonly _mafias: GameClient[] = [];
 
-  constructor(private title: string, private capacity: number) {}
+  constructor(
+    private owner: string,
+    private title: string,
+    private capacity: number,
+  ) {}
 
   get roomId() {
     return this._roomId;
@@ -51,8 +55,8 @@ export class GameRoom {
     this._status = status;
   }
 
-  static of(title: string, capacity: number) {
-    return new GameRoom(title, capacity);
+  static of(owner: string, title: string, capacity: number) {
+    return new GameRoom(owner, title, capacity);
   }
 
   enter(client: GameClient) {
@@ -65,7 +69,7 @@ export class GameRoom {
   }
 
   leave(nickname: string) {
-    this._clients = this.clients.filter(c => c.nickname !== nickname);
+    this._clients = this.clients.filter((c) => c.nickname !== nickname);
     this.participants--;
     this.sendAll('leave-user-nickname', nickname);
   }
@@ -97,10 +101,11 @@ export class GameRoom {
   toResponse() {
     return {
       roomId: this._roomId,
+      owner: this.owner,
       title: this.title,
       capacity: this.capacity,
       participants: this.participants,
-      status: this.status,
+      status: this._status,
       createdAt: this.createdAt,
     };
   }
