@@ -1,4 +1,4 @@
-import AuthPanel from '@/components/signIn/AuthPanel';
+import AuthPanel from '@/components/signin/AuthPanel';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {

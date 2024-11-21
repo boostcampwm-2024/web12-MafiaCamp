@@ -48,7 +48,7 @@ const AdminPanel = () => {
         return;
       }
 
-      const response = await fetch('/api/login/admin', {
+      const response = await fetch('/api/signin/admin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -68,7 +68,7 @@ const AdminPanel = () => {
         await response.json();
 
       setState({ nickname: result.nickname });
-      router.push('/lobby');
+      router.replace('/lobby');
       notifySuccess('로그인에 성공하였습니다.');
     } else {
       await methods.trigger();

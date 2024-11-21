@@ -9,11 +9,13 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { MdOutlineMenu } from 'react-icons/md';
 import HeaderSidebar from './HeaderSidebar';
+import { useSignout } from '@/hooks/useSignout';
 
 const Header = () => {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const { nickname, handleSignout } = useSignout();
 
   const handleScroll = () => {
     if (window.scrollY >= 300) {
@@ -28,7 +30,6 @@ const Header = () => {
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (pathname.startsWith('/game')) {
@@ -73,12 +74,18 @@ const Header = () => {
               </Link>
             </li>
             <li>
-              <Link
-                className={`${pathname === '/signin' ? 'font-semibold text-white' : 'hover:text-white'}`}
-                href='/signin'
-              >
-                로그인
-              </Link>
+              {nickname === '' ? (
+                <Link
+                  className={`${pathname === '/signin' ? 'font-semibold text-white' : 'hover:text-white'}`}
+                  href='/signin'
+                >
+                  로그인
+                </Link>
+              ) : (
+                <button className='hover:text-white' onClick={handleSignout}>
+                  로그아웃
+                </button>
+              )}
             </li>
           </ul>
         </nav>

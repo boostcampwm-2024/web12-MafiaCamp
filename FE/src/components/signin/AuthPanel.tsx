@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import AdminPanel from './AdminPanel';
-import SignInPanel from './SignInPanel';
+import SignInPanel from './SigninPanel';
 
 export const AuthPanel = () => {
   const [isAdmin, setIsAdmin] = useState(false);
