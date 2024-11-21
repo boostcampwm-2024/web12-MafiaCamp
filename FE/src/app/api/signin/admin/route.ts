@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
   });
 
   if (!response.ok) {
-    return response;
+    return new NextResponse('Failed to sign in.', { status: 400 });
   }
 
   const signInResponse = new NextResponse(

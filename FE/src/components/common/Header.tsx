@@ -10,12 +10,15 @@ import { useEffect, useState } from 'react';
 import { MdOutlineMenu } from 'react-icons/md';
 import HeaderSidebar from './HeaderSidebar';
 import { useSignout } from '@/hooks/useSignout';
+import { useSocketStore } from '@/stores/socketStore';
+import { User } from '@/types/user';
 
 const Header = () => {
-  const pathname = usePathname();
+  const { nickname, handleSignout } = useSignout();
+  const { setState } = useSocketStore();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-  const { nickname, handleSignout } = useSignout();
+  const pathname = usePathname();
 
   const handleScroll = () => {
     if (window.scrollY >= 300) {
@@ -26,11 +29,22 @@ const Header = () => {
   };
 
   useEffect(() => {
+    (async () => {
+      const response = await fetch('/api/user/info', { method: 'GET' });
+
+      if (!response.ok) {
+        return;
+      }
+
+      const result: User = await response.json();
+      setState({ nickname: result.nickname });
+    })();
+
     window.addEventListener('scroll', handleScroll);
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, []);
+  }, [setState]);
 
   if (pathname.startsWith('/game')) {
     return null;

@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { useSocketStore } from '@/stores/socketStore';
 import AdminInput from './AdminInput';
 import { AuthAdmin } from '@/types/authAdmin';
+import { User } from '@/types/user';
 
 const AdminPanel = () => {
   const router = useRouter();
@@ -60,7 +61,7 @@ const AdminPanel = () => {
       throw new Error(response.statusText);
     }
 
-    const result: { nickname: string; userId: string } = await response.json();
+    const result: User = await response.json();
     setState({ nickname: result.nickname });
     router.replace('/lobby');
     notifySuccess('로그인에 성공하였습니다.');
