@@ -2,7 +2,7 @@ import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { initializeTransactionalContext } from 'typeorm-transactional';
 import { ConfigService } from '@nestjs/config';
-import { GlobalExceptionFilter } from './common/filter/global.exception.filter';
+import { HttpExceptionFilter } from './common/filter/http.exception.filter';
 
 async function bootstrap() {
   //process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; # Node.js 환경 변수로 SSL 검증 무시
@@ -24,7 +24,7 @@ async function bootstrap() {
   });
 
   const httpAdapter = app.get(HttpAdapterHost);
-  app.useGlobalFilters(new GlobalExceptionFilter(httpAdapter));
+  app.useGlobalFilters(new HttpExceptionFilter(httpAdapter));
   await app.listen(configService.get<number>('PORT'));
 }
 

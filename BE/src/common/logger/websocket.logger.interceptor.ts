@@ -3,6 +3,7 @@ import { Observable, tap } from 'rxjs';
 import { v4 as uuidv4 } from 'uuid';
 import { sanitizeData } from './sanitize.data';
 import { BasicLoggerInterceptor } from './basic.logger.interceptor';
+import { WsException } from '@nestjs/websockets';
 
 @Injectable()
 export class WebsocketLoggerInterceptor extends BasicLoggerInterceptor {
@@ -20,7 +21,7 @@ export class WebsocketLoggerInterceptor extends BasicLoggerInterceptor {
     startTime: number,
   ): Observable<any> {
     const client = context.switchToWs().getClient();
-    const data = context.switchToWs().getData();
+    const data = context.switchToWs().getData() || {} ;
     const { className, handlerName } = this.getExecutionInfo(context);
 
     const traceId =
@@ -34,7 +35,7 @@ export class WebsocketLoggerInterceptor extends BasicLoggerInterceptor {
       class: className,
       handler: handlerName,
       event: data.event,
-      payload: sanitizeData(data.data),
+      payload: data ? sanitizeData(data) : undefined,
       clientId: client.id,
     });
 
@@ -55,7 +56,7 @@ export class WebsocketLoggerInterceptor extends BasicLoggerInterceptor {
             message: 'WebSocket event failed',
             traceId,
             spanId,
-            error: error instanceof Error ? error.message : error.toString(),
+            error: error instanceof WsException ? error.message : error.toString(),
             stack: error.stack,
           });
         },

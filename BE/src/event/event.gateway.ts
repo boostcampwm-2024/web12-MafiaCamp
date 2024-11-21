@@ -10,31 +10,21 @@ import {
 import { Socket } from 'socket.io';
 import { CreateRoomRequest } from 'src/game-room/dto/create-room.request';
 import { GameRoomService } from 'src/game-room/game-room.service';
-import { Inject, Logger } from '@nestjs/common';
+import { Inject, Logger, UseFilters, UseInterceptors } from '@nestjs/common';
 import { EventClient } from './event-client.model';
 import { EventManager } from './event-manager';
 import { Event } from './event.const';
-import {
-  START_GAME_USECASE,
-  StartGameUsecase,
-} from 'src/game/usecase/start-game/start-game.usecase';
-import {
-  VOTE_MAFIA_USECASE,
-  VoteMafiaUsecase,
-} from '../game/usecase/vote-manager/vote.mafia.usecase';
+import { START_GAME_USECASE, StartGameUsecase } from 'src/game/usecase/start-game/start-game.usecase';
+import { VOTE_MAFIA_USECASE, VoteMafiaUsecase } from '../game/usecase/vote-manager/vote.mafia.usecase';
 import { VoteCandidateRequest } from '../game/dto/vote.candidate.request';
 import { SelectMafiaTargetRequest } from '../game/dto/select.mafia.target.request';
-import {
-  MAFIA_KILL_USECASE,
-  MafiaKillUsecase,
-} from '../game/usecase/role-playing/mafia.kill.usecase';
+import { MAFIA_KILL_USECASE, MafiaKillUsecase } from '../game/usecase/role-playing/mafia.kill.usecase';
 import { SelectDoctorTargetRequest } from '../game/dto/select.doctor.target.request';
-import {
-  DOCTOR_CURE_USECASE,
-  DoctorCureUsecase,
-} from '../game/usecase/role-playing/doctor.cure.usecase';
+import { DOCTOR_CURE_USECASE, DoctorCureUsecase } from '../game/usecase/role-playing/doctor.cure.usecase';
+import { WebsocketLoggerInterceptor } from '../common/logger/websocket.logger.interceptor';
 
-// @UseInterceptors(WebsocketLoggerInterceptor)
+@UseFilters(WebsocketLoggerInterceptor)
+@UseInterceptors(WebsocketLoggerInterceptor)
 @WebSocketGateway({
   namespace: 'ws',
   cors: {
@@ -56,7 +46,8 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly mafiaKillUseCase: MafiaKillUsecase,
     @Inject(DOCTOR_CURE_USECASE)
     private readonly doctorCureUsecase: DoctorCureUsecase,
-  ) {}
+  ) {
+  }
 
   handleConnection(socket: Socket) {
     this.logger.log(`client connected: ${socket.id}`);
@@ -104,7 +95,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
       event: 'create-room',
       data: {
         success: true,
-        roomId
+        roomId,
       },
     };
   }
