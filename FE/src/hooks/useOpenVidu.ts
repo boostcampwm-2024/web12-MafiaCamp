@@ -27,7 +27,8 @@ type Action =
     }
   | { type: 'INITIALIZE_VOTES' }
   | { type: 'SET_All_PARTICIPANTS_AS_CANDIDATES' }
-  | { type: 'SET_TARGETS_OF_MAFIA' };
+  | { type: 'SET_TARGETS_OF_MAFIA' }
+  | { type: 'SET_TARGETS_OF_POLICE' };
 
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
@@ -159,6 +160,19 @@ const reducer = (state: State, action: Action): State => {
         })),
       };
 
+    case 'SET_TARGETS_OF_POLICE':
+      return {
+        ...state,
+        gamePublisher: {
+          ...state.gamePublisher,
+          isCandidate: false,
+        },
+        gameSubscribers: state.gameSubscribers.map((gameSubscriber) => ({
+          ...gameSubscriber,
+          isCandidate: gameSubscriber.role === null,
+        })),
+      };
+
     default:
       throw new Error('Unknown action type');
   }
@@ -241,6 +255,10 @@ export const useOpenVidu = () => {
 
   const setTargetsOfMafia = () => {
     dispatch({ type: 'SET_TARGETS_OF_MAFIA' });
+  };
+
+  const setTargetsOfPolice = () => {
+    dispatch({ type: 'SET_TARGETS_OF_POLICE' });
   };
 
   const eliminatePublisher = () => {
@@ -402,6 +420,7 @@ export const useOpenVidu = () => {
     initializeVotes,
     setAllParticipantsAsCandidates,
     setTargetsOfMafia,
+    setTargetsOfPolice,
     eliminatePublisher,
   };
 };

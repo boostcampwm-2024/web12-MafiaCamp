@@ -99,6 +99,7 @@ const VideoViewer = ({
           (situation === 'VOTE' ||
             situation === 'ARGUMENT' ||
             (situation === 'MAFIA' && gamePublisher.role === 'MAFIA') ||
+            (situation === 'DOCTOR' && gamePublisher.role === 'DOCTOR') ||
             (situation === 'POLICE' && gamePublisher.role === 'POLICE')) && (
             <div className='pointer-events-none absolute bottom-0 left-0 z-10 h-full w-full bg-slate-800/75' />
           )
