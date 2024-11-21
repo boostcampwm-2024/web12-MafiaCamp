@@ -31,7 +31,9 @@ export class AllocateUserRoleService implements AllocateUserRoleUsecase {
   async allocate(jobRequest: AllocateJobRequest): Promise<void> {
     const gameHistoryEntity = new GameHistoryEntity();
     await this.gameHistoryRepository.save(gameHistoryEntity);
-    const userRoles: Map<GameClient, MAFIA_ROLE> = this.jobFactory.allocateGameRoles(jobRequest.gameRoom);
-    await this.gameManager.register(jobRequest.gameRoom, userRoles);
+    const gameRoom = jobRequest.gameRoom;
+    gameRoom.gameId = gameHistoryEntity.gameId;
+    const userRoles: Map<GameClient, MAFIA_ROLE> = this.jobFactory.allocateGameRoles(gameRoom);
+    await this.gameManager.register(gameRoom, userRoles);
   }
 }

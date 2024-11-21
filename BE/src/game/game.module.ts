@@ -29,12 +29,18 @@ import { FinalVoteState } from './fsm/states/final-vote.state';
 import { POLICE_MANAGER } from './usecase/role-playing/police-manager';
 import { POLICE_INVESTIGATE_USECASE } from './usecase/role-playing/police.investigate.usecase';
 import { PoliceInvestigateService } from './usecase/role-playing/police.investigate.service';
+import { FINISH_GAME_USECASE } from './usecase/finish-game/finish-game.usecase';
+import { FinishGameService } from './usecase/finish-game/finish-game.service';
 import { MAFIA_KILL_USECASE } from './usecase/role-playing/mafia.kill.usecase';
 import { MafiaKillService } from './usecase/role-playing/mafia.kill.service';
 import { MAFIA_MANAGER } from './usecase/role-playing/mafia-manager';
+import { FINISH_GAME_MANAGER } from './usecase/finish-game/finish-game.manager';
+import { CitizenWinState } from './fsm/states/citizen-win.state';
+import { MafiaWinState } from './fsm/states/mafia-win.state';
 import { DOCTOR_MANAGER } from './usecase/role-playing/doctor-manager';
-import { DOCTOR_SAVE_USECASE } from './usecase/role-playing/doctor.save.usecase';
-import { DoctorSaveService } from './usecase/role-playing/doctor.save.service';
+import { DOCTOR_CURE_USECASE } from './usecase/role-playing/doctor.cure.usecase';
+import { DoctorCureService } from './usecase/role-playing/doctor.cure.service';
+import { KILL_DECISION_MANAGER } from './usecase/role-playing/killDecision-manager';
 
 @Module({
   imports: [TypeOrmModule.forFeature([GameHistoryEntity]), VideoServerModule],
@@ -73,6 +79,14 @@ import { DoctorSaveService } from './usecase/role-playing/doctor.save.service';
       useClass: StartGameService,
     },
     {
+      provide: FINISH_GAME_MANAGER,
+      useExisting: TotalGameManager,
+    },
+    {
+      provide: FINISH_GAME_USECASE,
+      useClass: FinishGameService,
+    },
+    {
       provide: POLICE_MANAGER,
       useExisting: TotalGameManager,
     },
@@ -93,8 +107,12 @@ import { DoctorSaveService } from './usecase/role-playing/doctor.save.service';
       useExisting: TotalGameManager,
     },
     {
-      provide: DOCTOR_SAVE_USECASE,
-      useClass: DoctorSaveService,
+      provide: DOCTOR_CURE_USECASE,
+      useClass: DoctorCureService,
+    },
+    {
+      provide: KILL_DECISION_MANAGER,
+      useExisting: TotalGameManager,
     },
     ArgumentState,
     DiscussionState,
@@ -104,6 +122,8 @@ import { DoctorSaveService } from './usecase/role-playing/doctor.save.service';
     SetUpState,
     PrimaryVoteState,
     FinalVoteState,
+    CitizenWinState,
+    MafiaWinState,
   ],
   exports: [
     START_GAME_USECASE,
@@ -112,7 +132,7 @@ import { DoctorSaveService } from './usecase/role-playing/doctor.save.service';
     VOTE_MAFIA_USECASE,
     POLICE_INVESTIGATE_USECASE,
     MAFIA_KILL_USECASE,
-    DOCTOR_SAVE_USECASE,
+    DOCTOR_CURE_USECASE,
   ],
 })
 export class GameModule {}

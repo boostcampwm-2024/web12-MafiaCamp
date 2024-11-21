@@ -1,10 +1,10 @@
-import { DoctorSaveUsecase } from './doctor.save.usecase';
+import { DoctorCureUsecase } from './doctor.cure.usecase';
 import { Inject, Injectable } from '@nestjs/common';
 import { DOCTOR_MANAGER, DoctorManager } from './doctor-manager';
 import { GameRoom } from '../../../game-room/entity/game-room.model';
 
 @Injectable()
-export class DoctorSaveService implements DoctorSaveUsecase {
+export class DoctorCureService implements DoctorCureUsecase {
   constructor(
     @Inject(DOCTOR_MANAGER)
     private readonly doctorManager: DoctorManager,

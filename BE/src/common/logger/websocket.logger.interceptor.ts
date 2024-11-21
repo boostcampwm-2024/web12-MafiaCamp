@@ -11,7 +11,7 @@ export class WebsocketLoggerInterceptor extends BasicLoggerInterceptor {
     next: CallHandler,
     startTime: number,
   ): Observable<any> {
-    return undefined;
+    return next.handle();
   }
 
   protected handleWebsocketEvent(

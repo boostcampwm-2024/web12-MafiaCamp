@@ -4,12 +4,14 @@ import { EXCEPTION_MESSAGE } from './exception.message';
 
 export class NotFoundTimerException extends HttpException {
   constructor() {
-    super({
+    super(
+      {
         code: EXCEPTION_CODE.NOT_FOUND_TIMER_EXCEPTION,
         message: EXCEPTION_MESSAGE.NOT_FOUND_TIMER_EXCEPTION,
         error: 'NotFoundTimerException',
-        statusCode: HttpStatus.BAD_REQUEST,
+        statusCode: HttpStatus.NOT_FOUND,
       },
-      HttpStatus.BAD_REQUEST);
+      HttpStatus.NOT_FOUND,
+    );
   }
 }

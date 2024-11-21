@@ -3,7 +3,6 @@ import { CreateRoomRequest } from './dto/create-room.request';
 import { GameRoom } from './entity/game-room.model';
 import { EventClient } from 'src/event/event-client.model';
 import { GameClient } from './entity/game-client.model';
-import { GameChat } from './entity/game-chat.model';
 
 @Injectable()
 export class GameRoomService {
@@ -13,16 +12,19 @@ export class GameRoomService {
     return this.rooms.map((r) => r.toResponse());
   }
 
-  createRoom(createRoomRequest: CreateRoomRequest) {
-    this.rooms.push(GameRoom.from(createRoomRequest));
+  createRoom(client: EventClient, createRoomRequest: CreateRoomRequest): string {
+    const { title, capacity } = createRoomRequest;
+    const room = GameRoom.of(client.nickname, title, capacity)
+    this.rooms.push(room);
+    return room.roomId;
   }
 
   enterRoom(client: EventClient, roomId: string) {
     this.findRoomById(roomId).enter(new GameClient(client));
   }
 
-  sendChat(roomId: string, chat: GameChat) {
-    this.findRoomById(roomId).sendAll('chat', chat);
+  leaveRoom(nickname: string, roomId: string) {
+    this.findRoomById(roomId).leave(nickname);
   }
 
   findRoomById(roomId: string) {

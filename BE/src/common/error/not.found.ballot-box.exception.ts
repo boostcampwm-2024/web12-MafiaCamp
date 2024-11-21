@@ -9,9 +9,9 @@ export class NotFoundBallotBoxException extends HttpException {
         code: EXCEPTION_CODE.NOT_FOUND_BALLOT_BOX_EXCEPTION,
         message: EXCEPTION_MESSAGE.NOT_FOUND_BALLOT_BOX_EXCEPTION,
         error: 'NotFoundBallotBoxException',
-        statusCode: HttpStatus.BAD_REQUEST,
+        statusCode: HttpStatus.NOT_FOUND,
       },
-      HttpStatus.BAD_REQUEST,
+      HttpStatus.NOT_FOUND,
     );
   }
 }

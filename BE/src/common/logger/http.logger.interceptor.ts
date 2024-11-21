@@ -58,7 +58,7 @@ export class HttpLoggerInterceptor extends BasicLoggerInterceptor {
     next: CallHandler,
     startTime: number,
   ): Observable<any> {
-    return undefined;
+    return next.handle();
   }
 
   private getRequestInfo(request: any): Record<string, any> {
@@ -69,11 +69,11 @@ export class HttpLoggerInterceptor extends BasicLoggerInterceptor {
     }
 
     if (request.params && Object.keys(request.params).length > 0) {
-      info.urlParams = request.params;
+      info.urlParams = sanitizeData(request.params);
     }
 
     if (request.query && Object.keys(request.query).length > 0) {
-      info.queryParams = request.query;
+      info.queryParams = sanitizeData(request.query);
     }
     return info;
   }

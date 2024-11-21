@@ -55,7 +55,6 @@ export class MafiaCountdownTimer implements CountdownTimer {
   private cleanup(room: GameRoom): void {
     const signal = this.stopSignals.get(room);
     if (!signal) {
-      // 기존에는 signal 유무와 상관없이 항상 Exception이 터지는 코드라서 수정하였습니다.
       throw new NotFoundTimerException();
     }
     signal.next(null);
@@ -65,6 +64,9 @@ export class MafiaCountdownTimer implements CountdownTimer {
   }
 
   stop(room: GameRoom): void {
+    if (!this.pauses.has(room)) {
+      return;
+    }
     this.pause(room);
     this.cleanup(room);
   }

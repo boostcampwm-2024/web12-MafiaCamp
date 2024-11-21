@@ -18,6 +18,18 @@ export class GameClient {
     this._job = job;
   }
 
+  on(event: string, listener) {
+    this._client.on(event, listener);
+  }
+
+  once(event: string, listener) {
+    this._client.once(event, listener);
+  }
+
+  removeListener(event: string, listener) {
+    this._client.removeListener(event, listener);
+  }
+
   send(event: string, ...args) {
     this._client.emit(event, ...args);
   }
