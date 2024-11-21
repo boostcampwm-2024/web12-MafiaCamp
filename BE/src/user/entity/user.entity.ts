@@ -1,7 +1,6 @@
 import { BaseEntity, Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { GameUserEntity } from '../../game-user/entity/game-user.entity';
 import * as bcrypt from 'bcrypt';
-import { UnauthorizedUserException } from '../../common/error/unauthorized.user.exception';
 import { InvalidPasswordException } from '../../common/error/invalid.password.exception';
 
 @Entity('user')
