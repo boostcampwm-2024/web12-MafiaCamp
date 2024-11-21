@@ -68,6 +68,7 @@ const AdminPanel = () => {
     const result: User = await response.json();
     setState({ nickname: result.nickname });
     router.replace('/');
+    router.refresh();
   };
 
   const handleSignUp = async (e: FormEvent<HTMLFormElement>) => {
