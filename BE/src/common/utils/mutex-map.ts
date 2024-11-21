@@ -4,9 +4,6 @@ export class MutexMap<K, V> {
   private _map = new Map<K, V>();
   private mutex: Mutex = new Mutex();
 
-  constructor() {
-  }
-
   private async withLock<T>(callback: (map: Map<K, V>) => T | Promise<T>): Promise<T> {
     const release = await this.mutex.acquire();
     try {
@@ -44,11 +41,11 @@ export class MutexMap<K, V> {
   }
 
   async forEach(callbackFn: (value: V, key: K, map: Map<K, V>) => void | Promise<void>): Promise<void> {
-    await this.withLock(async map=>{
+    await this.withLock(async map => {
       for (const [key, value] of map.entries()) {
         await callbackFn(value, key, map);
       }
-    })
+    });
   }
 
   async map<T>(callbackFn: (value: V, key: K) => T | Promise<T>): Promise<T[]> {
@@ -62,7 +59,7 @@ export class MutexMap<K, V> {
   }
 
   async filter(
-    predicate: (value: V, key: K) => boolean | Promise<boolean>
+    predicate: (value: V, key: K) => boolean | Promise<boolean>,
   ): Promise<[K, V][]> {
     return this.withLock(async map => {
       const results: [K, V][] = [];
@@ -77,7 +74,7 @@ export class MutexMap<K, V> {
 
   async reduce<T>(
     callbackFn: (accumulator: T, value: V, key: K) => T | Promise<T>,
-    initialValue: T
+    initialValue: T,
   ): Promise<T> {
     return this.withLock(async map => {
       let accumulator = initialValue;
