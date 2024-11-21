@@ -4,12 +4,8 @@ import PaperAirplainIcon from '@/components/common/icons/PaperAirplainIcon';
 import ChattingItem from './ChattingItem';
 import CloseIcon from '@/components/common/icons/CloseIcon';
 import UsersIcon from '@/components/common/icons/UsersIcon';
-import { useSidebarStore } from '@/stores/sidebarStore';
 import { AnimatePresence, motion } from 'framer-motion';
-import { FormEvent, useEffect, useRef, useState } from 'react';
-import { useSocketStore } from '@/stores/socketStore';
-import { Chat } from '@/types/chat';
-import { useSearchParams } from 'next/navigation';
+import { useChatting } from '@/hooks/useChatting';
 
 interface ChattingListProps {
   roomId: string;
@@ -24,48 +20,19 @@ const ChattingList = ({
   chatEnabled,
   totalParticipants,
 }: ChattingListProps) => {
-  // TODO: 커스텀 훅 생성
-  const { nickname, socket } = useSocketStore();
-  const { isOpen, initialize, closeSidebar } = useSidebarStore();
-  const [chatList, setChatList] = useState<Chat[]>([]);
-  const [message, setMessage] = useState('');
-  const capacity = useSearchParams().get('capacity');
-
-  // TODO: 추후 수정 필요
-  const [isMafiaOnly, setIsMafiaOnly] = useState(false);
-
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-
-    if (message.trim() === '') {
-      return;
-    }
-
-    socket?.emit('send-chat', { roomId, message });
-    setMessage('');
-  };
-
-  const chatListRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (chatListRef.current) {
-      chatListRef.current.scroll({
-        top: chatListRef.current.scrollHeight,
-        behavior: 'smooth',
-      });
-    }
-  }, [chatList]);
-
-  useEffect(() => {
-    socket?.on('chat', (chat: Chat) => {
-      setChatList([...chatList, chat]);
-    });
-
-    return () => {
-      socket?.off('chat');
-      initialize();
-    };
-  }, [chatList, initialize, socket]);
+  const {
+    isOpen,
+    nickname,
+    capacity,
+    chatList,
+    message,
+    isMafiaOnly,
+    chatListRef,
+    closeSidebar,
+    setMessage,
+    handleSubmit,
+    setIsMafiaOnly,
+  } = useChatting(roomId, isMafia);
 
   return (
     <AnimatePresence>
