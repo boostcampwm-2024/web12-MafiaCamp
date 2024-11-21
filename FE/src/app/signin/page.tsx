@@ -1,4 +1,4 @@
-import SigninPanel from '@/components/signin/SigninPanel';
+import AuthPanel from '@/components/signin/AuthPanel';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 export default function Page() {
   return (
     <div className='flex w-full flex-col items-center pt-20'>
-      <SigninPanel />
+      <AuthPanel />
     </div>
   );
 }

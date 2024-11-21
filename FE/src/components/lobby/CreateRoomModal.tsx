@@ -6,12 +6,14 @@ import { useForm } from 'react-hook-form';
 import { RoomCreateFormSchema } from '@/libs/zod/roomCreateFormSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSocketStore } from '@/stores/socketStore';
+import { useRouter } from 'next/navigation';
 
 interface CreateRoomModalProps {
   close: () => void;
 }
 
 const CreateRoomModal = ({ close }: CreateRoomModalProps) => {
+  const router = useRouter();
   const { socket } = useSocketStore();
   const methods = useForm<{ title: string; capacity: string }>({
     resolver: zodResolver(RoomCreateFormSchema),
@@ -35,17 +37,18 @@ const CreateRoomModal = ({ close }: CreateRoomModalProps) => {
   };
 
   useEffect(() => {
-    socket?.on('create-room', (response: { success: boolean }) => {
-      if (response.success) {
-        alert('TODO: 방 바로 이동하기');
-        close();
+    socket?.on('create-room', (data: { success: boolean; roomId: string }) => {
+      if (data.success) {
+        router.push(
+          `/game/${data.roomId}?roomName=${methods.getValues('title')}&capacity=${methods.getValues('capacity')}`,
+        );
       }
     });
 
     return () => {
       socket?.off('create-room');
     };
-  }, [close, socket]);
+  }, [methods, router, socket]);
 
   return (
     <form

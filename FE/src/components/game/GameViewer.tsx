@@ -56,7 +56,12 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
 
   useEffect(() => {
     // 방 입장
-    socket?.emit('enter-room', { roomId: roomId });
+    socket?.emit('enter-room', { roomId });
+
+    return () => {
+      // 방 나가기
+      socket?.emit('leave-room', { roomId });
+    };
   }, [roomId, socket]);
 
   useEffect(() => {
@@ -69,7 +74,6 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
         }
 
         if (data.situation === 'ARGUMENT' && data.timeLeft === 90) {
-          initializeVotes();
           setTarget(null);
           setInvalidityCount(0);
           notifyInfo(SITUATION_MESSAGE.ARGUMENT);
@@ -84,20 +88,32 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
         }
 
         if (data.situation === 'MAFIA' && data.timeLeft === 30) {
+          if (gamePublisher.role === 'MAFIA') {
+            setTargetsOfMafia();
+          } else {
+            initializeVotes();
+          }
           setTarget(null);
-          setTargetsOfMafia();
           notifyInfo(SITUATION_MESSAGE.MAFIA);
         }
 
         if (data.situation === 'DOCTOR' && data.timeLeft === 20) {
+          if (gamePublisher.role === 'DOCTOR') {
+            setAllParticipantsAsCandidates();
+          } else {
+            initializeVotes();
+          }
           setTarget(null);
-          setAllParticipantsAsCandidates();
           notifyInfo(SITUATION_MESSAGE.DOCTOR);
         }
 
         if (data.situation === 'POLICE' && data.timeLeft === 20) {
+          if (gamePublisher.role === 'POLICE') {
+            setTargetsOfPolice();
+          } else {
+            initializeVotes();
+          }
           setTarget(null);
-          setTargetsOfPolice();
           notifyInfo(SITUATION_MESSAGE.POLICE);
         }
 
@@ -131,8 +147,6 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     // 투표 시작 시 투표 대상 후보자 설정
     socket?.on('send-vote-candidates', (candidates: string[]) => {
       initializeVotes();
-      setTarget(null);
-      setInvalidityCount(0);
 
       for (const nickname of candidates) {
         if (nickname === gamePublisher.nickname) {
@@ -158,6 +172,10 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
 
     // 1차 투표 결과 확인
     socket?.on('primary-vote-result', (candidates: string[]) => {
+      initializeVotes();
+      setTarget(null);
+      setInvalidityCount(0);
+
       for (const nickname of candidates) {
         if (nickname === gamePublisher.nickname) {
           changePublisherStatus({ isCandidate: true });
@@ -172,7 +190,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       'vote-kill-user',
       (data: { player: string; job: Role } | null) => {
         if (!data) {
-          notifyInfo('처형이 보류되었습니다.');
+          notifyInfo('투표 결과, 아무도 죽지 않았습니다.');
           return;
         }
 
@@ -180,7 +198,9 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
           eliminatePublisher();
         }
 
-        notifyInfo(`${ROLE[data.job]} ${data.player} 님이 사망하였습니다.`);
+        notifyInfo(
+          `투표 결과, ${ROLE[data.job]} ${data.player} 님이 사망하였습니다.`,
+        );
       },
     );
 
@@ -202,6 +222,43 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       );
     }
 
+    socket?.on(
+      'mafia-kill-result',
+      (data: { player: string; job: Role } | null) => {
+        if (!data) {
+          notifyInfo('지난밤, 아무도 죽지 않았습니다.');
+          return;
+        }
+
+        if (data.player === gamePublisher.nickname) {
+          eliminatePublisher();
+        }
+
+        notifyInfo(
+          `지난밤, 마피아에 의해 ${ROLE[data.job]} ${data.player} 님이 사망하였습니다.`,
+        );
+      },
+    );
+
+    socket?.on(
+      'game-result',
+      (data: {
+        result: 'WIN' | 'LOSE';
+        playerInfo: {
+          nickname: string;
+          role: Role;
+          status: 'ALIVE' | 'DEAD';
+        }[];
+      }) => {
+        // TODO: 수정 필요
+        if (data.result === 'WIN') {
+          notifyInfo('게임에서 승리하였습니다.');
+        } else {
+          notifyInfo('게임에서 패배하였습니다.');
+        }
+      },
+    );
+
     return () => {
       socket?.off('countdown');
       socket?.off('countdown-exit');
@@ -211,6 +268,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       socket?.off('vote-kill-user');
       socket?.off('mafia-current-target');
       socket?.off('police-investigation-result');
+      socket?.off('mafia-kill-result');
     };
   }, [
     changePublisherStatus,

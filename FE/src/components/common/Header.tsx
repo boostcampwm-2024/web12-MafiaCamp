@@ -9,11 +9,16 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { MdOutlineMenu } from 'react-icons/md';
 import HeaderSidebar from './HeaderSidebar';
+import { useSignout } from '@/hooks/useSignout';
+import { useSocketStore } from '@/stores/socketStore';
+import { User } from '@/types/user';
 
 const Header = () => {
-  const pathname = usePathname();
+  const { nickname, handleSignout } = useSignout();
+  const { setState } = useSocketStore();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const pathname = usePathname();
 
   const handleScroll = () => {
     if (window.scrollY >= 300) {
@@ -24,12 +29,22 @@ const Header = () => {
   };
 
   useEffect(() => {
+    (async () => {
+      const response = await fetch('/api/user/info', { method: 'GET' });
+
+      if (!response.ok) {
+        return;
+      }
+
+      const result: User = await response.json();
+      setState({ nickname: result.nickname });
+    })();
+
     window.addEventListener('scroll', handleScroll);
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [setState]);
 
   if (pathname.startsWith('/game')) {
     return null;
@@ -73,12 +88,18 @@ const Header = () => {
               </Link>
             </li>
             <li>
-              <Link
-                className={`${pathname === '/signin' ? 'font-semibold text-white' : 'hover:text-white'}`}
-                href='/signin'
-              >
-                로그인
-              </Link>
+              {nickname === '' ? (
+                <Link
+                  className={`${pathname === '/signin' ? 'font-semibold text-white' : 'hover:text-white'}`}
+                  href='/signin'
+                >
+                  로그인
+                </Link>
+              ) : (
+                <button className='hover:text-white' onClick={handleSignout}>
+                  로그아웃
+                </button>
+              )}
             </li>
           </ul>
         </nav>

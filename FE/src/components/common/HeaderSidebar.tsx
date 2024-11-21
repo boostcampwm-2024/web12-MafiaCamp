@@ -5,6 +5,7 @@ import CloseIcon from './icons/CloseIcon';
 import { AnimatePresence, motion } from 'framer-motion';
 import { IoHome } from 'react-icons/io5';
 import { MdGroups, MdLogin, MdLogout } from 'react-icons/md';
+import { useSignout } from '@/hooks/useSignout';
 
 interface HeaderSidebarProps {
   visible: boolean;
@@ -12,6 +13,8 @@ interface HeaderSidebarProps {
 }
 
 const HeaderSidebar = ({ visible, close }: HeaderSidebarProps) => {
+  const { nickname, handleSignout } = useSignout();
+
   return (
     <AnimatePresence>
       {visible && (
@@ -20,7 +23,7 @@ const HeaderSidebar = ({ visible, close }: HeaderSidebarProps) => {
           onClick={() => close()}
         >
           <motion.aside
-            className='flex h-fit w-52 flex-col items-center gap-4 rounded-b-2xl bg-white p-4 pb-16 text-xl text-slate-800'
+            className='flex h-fit w-52 flex-col items-center gap-0 rounded-b-2xl bg-white p-4 pb-16 text-xl text-slate-800'
             initial={{ y: '-100%' }}
             animate={{ y: '0%' }}
             exit={{ y: '-100%' }}
@@ -34,7 +37,7 @@ const HeaderSidebar = ({ visible, close }: HeaderSidebarProps) => {
             <motion.div
               className='w-full'
               initial={{ y: '1rem', opacity: 0 }}
-              animate={{ z: '0rem', opacity: 1 }}
+              animate={{ y: '0rem', opacity: 1 }}
               transition={{ delay: 0.2, bounce: false }}
             >
               <Link
@@ -61,31 +64,34 @@ const HeaderSidebar = ({ visible, close }: HeaderSidebarProps) => {
                 <span>로비</span>
               </Link>
             </motion.div>
-            <motion.div
-              className='w-full'
-              initial={{ y: '1rem', opacity: 0 }}
-              animate={{ y: '0rem', opacity: 1 }}
-              transition={{ delay: 0.4, bounce: false }}
-            >
-              <Link
-                className='flex w-full flex-row items-center gap-2 p-3 hover:bg-slate-100'
-                href='/signin'
-                onClick={() => close()}
+            {nickname === '' ? (
+              <motion.div
+                className='w-full'
+                initial={{ y: '1rem', opacity: 0 }}
+                animate={{ y: '0rem', opacity: 1 }}
+                transition={{ delay: 0.4, bounce: false }}
               >
-                <MdLogin />
-                <span>로그인</span>
-              </Link>
-            </motion.div>
-            <motion.button
-              className='flex w-full flex-row items-center gap-2 p-3 hover:bg-slate-100'
-              initial={{ y: '1rem', opacity: 0 }}
-              animate={{ y: '0rem', opacity: 1 }}
-              transition={{ delay: 0.5, bounce: false }}
-              onClick={() => close()}
-            >
-              <MdLogout />
-              <span>로그아웃</span>
-            </motion.button>
+                <Link
+                  className='flex w-full flex-row items-center gap-2 p-3 hover:bg-slate-100'
+                  href='/signin'
+                  onClick={() => close()}
+                >
+                  <MdLogin />
+                  <span>로그인</span>
+                </Link>
+              </motion.div>
+            ) : (
+              <motion.button
+                className='flex w-full flex-row items-center gap-2 p-3 hover:bg-slate-100'
+                initial={{ y: '1rem', opacity: 0 }}
+                animate={{ y: '0rem', opacity: 1 }}
+                transition={{ delay: 0.4, bounce: false }}
+                onClick={handleSignout}
+              >
+                <MdLogout />
+                <span>로그아웃</span>
+              </motion.button>
+            )}
           </motion.aside>
         </div>
       )}

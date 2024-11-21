@@ -17,6 +17,7 @@ type State = {
 
 type Action =
   | { type: 'PARTICIPATE'; payload: { participantList: string[] } }
+  | { type: 'LEAVE'; payload: { nickname: string } }
   | { type: 'START_GAME'; payload: { publisher: Publisher } }
   | { type: 'SUBSCRIBE'; payload: { subscriber: Subscriber } }
   | { type: 'UNSUBSCRIBE'; payload: { nickname: string } }
@@ -44,6 +45,15 @@ const reducer = (state: State, action: Action): State => {
           votes: 0,
           isCandidate: false,
         })),
+      };
+
+    case 'LEAVE':
+      return {
+        ...state,
+        gameSubscribers: state.gameSubscribers.filter(
+          (gameSubscriber) =>
+            gameSubscriber.nickname !== action.payload.nickname,
+        ),
       };
 
     case 'START_GAME':
@@ -282,6 +292,11 @@ export const useOpenVidu = () => {
           ),
         },
       });
+    });
+
+    // 다른 플레이어가 방을 나간 경우
+    socket?.on('leave-user-nickname', (nickname: string) => {
+      dispatch({ type: 'LEAVE', payload: { nickname } });
     });
 
     (async () => {
