@@ -13,22 +13,28 @@ export class MafiaCountdownTimer implements CountdownTimer {
   private readonly pauses = new Map<GameRoom, boolean>();
 
   async start(room: GameRoom, situation: string): Promise<any> {
+    console.log(1);
     if (this.stopSignals.has(room)) {
       throw new DuplicateTimerException();
     }
-
+    console.log(2);
     this.stopSignals.set(room, new Subject());
+    console.log(3);
     this.pauses.set(room, false);
-
+    console.log(4);
     let timeLeft: number = TIMEOUT_SITUATION[situation];
+    console.log(5);
     const currentSignal = this.stopSignals.get(room);
+    console.log(6);
     let paused = this.pauses.get(room);
+    console.log(7);
     return new Promise<void>((resolve) => {
       interval(1000).pipe(
         takeUntil(currentSignal),
         takeWhile(() => timeLeft > 0 && !paused),
       ).subscribe({
         next: () => {
+          console.log(8);
           paused = this.pauses.get(room);
           room.sendAll('countdown', {
             situation: situation,
