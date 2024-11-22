@@ -35,9 +35,11 @@ export class SetUpState extends GameState {
   async handle(context: GameContext, next: TransitionHandler) {
     const room = context.room;
     room.status = GameRoomStatus.RUNNING;
+    console.log('aaa');
     await this.startVideo(room);
+    console.log('bbb');
     await this.allocateUserRole(room);
-    console.log(12345);
+    console.log('ccc');
     await this.countdownTimeoutUsecase.countdownStart(
       new StartCountdownRequest(room, 'INTERMISSION'),
     );

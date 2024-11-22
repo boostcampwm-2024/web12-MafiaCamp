@@ -61,7 +61,9 @@ export class TotalGameManager
     gameRoom: GameRoom,
     players: Map<GameClient, MAFIA_ROLE>,
   ): Promise<void> {
+    console.log('gggg');
     await this.games.withKeyLock(gameRoom.roomId, async () => {
+      console.log('zzzz');
       if (await this.games.has(gameRoom.roomId)) {
         return;
       }
