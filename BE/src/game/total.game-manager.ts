@@ -61,9 +61,7 @@ export class TotalGameManager
     gameRoom: GameRoom,
     players: Map<GameClient, MAFIA_ROLE>,
   ): Promise<void> {
-    console.log('gggg');
-    await this.games.withKeyLock(gameRoom.roomId, async () => {
-      console.log('zzzz');
+    return await this.games.withKeyLock(gameRoom.roomId, async () => {
       if (await this.games.has(gameRoom.roomId)) {
         return;
       }
@@ -103,7 +101,7 @@ export class TotalGameManager
   }
 
   async registerBallotBox(gameRoom: GameRoom): Promise<void> {
-    await this.games.withKeyLock(gameRoom.roomId, async () => {
+    return await this.games.withKeyLock(gameRoom.roomId, async () => {
       const ballotBox = await this.ballotBoxs.get(gameRoom.roomId);
       const candidates: string[] = [];
       if (!ballotBox) {
@@ -140,7 +138,7 @@ export class TotalGameManager
     from: string,
     to: string,
   ): Promise<void> {
-    await this.games.withKeyLock(gameRoom.roomId, async () => {
+    return await this.games.withKeyLock(gameRoom.roomId, async () => {
       await this.checkVoteAuthority(gameRoom, from);
       const ballotBox = await this.ballotBoxs.get(gameRoom.roomId);
       const toVotes = ballotBox.get(to);
@@ -182,7 +180,7 @@ export class TotalGameManager
   }
 
   async vote(gameRoom: GameRoom, from: string, to: string): Promise<void> {
-    await this.games.withKeyLock(gameRoom.roomId, async () => {
+    return await this.games.withKeyLock(gameRoom.roomId, async () => {
       await this.checkVoteAuthority(gameRoom, from);
       const ballotBox = await this.ballotBoxs.get(gameRoom.roomId);
       const toVotes = ballotBox.get(to);
@@ -307,7 +305,7 @@ export class TotalGameManager
     let criminalFlag = false;
     let criminalJob: MAFIA_ROLE;
 
-    await this.games.withKeyLock(gameRoom.roomId, async () => {
+    return await this.games.withKeyLock(gameRoom.roomId, async () => {
       const userInfos = await this.games.get(gameRoom.roomId);
       userInfos.forEach((playerInfo, client) => {
         if (
@@ -343,7 +341,7 @@ export class TotalGameManager
     from: string,
     killTarget: string,
   ): Promise<void> {
-    await this.games.withKeyLock(gameRoom.roomId, async () => {
+    return await this.games.withKeyLock(gameRoom.roomId, async () => {
       const gameInfo = await this.games.get(gameRoom.roomId);
       if (!gameInfo) {
         throw new NotFoundGameRoomException();
@@ -383,7 +381,7 @@ export class TotalGameManager
   }
 
   async initMafia(gameRoom: GameRoom): Promise<void> {
-    await this.games.withKeyLock(gameRoom.roomId, async () => {
+    return await this.games.withKeyLock(gameRoom.roomId, async () => {
       await Promise.all([
         this.mafiaCurrentTarget.set(gameRoom.roomId, 'NO_SELECTION'),
         this.mafiaSelectLogs.set(gameRoom.roomId, []),
@@ -392,7 +390,7 @@ export class TotalGameManager
   }
 
   async decisionMafiaTarget(gameRoom: GameRoom): Promise<void> {
-    await this.games.withKeyLock(gameRoom.roomId, async () => {
+    return await this.games.withKeyLock(gameRoom.roomId, async () => {
       const [selectLog, finalTarget] = await Promise.all([
         this.mafiaSelectLogs.get(gameRoom.roomId),
         this.mafiaCurrentTarget.get(gameRoom.roomId),
@@ -437,7 +435,7 @@ export class TotalGameManager
     from: string,
     saveTarget: string,
   ): Promise<void> {
-    await this.games.withKeyLock(gameRoom.roomId, async () => {
+    return await this.games.withKeyLock(gameRoom.roomId, async () => {
       const gameInfo = await this.games.get(gameRoom.roomId);
       if (!gameInfo) {
         throw new NotFoundGameRoomException();
@@ -467,7 +465,7 @@ export class TotalGameManager
     gameRoom: GameRoom,
     saveTarget: string,
   ): Promise<void> {
-    await this.games.withKeyLock(gameRoom.roomId, async () => {
+    return await this.games.withKeyLock(gameRoom.roomId, async () => {
       const mafiaSelectLog = await this.mafiaSelectLogs.get(gameRoom.roomId);
 
       if (!mafiaSelectLog || mafiaSelectLog.length === 0) {
@@ -485,7 +483,7 @@ export class TotalGameManager
   }
 
   async determineKillTarget(gameRoom: GameRoom): Promise<void> {
-    await this.games.withKeyLock(gameRoom.roomId, async () => {
+    return await this.games.withKeyLock(gameRoom.roomId, async () => {
       const mafiaSelectLog = await this.mafiaSelectLogs.get(gameRoom.roomId);
       if (
         !mafiaSelectLog ||
@@ -541,7 +539,7 @@ export class TotalGameManager
   }
 
   async finishGame(gameRoom: GameRoom): Promise<void> {
-    await this.games.withKeyLock(gameRoom.roomId, async () => {
+    return await this.games.withKeyLock(gameRoom.roomId, async () => {
       await this.sendResultToClient(gameRoom);
       await this.saveGameResult(gameRoom);
     });
