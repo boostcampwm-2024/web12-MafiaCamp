@@ -37,14 +37,12 @@ interface MafiaSelectLogEntry {
 
 @Injectable()
 export class TotalGameManager
-  implements
-    VoteManager,
+  implements VoteManager,
     PoliceManager,
     MafiaManager,
     DoctorManager,
     KillDecisionManager,
-    FinishGameManager
-{
+    FinishGameManager {
   private readonly games = new MutexMap<string, Map<string, PlayerInfo>>();
   private readonly ballotBoxs = new MutexMap<string, Map<string, string[]>>();
   private readonly mafiaCurrentTarget = new MutexMap<string, string>();
@@ -63,7 +61,11 @@ export class TotalGameManager
     gameRoom: GameRoom,
     players: Map<GameClient, MAFIA_ROLE>,
   ): Promise<void> {
-    if (!(await this.games.get(gameRoom.roomId))) {
+    await this.games.withKeyLock(gameRoom.roomId, async () => {
+      if (await this.games.has(gameRoom.roomId)) {
+        return;
+      }
+
       const gameInfo = new Map<string, PlayerInfo>();
       players.forEach((role, client) => {
         gameInfo.set(client.nickname, { role, status: USER_STATUS.ALIVE });
@@ -73,7 +75,7 @@ export class TotalGameManager
         }
       });
       await this.games.set(gameRoom.roomId, gameInfo);
-    }
+    });
   }
 
   private async killUser(
@@ -99,31 +101,33 @@ export class TotalGameManager
   }
 
   async registerBallotBox(gameRoom: GameRoom): Promise<void> {
-    const ballotBox = await this.ballotBoxs.get(gameRoom.roomId);
-    const candidates: string[] = [];
-    if (!ballotBox) {
-      const gameInfo = await this.games.get(gameRoom.roomId);
-      if (!gameInfo) {
-        throw new NotFoundGameRoomException();
-      }
-      const newBallotBox = new Map<string, string[]>();
-      gameInfo.forEach((playerInfo, client) => {
-        if (playerInfo.status === USER_STATUS.ALIVE) {
-          newBallotBox.set(client, []);
-          candidates.push(client);
+    await this.games.withKeyLock(gameRoom.roomId, async () => {
+      const ballotBox = await this.ballotBoxs.get(gameRoom.roomId);
+      const candidates: string[] = [];
+      if (!ballotBox) {
+        const gameInfo = await this.games.get(gameRoom.roomId);
+        if (!gameInfo) {
+          throw new NotFoundGameRoomException();
         }
-      });
-      // 무효표 추가
-      candidates.push('INVALIDITY');
-      newBallotBox.set('INVALIDITY', []);
-      await this.ballotBoxs.set(gameRoom.roomId, newBallotBox);
-    } else {
-      ballotBox.forEach((votedUsers, client) => {
-        candidates.push(client);
-      });
-    }
+        const newBallotBox = new Map<string, string[]>();
+        gameInfo.forEach((playerInfo, client) => {
+          if (playerInfo.status === USER_STATUS.ALIVE) {
+            newBallotBox.set(client, []);
+            candidates.push(client);
+          }
+        });
+        // 무효표 추가
+        candidates.push('INVALIDITY');
+        newBallotBox.set('INVALIDITY', []);
+        await this.ballotBoxs.set(gameRoom.roomId, newBallotBox);
+      } else {
+        ballotBox.forEach((votedUsers, client) => {
+          candidates.push(client);
+        });
+      }
 
-    gameRoom.sendAll('send-vote-candidates', candidates);
+      gameRoom.sendAll('send-vote-candidates', candidates);
+    });
   }
 
   /*
@@ -134,17 +138,19 @@ export class TotalGameManager
     from: string,
     to: string,
   ): Promise<void> {
-    await this.checkVoteAuthority(gameRoom, from);
-    const ballotBox = await this.ballotBoxs.get(gameRoom.roomId);
-    const toVotes = ballotBox.get(to);
-    const voteFlag = this.checkVote(ballotBox, from);
-    if (voteFlag) {
-      ballotBox.set(
-        to,
-        toVotes.filter((voteId) => voteId !== from),
-      );
-    }
-    this.sendVoteCurrentState(ballotBox, gameRoom);
+    await this.games.withKeyLock(gameRoom.roomId, async () => {
+      await this.checkVoteAuthority(gameRoom, from);
+      const ballotBox = await this.ballotBoxs.get(gameRoom.roomId);
+      const toVotes = ballotBox.get(to);
+      const voteFlag = this.checkVote(ballotBox, from);
+      if (voteFlag) {
+        ballotBox.set(
+          to,
+          toVotes.filter((voteId) => voteId !== from),
+        );
+      }
+      this.sendVoteCurrentState(ballotBox, gameRoom);
+    });
   }
 
   private sendVoteCurrentState(
@@ -173,19 +179,18 @@ export class TotalGameManager
     }
   }
 
-  /*
-      무효표인 경우 to에 INVALIDITY로 보내면 됩니다.
-     */
   async vote(gameRoom: GameRoom, from: string, to: string): Promise<void> {
-    await this.checkVoteAuthority(gameRoom, from);
-    const ballotBox = await this.ballotBoxs.get(gameRoom.roomId);
-    const toVotes = ballotBox.get(to);
-    const voteFlag = this.checkVote(ballotBox, from);
-    if (!voteFlag) {
-      toVotes.push(from);
-      ballotBox.set(to, toVotes);
-    }
-    this.sendVoteCurrentState(ballotBox, gameRoom);
+    await this.games.withKeyLock(gameRoom.roomId, async () => {
+      await this.checkVoteAuthority(gameRoom, from);
+      const ballotBox = await this.ballotBoxs.get(gameRoom.roomId);
+      const toVotes = ballotBox.get(to);
+      const voteFlag = this.checkVote(ballotBox, from);
+      if (!voteFlag) {
+        toVotes.push(from);
+        ballotBox.set(to, toVotes);
+      }
+      this.sendVoteCurrentState(ballotBox, gameRoom);
+    });
   }
 
   private checkVote(
@@ -202,35 +207,37 @@ export class TotalGameManager
   }
 
   async primaryVoteResult(gameRoom: GameRoom): Promise<VOTE_STATE> {
-    const ballotBox = await this.ballotBoxs.get(gameRoom.roomId);
-    if (!ballotBox) {
-      throw new NotFoundBallotBoxException();
-    }
-    await this.voteForYourself(ballotBox);
+    return await this.games.withKeyLock(gameRoom.roomId, async () => {
+      const ballotBox = await this.ballotBoxs.get(gameRoom.roomId);
+      if (!ballotBox) {
+        throw new NotFoundBallotBoxException();
+      }
+      await this.voteForYourself(ballotBox);
 
-    const newBalletBox = new Map<string, string[]>();
-    const maxVotedUsers = this.findMostVotedUser(ballotBox);
+      const newBalletBox = new Map<string, string[]>();
+      const maxVotedUsers = this.findMostVotedUser(ballotBox);
 
-    if (
-      (maxVotedUsers.length === 1 && maxVotedUsers[0] !== 'INVALIDITY') ||
-      maxVotedUsers.length > 1
-    ) {
-      /*
-      투표결과가 1등이 있는 경우 혹은 공동이 있는 경우
-       */
-      maxVotedUsers.forEach((votedUser) => {
-        if (votedUser !== 'INVALIDITY') {
-          newBalletBox.set(votedUser, []);
-        }
-      });
-      newBalletBox.set('INVALIDITY', []);
-      await this.ballotBoxs.set(gameRoom.roomId, newBalletBox);
+      if (
+        (maxVotedUsers.length === 1 && maxVotedUsers[0] !== 'INVALIDITY') ||
+        maxVotedUsers.length > 1
+      ) {
+        /*
+        투표결과가 1등이 있는 경우 혹은 공동이 있는 경우
+         */
+        maxVotedUsers.forEach((votedUser) => {
+          if (votedUser !== 'INVALIDITY') {
+            newBalletBox.set(votedUser, []);
+          }
+        });
+        newBalletBox.set('INVALIDITY', []);
+        await this.ballotBoxs.set(gameRoom.roomId, newBalletBox);
+        gameRoom.sendAll('primary-vote-result', maxVotedUsers);
+        return VOTE_STATE.PRIMARY;
+      }
       gameRoom.sendAll('primary-vote-result', maxVotedUsers);
-      return VOTE_STATE.PRIMARY;
-    }
-    gameRoom.sendAll('primary-vote-result', maxVotedUsers);
-    await this.ballotBoxs.delete(gameRoom.roomId);
-    return VOTE_STATE.INVALIDITY;
+      await this.ballotBoxs.delete(gameRoom.roomId);
+      return VOTE_STATE.INVALIDITY;
+    });
   }
 
   private findMostVotedUser(ballotBox: Map<string, string[]>): string[] {
@@ -256,33 +263,37 @@ export class TotalGameManager
   }
 
   async finalVoteResult(gameRoom: GameRoom): Promise<VOTE_STATE> {
-    const ballotBox = await this.ballotBoxs.get(gameRoom.roomId);
-    if (!ballotBox) {
-      throw new NotFoundBallotBoxException();
-    }
-    const mostVotedUser = this.findMostVotedUser(ballotBox);
+    return await this.games.withKeyLock(gameRoom.roomId, async () => {
+      const ballotBox = await this.ballotBoxs.get(gameRoom.roomId);
+      if (!ballotBox) {
+        throw new NotFoundBallotBoxException();
+      }
+      const mostVotedUser = this.findMostVotedUser(ballotBox);
 
-    await this.ballotBoxs.delete(gameRoom.roomId);
+      await this.ballotBoxs.delete(gameRoom.roomId);
 
-    if (mostVotedUser.length === 1 && mostVotedUser[0] !== 'INVALIDITY') {
-      await this.killUser(gameRoom, mostVotedUser[0]);
-    } else {
-      gameRoom.sendAll('vote-kill-user', null);
-    }
-    return VOTE_STATE.FINAL;
+      if (mostVotedUser.length === 1 && mostVotedUser[0] !== 'INVALIDITY') {
+        await this.killUser(gameRoom, mostVotedUser[0]);
+      } else {
+        gameRoom.sendAll('vote-kill-user', null);
+      }
+      return VOTE_STATE.FINAL;
+    });
   }
 
   async isPoliceAlive(gameRoom: GameRoom): Promise<boolean> {
-    const gameInfo = await this.games.get(gameRoom.roomId);
-    if (!gameInfo) {
-      throw new NotFoundGameRoomException();
-    }
+    return await this.games.withKeyLock(gameRoom.roomId, async () => {
+      const gameInfo = await this.games.get(gameRoom.roomId);
+      if (!gameInfo) {
+        throw new NotFoundGameRoomException();
+      }
 
-    return Array.from(gameInfo.values()).some(
-      (playerInfo) =>
-        playerInfo.role === MAFIA_ROLE.POLICE &&
-        playerInfo.status === USER_STATUS.ALIVE,
-    );
+      return Array.from(gameInfo.values()).some(
+        (playerInfo) =>
+          playerInfo.role === MAFIA_ROLE.POLICE &&
+          playerInfo.status === USER_STATUS.ALIVE,
+      );
+    });
   }
 
   async executePolice(
@@ -294,33 +305,35 @@ export class TotalGameManager
     let criminalFlag = false;
     let criminalJob: MAFIA_ROLE;
 
-    const userInfos = await this.games.get(gameRoom.roomId);
-    userInfos.forEach((playerInfo, client) => {
-      if (
-        police === client &&
-        playerInfo.role === MAFIA_ROLE.POLICE &&
-        playerInfo.status === USER_STATUS.ALIVE
-      ) {
-        policeFlag = true;
-      } else if (
-        criminal === client &&
-        playerInfo.status === USER_STATUS.ALIVE
-      ) {
-        criminalFlag = true;
-        criminalJob = playerInfo.role;
+    await this.games.withKeyLock(gameRoom.roomId, async () => {
+      const userInfos = await this.games.get(gameRoom.roomId);
+      userInfos.forEach((playerInfo, client) => {
+        if (
+          police === client &&
+          playerInfo.role === MAFIA_ROLE.POLICE &&
+          playerInfo.status === USER_STATUS.ALIVE
+        ) {
+          policeFlag = true;
+        } else if (
+          criminal === client &&
+          playerInfo.status === USER_STATUS.ALIVE
+        ) {
+          criminalFlag = true;
+          criminalJob = playerInfo.role;
+        }
+      });
+      if (policeFlag && criminalFlag) {
+        const policeClient = gameRoom.clients.find(
+          (client) => client.nickname === police,
+        );
+        if (policeClient) {
+          policeClient.send('police-investigation-result', {
+            criminal,
+            criminalJob,
+          });
+        }
       }
     });
-    if (policeFlag && criminalFlag) {
-      const policeClient = gameRoom.clients.find(
-        (client) => client.nickname === police,
-      );
-      if (policeClient) {
-        policeClient.send('police-investigation-result', {
-          criminal,
-          criminalJob,
-        });
-      }
-    }
   }
 
   async selectMafiaTarget(
@@ -328,34 +341,36 @@ export class TotalGameManager
     from: string,
     killTarget: string,
   ): Promise<void> {
-    const gameInfo = await this.games.get(gameRoom.roomId);
-    if (!gameInfo) {
-      throw new NotFoundGameRoomException();
-    }
-    const targetInfo = gameInfo.get(killTarget);
-    const fromClientInfo = gameInfo.get(from);
+    await this.games.withKeyLock(gameRoom.roomId, async () => {
+      const gameInfo = await this.games.get(gameRoom.roomId);
+      if (!gameInfo) {
+        throw new NotFoundGameRoomException();
+      }
+      const targetInfo = gameInfo.get(killTarget);
+      const fromClientInfo = gameInfo.get(from);
 
-    if (!targetInfo || !fromClientInfo) {
-      throw new NotFoundUserException();
-    }
+      if (!targetInfo || !fromClientInfo) {
+        throw new NotFoundUserException();
+      }
 
-    if (targetInfo.status !== USER_STATUS.ALIVE) {
-      throw new CanNotSelectUserException();
-    }
+      if (targetInfo.status !== USER_STATUS.ALIVE) {
+        throw new CanNotSelectUserException();
+      }
 
-    if (targetInfo.role === MAFIA_ROLE.MAFIA) {
-      throw new CanNotSelectUserException('마피아는 선택할 수 없습니다.');
-    }
+      if (targetInfo.role === MAFIA_ROLE.MAFIA) {
+        throw new CanNotSelectUserException('마피아는 선택할 수 없습니다.');
+      }
 
-    if (
-      fromClientInfo.status !== USER_STATUS.ALIVE ||
-      fromClientInfo.role !== MAFIA_ROLE.MAFIA
-    ) {
-      throw new UnauthorizedSelectException();
-    }
+      if (
+        fromClientInfo.status !== USER_STATUS.ALIVE ||
+        fromClientInfo.role !== MAFIA_ROLE.MAFIA
+      ) {
+        throw new UnauthorizedSelectException();
+      }
 
-    await this.mafiaCurrentTarget.set(gameRoom.roomId, killTarget);
-    await this.sendCurrentMafiaTarget(killTarget, gameRoom);
+      await this.mafiaCurrentTarget.set(gameRoom.roomId, killTarget);
+      await this.sendCurrentMafiaTarget(killTarget, gameRoom);
+    });
   }
 
   async sendCurrentMafiaTarget(
@@ -366,47 +381,53 @@ export class TotalGameManager
   }
 
   async initMafia(gameRoom: GameRoom): Promise<void> {
-    await Promise.all([
-      this.mafiaCurrentTarget.set(gameRoom.roomId, 'NO_SELECTION'),
-      this.mafiaSelectLogs.set(gameRoom.roomId, []),
-    ]);
+    await this.games.withKeyLock(gameRoom.roomId, async () => {
+      await Promise.all([
+        this.mafiaCurrentTarget.set(gameRoom.roomId, 'NO_SELECTION'),
+        this.mafiaSelectLogs.set(gameRoom.roomId, []),
+      ]);
+    });
   }
 
   async decisionMafiaTarget(gameRoom: GameRoom): Promise<void> {
-    const [selectLog, finalTarget] = await Promise.all([
-      this.mafiaSelectLogs.get(gameRoom.roomId),
-      this.mafiaCurrentTarget.get(gameRoom.roomId),
-    ]);
+    await this.games.withKeyLock(gameRoom.roomId, async () => {
+      const [selectLog, finalTarget] = await Promise.all([
+        this.mafiaSelectLogs.get(gameRoom.roomId),
+        this.mafiaCurrentTarget.get(gameRoom.roomId),
+      ]);
 
-    if (!finalTarget) {
-      throw new NotFoundUserException();
-    }
+      if (!finalTarget) {
+        throw new NotFoundUserException();
+      }
 
-    if (!selectLog) {
-      throw new NotFoundMafiaSelectLogException();
-    }
+      if (!selectLog) {
+        throw new NotFoundMafiaSelectLogException();
+      }
 
-    const updateSelectLogs: MafiaSelectLogEntry[] = [
-      ...(selectLog || []),
-      { target: finalTarget, shouldBeKilled: true },
-    ];
+      const updateSelectLogs: MafiaSelectLogEntry[] = [
+        ...(selectLog || []),
+        { target: finalTarget, shouldBeKilled: true },
+      ];
 
-    await Promise.all([
-      this.mafiaSelectLogs.set(gameRoom.roomId, updateSelectLogs),
-      this.mafiaCurrentTarget.delete(gameRoom.roomId),
-    ]);
+      await Promise.all([
+        this.mafiaSelectLogs.set(gameRoom.roomId, updateSelectLogs),
+        this.mafiaCurrentTarget.delete(gameRoom.roomId),
+      ]);
+    });
   }
 
   async isDoctorAlive(gameRoom: GameRoom): Promise<boolean> {
-    const gameInfo = await this.games.get(gameRoom.roomId);
-    if (!gameInfo) {
-      throw new NotFoundGameRoomException();
-    }
-    return Array.from(gameInfo.values()).some(
-      (playerInfo) =>
-        playerInfo.role === MAFIA_ROLE.DOCTOR &&
-        playerInfo.status === USER_STATUS.ALIVE,
-    );
+    return await this.games.withKeyLock(gameRoom.roomId, async () => {
+      const gameInfo = await this.games.get(gameRoom.roomId);
+      if (!gameInfo) {
+        throw new NotFoundGameRoomException();
+      }
+      return Array.from(gameInfo.values()).some(
+        (playerInfo) =>
+          playerInfo.role === MAFIA_ROLE.DOCTOR &&
+          playerInfo.status === USER_STATUS.ALIVE,
+      );
+    });
   }
 
   async selectDoctorTarget(
@@ -414,104 +435,114 @@ export class TotalGameManager
     from: string,
     saveTarget: string,
   ): Promise<void> {
-    const gameInfo = await this.games.get(gameRoom.roomId);
-    if (!gameInfo) {
-      throw new NotFoundGameRoomException();
-    }
-    const targetInfo = gameInfo.get(saveTarget);
-    const fromClientInfo = gameInfo.get(from);
+    await this.games.withKeyLock(gameRoom.roomId, async () => {
+      const gameInfo = await this.games.get(gameRoom.roomId);
+      if (!gameInfo) {
+        throw new NotFoundGameRoomException();
+      }
+      const targetInfo = gameInfo.get(saveTarget);
+      const fromClientInfo = gameInfo.get(from);
 
-    if (!targetInfo || !fromClientInfo) {
-      throw new NotFoundUserException();
-    }
+      if (!targetInfo || !fromClientInfo) {
+        throw new NotFoundUserException();
+      }
 
-    if (targetInfo.status !== USER_STATUS.ALIVE) {
-      throw new CanNotSelectUserException();
-    }
+      if (targetInfo.status !== USER_STATUS.ALIVE) {
+        throw new CanNotSelectUserException();
+      }
 
-    if (
-      fromClientInfo.status !== USER_STATUS.ALIVE ||
-      fromClientInfo.role !== MAFIA_ROLE.DOCTOR
-    ) {
-      throw new UnauthorizedSelectException();
-    }
-    await this.decisionSurvivorByDoctor(gameRoom, saveTarget);
+      if (
+        fromClientInfo.status !== USER_STATUS.ALIVE ||
+        fromClientInfo.role !== MAFIA_ROLE.DOCTOR
+      ) {
+        throw new UnauthorizedSelectException();
+      }
+      await this.decisionSurvivorByDoctor(gameRoom, saveTarget);
+    });
   }
 
   async decisionSurvivorByDoctor(
     gameRoom: GameRoom,
     saveTarget: string,
   ): Promise<void> {
-    const mafiaSelectLog = await this.mafiaSelectLogs.get(gameRoom.roomId);
+    await this.games.withKeyLock(gameRoom.roomId, async () => {
+      const mafiaSelectLog = await this.mafiaSelectLogs.get(gameRoom.roomId);
 
-    if (!mafiaSelectLog || mafiaSelectLog.length === 0) {
-      throw new NotFoundMafiaSelectLogException();
-    }
-
-    if (mafiaSelectLog[mafiaSelectLog.length - 1].target === saveTarget) {
-      const lastLog = mafiaSelectLog[mafiaSelectLog.length - 1];
-      if (lastLog.shouldBeKilled) {
-        lastLog.shouldBeKilled = false;
-        await this.mafiaSelectLogs.set(gameRoom.roomId, mafiaSelectLog);
+      if (!mafiaSelectLog || mafiaSelectLog.length === 0) {
+        throw new NotFoundMafiaSelectLogException();
       }
-    }
+
+      if (mafiaSelectLog[mafiaSelectLog.length - 1].target === saveTarget) {
+        const lastLog = mafiaSelectLog[mafiaSelectLog.length - 1];
+        if (lastLog.shouldBeKilled) {
+          lastLog.shouldBeKilled = false;
+          await this.mafiaSelectLogs.set(gameRoom.roomId, mafiaSelectLog);
+        }
+      }
+    });
   }
 
   async determineKillTarget(gameRoom: GameRoom): Promise<void> {
-    const mafiaSelectLog = await this.mafiaSelectLogs.get(gameRoom.roomId);
-    if (
-      !mafiaSelectLog ||
-      mafiaSelectLog.length === 0
-    ) {
-      throw new NotFoundMafiaSelectLogException();
-    }
+    await this.games.withKeyLock(gameRoom.roomId, async () => {
+      const mafiaSelectLog = await this.mafiaSelectLogs.get(gameRoom.roomId);
+      if (
+        !mafiaSelectLog ||
+        mafiaSelectLog.length === 0
+      ) {
+        throw new NotFoundMafiaSelectLogException();
+      }
 
-    const lastLog = mafiaSelectLog[mafiaSelectLog.length - 1];
-    if (
-      !lastLog ||
-      !lastLog.target
-    ) {
-      throw new NotFoundMafiaSelectLogException();
-    }
+      const lastLog = mafiaSelectLog[mafiaSelectLog.length - 1];
+      if (
+        !lastLog ||
+        !lastLog.target
+      ) {
+        throw new NotFoundMafiaSelectLogException();
+      }
 
-    if (!lastLog.shouldBeKilled || lastLog.target === 'NO_SELECTION') {
-      return gameRoom.sendAll('mafia-kill-result', null);
-      
-    }
+      if (!lastLog.shouldBeKilled || lastLog.target === 'NO_SELECTION') {
+        return gameRoom.sendAll('mafia-kill-result', null);
 
-    await this.killUser(gameRoom, lastLog.target, KILL_OPTION.MAFIA_KILL);
+      }
+
+      await this.killUser(gameRoom, lastLog.target, KILL_OPTION.MAFIA_KILL);
+    });
   }
 
   async checkFinishCondition(gameRoom: GameRoom): Promise<GAME_HISTORY_RESULT> {
-    const gameInfo = await this.games.get(gameRoom.roomId);
-    if (!gameInfo) {
-      throw new NotFoundGameRoomException();
-    }
-    let mafiaCount = 0;
-    let citienCount = 0;
-    gameInfo.forEach((playerInfo) => {
-      if (playerInfo.status === USER_STATUS.DEAD) {
-        return;
+    return await this.games.withKeyLock(gameRoom.roomId, async () => {
+      const gameInfo = await this.games.get(gameRoom.roomId);
+      if (!gameInfo) {
+        throw new NotFoundGameRoomException();
       }
-      if (playerInfo.role === MAFIA_ROLE.MAFIA) {
-        mafiaCount++;
-      } else {
-        citienCount++;
+      let mafiaCount = 0;
+      let citizenCount = 0;
+      gameInfo.forEach((playerInfo) => {
+        if (playerInfo.status === USER_STATUS.DEAD) {
+          return;
+        }
+        if (playerInfo.role === MAFIA_ROLE.MAFIA) {
+          mafiaCount++;
+        } else {
+          citizenCount++;
+        }
+      });
+
+      if (mafiaCount === 0) {
+        return GAME_HISTORY_RESULT.CITIZEN;
       }
+      if (mafiaCount >= citizenCount) {
+        return GAME_HISTORY_RESULT.MAFIA;
+      }
+      return null;
     });
-    
-    if (mafiaCount === 0) {
-      return GAME_HISTORY_RESULT.CITIZEN;
-    }
-    if (mafiaCount >= citienCount) {
-      return GAME_HISTORY_RESULT.MAFIA;
-    }
-    return null;
   }
 
   async finishGame(gameRoom: GameRoom): Promise<void> {
-    await this.sendResultToClient(gameRoom);
-    await this.saveGameResult(gameRoom);
+    await this.games.withKeyLock(gameRoom.roomId, async () => {
+      await this.sendResultToClient(gameRoom);
+      await this.saveGameResult(gameRoom);
+    });
   }
 
   private async sendResultToClient(gameRoom: GameRoom) {
@@ -523,7 +554,7 @@ export class TotalGameManager
     for (const entry of gameInfo.entries()) {
       playerInfo.push({
         nickname: entry[0],
-        ...entry[1]
+        ...entry[1],
       });
     }
     const result = gameRoom.result;
@@ -532,7 +563,7 @@ export class TotalGameManager
       const winOrLose = result === GAME_HISTORY_RESULT.MAFIA ? c.job === MAFIA_ROLE.MAFIA : c.job !== MAFIA_ROLE.MAFIA;
       c.send('game-result', {
         result: winOrLose ? GAME_USER_RESULT.WIN : GAME_USER_RESULT.LOSE,
-        playerInfo
+        playerInfo,
       });
     });
   }
@@ -542,6 +573,6 @@ export class TotalGameManager
     const endTime = new Date();
     const gameHistoryResult = gameRoom.result;
     const gameStatus = GAME_STATUS.END;
-    this.gameHistoryRepository.saveGameResult(gameId, { endTime, gameHistoryResult, gameStatus }); // 게임 상태 업데이트
+    await this.gameHistoryRepository.saveGameResult(gameId, { endTime, gameHistoryResult, gameStatus }); // 게임 상태 업데이트
   }
 }
