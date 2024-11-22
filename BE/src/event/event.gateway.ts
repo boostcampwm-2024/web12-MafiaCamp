@@ -162,7 +162,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
         data: { success: false },
       };
     }
-    this.startGameUsecase.start(room);
+    await this.startGameUsecase.start(room);
   }
 
   @SubscribeMessage('vote-candidate')

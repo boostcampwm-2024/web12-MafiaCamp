@@ -11,9 +11,9 @@ export class StartGameService implements StartGameUsecase {
   ) {
   }
 
-  start(room: GameRoom): void {
+  async start(room: GameRoom): Promise<void> {
     const context = new GameContext(room);
     context.setState(this.setUpState);
-    context.run();
+    await context.run();
   }
 }
