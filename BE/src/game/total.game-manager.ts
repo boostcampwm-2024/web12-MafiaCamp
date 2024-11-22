@@ -61,8 +61,8 @@ export class TotalGameManager
     gameRoom: GameRoom,
     players: Map<GameClient, MAFIA_ROLE>,
   ): Promise<void> {
-    return await this.games.withKeyLock(gameRoom.roomId, async () => {
-      if (await this.games.has(gameRoom.roomId)) {
+    return await this.games.withKeyLock(gameRoom.roomId, async (map) => {
+      if (map.has(gameRoom.roomId)) {
         return;
       }
 
@@ -74,7 +74,7 @@ export class TotalGameManager
           gameRoom.addMafia(client);
         }
       });
-      await this.games.set(gameRoom.roomId, gameInfo);
+      map.set(gameRoom.roomId, gameInfo);
     });
   }
 

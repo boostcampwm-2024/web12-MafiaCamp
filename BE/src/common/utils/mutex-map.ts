@@ -14,11 +14,11 @@ export class MutexMap<K, V> {
     return lock;
   }
 
-  async withKeyLock<T>(key: K, callback: () => Promise<T>): Promise<T> {
+  async withKeyLock<T>(key: K, callback: (map: Map<K, V>) => Promise<T>): Promise<T> {
     const lock = this.getLock(key);
     const release = await lock.acquire();
     try {
-      return await callback();
+      return await callback(this._map);
     } finally {
       release();
     }
