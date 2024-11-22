@@ -32,12 +32,12 @@ export class LockManager<K> {
     }
   }
 
-  async releaseKey(key: K): Promise<void> {
+  releaseKey(key: K): void {
     this.locks.delete(key);
   }
 
   async clear(): Promise<void> {
-    return this.withGlobalLock(async () => {
+    return await this.withGlobalLock(async () => {
       this.locks.clear();
     });
   }
