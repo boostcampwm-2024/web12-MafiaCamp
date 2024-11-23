@@ -30,7 +30,10 @@ const Header = () => {
 
   useEffect(() => {
     (async () => {
-      const response = await fetch('/api/user/info', { method: 'GET' });
+      const response = await fetch('/api/user/info', {
+        method: 'GET',
+        cache: 'no-store',
+      });
 
       if (!response.ok) {
         return;
@@ -46,7 +49,10 @@ const Header = () => {
     };
   }, [setState]);
 
-  if (pathname.startsWith('/game')) {
+  if (
+    pathname.startsWith('/game') ||
+    pathname.startsWith('/login/kakao/callback')
+  ) {
     return null;
   }
 

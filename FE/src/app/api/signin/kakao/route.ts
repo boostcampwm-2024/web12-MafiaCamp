@@ -1,15 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const response = await fetch(`${process.env.BACKEND_API_URL}/login/admin`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
+export async function GET(request: NextRequest) {
+  const code = request.nextUrl.searchParams.get('code');
+
+  if (!code) {
+    return new NextResponse('Bad Request', { status: 400 });
+  }
+
+  const response = await fetch(
+    `${process.env.BACKEND_API_URL}/login/kakao/callback?code=${code}`,
+    {
+      method: 'GET',
+      cache: 'no-store',
     },
-    body: JSON.stringify(body),
-    cache: 'no-store',
-  });
+  );
 
   // TODO: 수정 필요
   if (!response.ok) {
@@ -18,9 +22,7 @@ export async function POST(request: NextRequest) {
 
   const signInResponse = new NextResponse(
     JSON.stringify(await response.json()),
-    {
-      status: 200,
-    },
+    { status: 200 },
   );
 
   const accessToken = response.headers.get('X-ACCESS-TOKEN');
