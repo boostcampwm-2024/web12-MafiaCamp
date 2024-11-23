@@ -34,10 +34,6 @@ jobs:
       #      - name: Run Tests and Check Coverage
       #        run: npm run test:cov --prefix BE
 
-      # 애플리케이션 빌드
-      - name: Build project
-        run: npm run build --prefix BE
-
       # Docker의 고급 빌드 기능을 사용하기 위한 설정 멀티 아키텍처 플랫폼을(예: amd64, arm64) 지원
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
