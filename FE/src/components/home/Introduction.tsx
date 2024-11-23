@@ -41,7 +41,7 @@ const Introduction = () => {
           transition={{ duration: 0.5 }}
           viewport={{ once: true, amount: 0.5 }}
         >
-          <Lottie animationData={LottieFile} className='bg-transparent' />
+          <Lottie animationData={LottieFile} loop={3} />
         </motion.div>
         <motion.div
           className='text-xl text-white max-[768px]:text-lg max-[540px]:text-base max-[440px]:text-sm'
