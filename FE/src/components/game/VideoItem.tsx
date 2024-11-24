@@ -4,6 +4,7 @@ import VideoCameraIcon from '@/components/common/icons/VideoCameraIcon';
 import VideoCameraSlashIcon from '@/components/common/icons/VideoCameraSlashIcon';
 import { ROLE, Role } from '@/constants/role';
 import { Situation } from '@/constants/situation';
+import { useAuthStore } from '@/stores/authStore';
 import { useSocketStore } from '@/stores/socketStore';
 import { GamePublisher } from '@/types/gamePublisher';
 import { GameSubscriber } from '@/types/gameSubscriber';
@@ -30,7 +31,8 @@ const VideoItem = ({
   setTarget,
 }: VideoItemProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const { nickname, socket } = useSocketStore();
+  const { nickname } = useAuthStore();
+  const { socket } = useSocketStore();
 
   const handleClick = () => {
     if (!situation || !gameParticipant.isCandidate) {

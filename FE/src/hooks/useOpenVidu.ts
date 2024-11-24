@@ -1,3 +1,4 @@
+import { useAuthStore } from '@/stores/authStore';
 import { useSocketStore } from '@/stores/socketStore';
 import { GamePublisher } from '@/types/gamePublisher';
 import { GameSubscriber } from '@/types/gameSubscriber';
@@ -189,7 +190,8 @@ const reducer = (state: State, action: Action): State => {
 };
 
 export const useOpenVidu = () => {
-  const { nickname, socket, session, setState } = useSocketStore();
+  const { nickname } = useAuthStore();
+  const { socket, session, setSocketState: setState } = useSocketStore();
   const [state, dispatch] = useReducer<Reducer<State, Action>>(reducer, {
     isGameStarted: false,
     gamePublisher: {

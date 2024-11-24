@@ -8,14 +8,14 @@ import { useForm } from 'react-hook-form';
 import { toast, ToastContainer } from 'react-toastify';
 import { TOAST_OPTION } from '@/constants/toastOption';
 import { useRouter } from 'next/navigation';
-import { useSocketStore } from '@/stores/socketStore';
 import AdminInput from './AdminInput';
 import { AuthAdmin } from '@/types/authAdmin';
 import { User } from '@/types/user';
+import { useAuthStore } from '@/stores/authStore';
 
 const AdminPanel = () => {
   const router = useRouter();
-  const { setState } = useSocketStore();
+  const { setAuthState } = useAuthStore();
   const [isSignIn, setIsSignIn] = useState(true);
   const [loading, setLoading] = useState(false);
 
@@ -67,7 +67,7 @@ const AdminPanel = () => {
     }
 
     const result: User = await response.json();
-    setState({ nickname: result.nickname });
+    setAuthState({ userId: Number(result.userId), nickname: result.nickname });
     router.replace('/');
   };
 

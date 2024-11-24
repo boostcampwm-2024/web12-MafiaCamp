@@ -2,7 +2,7 @@ import { useSocketStore } from '@/stores/socketStore';
 import { useRouter } from 'next/navigation';
 
 export const useSignout = () => {
-  const { nickname, setState } = useSocketStore();
+  const { nickname, setSocketState: setState } = useSocketStore();
   const router = useRouter();
 
   const handleSignout = async () => {

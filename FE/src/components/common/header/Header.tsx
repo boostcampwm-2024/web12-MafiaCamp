@@ -10,13 +10,13 @@ import { useEffect, useState } from 'react';
 import { MdOutlineMenu } from 'react-icons/md';
 import HeaderSidebar from './HeaderSidebar';
 import { useSignout } from '@/hooks/useSignout';
-import { useSocketStore } from '@/stores/socketStore';
 import { User } from '@/types/user';
 import ProfileModal from './ProfileModal';
+import { useAuthStore } from '@/stores/authStore';
 
 const Header = () => {
+  const { setAuthState } = useAuthStore();
   const { nickname, handleSignout } = useSignout();
-  const { setState } = useSocketStore();
   const [isScrolled, setIsScrolled] = useState(false);
   const [headerSidebarVisible, setHeaderSidebarVisible] = useState(false);
   const [profileModalVisible, setProfileModalVisible] = useState(false);
@@ -42,14 +42,17 @@ const Header = () => {
       }
 
       const result: User = await response.json();
-      setState({ nickname: result.nickname });
+      setAuthState({
+        userId: Number(result.userId),
+        nickname: result.nickname,
+      });
     })();
 
     window.addEventListener('scroll', handleScroll);
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [setState]);
+  }, [setAuthState]);
 
   if (
     pathname.startsWith('/game') ||

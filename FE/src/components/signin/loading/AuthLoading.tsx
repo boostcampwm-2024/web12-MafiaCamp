@@ -2,13 +2,13 @@
 
 import LottieFile from '@/../public/lottie/pulse.json';
 import Lottie from 'lottie-react';
-import { useSocketStore } from '@/stores/socketStore';
 import { User } from '@/types/user';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
+import { useAuthStore } from '@/stores/authStore';
 
 const AuthLoading = () => {
-  const { setState } = useSocketStore();
+  const { setAuthState } = useAuthStore();
   const code = useSearchParams().get('code');
   const router = useRouter();
 
@@ -27,11 +27,14 @@ const AuthLoading = () => {
         }
 
         const result: User = await response.json();
-        setState({ nickname: result.nickname });
+        setAuthState({
+          userId: Number(result.userId),
+          nickname: result.nickname,
+        });
         router.replace('/');
       })();
     }
-  }, [code, router, setState]);
+  }, [code, router, setAuthState]);
 
   return (
     <div className='fixed left-0 top-0 flex h-full w-full items-center justify-center'>

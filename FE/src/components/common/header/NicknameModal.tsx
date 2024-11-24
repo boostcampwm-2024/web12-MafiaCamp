@@ -1,18 +1,18 @@
 'use client';
 
-import { useSocketStore } from '@/stores/socketStore';
 import CloseIcon from '../icons/CloseIcon';
 import { FormEvent } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { NicknameChangeFormSchema } from '@/libs/zod/nicknameChangeFormSchema';
+import { useAuthStore } from '@/stores/authStore';
 
 interface NicknameModalProps {
   closeModal: () => void;
 }
 
 const NicknameModal = ({ closeModal }: NicknameModalProps) => {
-  const { nickname } = useSocketStore();
+  const { nickname } = useAuthStore();
 
   const methods = useForm<{ newNickname: string }>({
     resolver: zodResolver(NicknameChangeFormSchema),
@@ -30,9 +30,19 @@ const NicknameModal = ({ closeModal }: NicknameModalProps) => {
       return;
     }
 
-    // const response = await fetch(
-    //   `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/user/nickname`,
-    // );
+    // const response = await fetch('/api/user/nickname', {
+    //   method: 'PATCH',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify()
+    //   cache: 'no-store',
+    // });
+
+    // if (!response.ok){
+
+    //   return;
+    // }
   };
 
   return (
