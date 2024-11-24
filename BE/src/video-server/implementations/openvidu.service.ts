@@ -57,9 +57,8 @@ export class OpenviduService implements VideoServerUsecase {
           );
         }
       }
-      await session.close();
       this.sessions.delete(roomId);
-      console.log(`Session ${roomId} successfully closed and cleaned up`);
+      console.log(`Session ${roomId} is closed and cleaned up`);
     } catch (error) {
       console.error(`Failed to close session: ${error.message}`);
       throw new OpenviduSessionCloseFailedException();
