@@ -3,13 +3,13 @@
 import 'react-toastify/dist/ReactToastify.css';
 import { useOpenVidu } from '@/hooks/useOpenVidu';
 import Bottombar from './Bottombar';
-import ChattingList from './ChattingList';
-import VideoViewer from './VideoViewer';
+import ChattingList from './chatting/ChattingList';
 import { useEffect, useState } from 'react';
 import { useSocketStore } from '@/stores/socketStore';
 import { ROLE, Role } from '@/constants/role';
 import { Slide, toast, ToastContainer } from 'react-toastify';
 import { Situation, SITUATION_MESSAGE } from '@/constants/situation';
+import VideoViewer from './video/VideoViewer';
 
 interface GameViewerProps {
   roomId: string;
