@@ -16,7 +16,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { FaChevronDown } from 'react-icons/fa';
 
 const Header = () => {
-  const { initialize, setAuthState } = useAuthStore();
+  const { userId, initialize, setAuthState } = useAuthStore();
   const { nickname, handleSignout } = useSignout();
   const [isScrolled, setIsScrolled] = useState(false);
   const [headerSidebarVisible, setHeaderSidebarVisible] = useState(false);
@@ -101,7 +101,9 @@ const Header = () => {
               </Link>
             </li>
             <li>
-              {nickname === '' ? (
+              {userId === '' ? (
+                <div className='h-6 w-12 animate-pulse rounded-lg bg-slate-400' />
+              ) : nickname === '' ? (
                 <Link
                   className={`${pathname === '/signin' ? 'font-semibold text-white' : 'hover:text-white'}`}
                   href='/signin'
