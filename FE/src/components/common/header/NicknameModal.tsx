@@ -9,6 +9,7 @@ import { NicknameChangeFormSchema } from '@/libs/zod/nicknameChangeFormSchema';
 import { useAuthStore } from '@/stores/authStore';
 import { toast, ToastContainer } from 'react-toastify';
 import { TOAST_OPTION } from '@/constants/toastOption';
+import useScrollLock from '@/hooks/useScrollLock';
 
 interface NicknameModalProps {
   closeModal: () => void;
@@ -17,7 +18,6 @@ interface NicknameModalProps {
 const NicknameModal = ({ closeModal }: NicknameModalProps) => {
   const { userId, nickname, setAuthState } = useAuthStore();
   const [loading, setLoading] = useState(false);
-
   const methods = useForm<{ newNickname: string }>({
     resolver: zodResolver(NicknameChangeFormSchema),
     defaultValues: {
@@ -60,6 +60,8 @@ const NicknameModal = ({ closeModal }: NicknameModalProps) => {
     setAuthState({ nickname: methods.getValues('newNickname') });
     closeModal();
   };
+
+  useScrollLock();
 
   return (
     <form

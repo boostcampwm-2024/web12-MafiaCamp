@@ -4,6 +4,7 @@ import { FormEvent } from 'react';
 import CloseIcon from '../common/icons/CloseIcon';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
+import useScrollLock from '@/hooks/useScrollLock';
 
 interface NicknameModalProps {
   setHasNickname: () => void;
@@ -23,6 +24,8 @@ const NicknameModal = ({ setHasNickname }: NicknameModalProps) => {
 
     setHasNickname();
   };
+
+  useScrollLock();
 
   return (
     <form
