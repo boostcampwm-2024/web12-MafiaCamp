@@ -51,7 +51,10 @@ const Bottombar = ({
 
   return (
     <div
-      className={`${isOpen ? 'right-80' : 'right-0'} absolute bottom-0 left-0 flex h-16 flex-row items-center gap-4 text-nowrap bg-slate-600/50 pl-6 text-sm text-slate-200 transition-all duration-500 ease-out`}
+      className={[
+        `${isOpen ? 'right-80' : 'right-0'}`,
+        'absolute bottom-0 left-0 flex h-16 flex-row items-center gap-4 text-nowrap bg-slate-600/50 pl-6 text-sm text-slate-200 transition-all duration-500 ease-out',
+      ].join(' ')}
     >
       {situation !== null && (
         <h1 className='text-lg text-white'>
@@ -70,7 +73,7 @@ const Bottombar = ({
         onTouchEnd={onTouchEnd}
       >
         <div className='flex flex-row items-center gap-4'>
-          {!isGameStarted && (
+          {gamePublisher.isRoomManager && !isGameStarted && (
             <button
               className={[
                 `${totalParticipants !== Number(capacity) ? 'cursor-not-allowed opacity-50' : 'hover:scale-105'}`,

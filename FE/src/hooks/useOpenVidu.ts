@@ -17,7 +17,10 @@ type State = {
 };
 
 type Action =
-  | { type: 'PARTICIPATE'; payload: { participantList: string[] } }
+  | {
+      type: 'PARTICIPATE';
+      payload: { roomManager: string; participantList: string[] };
+    }
   | { type: 'LEAVE'; payload: { nickname: string } }
   | { type: 'START_GAME'; payload: { publisher: Publisher } }
   | { type: 'SUBSCRIBE'; payload: { subscriber: Subscriber } }
@@ -37,6 +40,11 @@ const reducer = (state: State, action: Action): State => {
     case 'PARTICIPATE':
       return {
         ...state,
+        gamePublisher: {
+          ...state.gamePublisher,
+          isRoomManager:
+            state.gamePublisher.nickname === action.payload.roomManager,
+        },
         gameSubscribers: action.payload.participantList.map((participant) => ({
           participant: null,
           nickname: participant,
@@ -197,6 +205,7 @@ export const useOpenVidu = () => {
   const [state, dispatch] = useReducer<Reducer<State, Action>>(reducer, {
     isGameStarted: false,
     gamePublisher: {
+      isRoomManager: false,
       participant: null,
       nickname: nickname,
       role: null,
@@ -297,6 +306,7 @@ export const useOpenVidu = () => {
       dispatch({
         type: 'PARTICIPATE',
         payload: {
+          roomManager: participants[0],
           participantList: participants.filter(
             (participant) => participant !== nickname,
           ),
