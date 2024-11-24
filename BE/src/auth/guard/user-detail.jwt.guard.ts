@@ -15,24 +15,24 @@ export class UserDetailJwtGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const accessToken = this.extractToken(request);
     const payload = this.tokenVerifyUsecase.verify(accessToken);
-    const bodyUserId = request.body?.userId;
-    const paramUserId = request.params?.userId;
-    const queryUserId = request.query?.userId;
+    const bodyUserId = +request.body?.userId;
+    const paramUserId = +request.params?.userId;
+    const queryUserId = +request.query?.userId;
     this.verifyUserId(bodyUserId, payload, paramUserId, queryUserId);
 
     return true;
   }
 
   private verifyUserId(bodyUserId, payload: Record<string, any>, paramUserId, queryUserId) {
-    if (bodyUserId && payload.userId !== bodyUserId) {
+    if (bodyUserId && +payload.userId !== bodyUserId) {
       throw new UnauthorizedUserException();
     }
 
-    if (paramUserId && payload.userId !== paramUserId) {
+    if (paramUserId && +payload.userId !== paramUserId) {
       throw new UnauthorizedUserException();
     }
 
-    if (queryUserId && payload.userId !== queryUserId) {
+    if (queryUserId && +payload.userId !== queryUserId) {
       throw new UnauthorizedUserException();
     }
 
