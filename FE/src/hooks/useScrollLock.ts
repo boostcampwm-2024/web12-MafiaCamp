@@ -15,6 +15,7 @@ const useScrollLock = () => {
     return () => {
       document.body.style.position = '';
       document.body.style.top = '';
+      document.body.style.width = '';
       document.body.style.overflowY = '';
       window.scrollTo({ top: currentY });
     };

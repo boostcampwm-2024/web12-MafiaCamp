@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { MdLogout, MdSettings } from 'react-icons/md';
 import NicknameModal from './NicknameModal';
+import useModalBackHandler from '@/hooks/useModalBackHandler';
 
 interface ProfileModalProps {
   closeModal: () => void;
@@ -12,6 +13,10 @@ interface ProfileModalProps {
 
 const ProfileModal = ({ closeModal, handleSignout }: ProfileModalProps) => {
   const [nicknameModalVisible, setNicknameModalVisible] = useState(false);
+
+  useModalBackHandler(nicknameModalVisible, () =>
+    setNicknameModalVisible(false),
+  );
 
   return (
     <motion.div
@@ -22,6 +27,7 @@ const ProfileModal = ({ closeModal, handleSignout }: ProfileModalProps) => {
       {nicknameModalVisible && (
         <NicknameModal
           closeModal={() => {
+            window.history.back();
             setNicknameModalVisible(false);
             closeModal();
           }}
