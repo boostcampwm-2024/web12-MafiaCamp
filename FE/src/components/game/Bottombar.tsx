@@ -5,6 +5,7 @@ import CloseIcon from '@/components/common/icons/CloseIcon';
 import PlayIcon from '@/components/common/icons/PlayIcon';
 import VideoCameraIcon from '@/components/common/icons/VideoCameraIcon';
 import VideoCameraSlashIcon from '@/components/common/icons/VideoCameraSlashIcon';
+import { GameStatus } from '@/constants/gameStatus';
 import { Situation } from '@/constants/situation';
 import { useDragScroll } from '@/hooks/useDragScroll';
 import { useSidebarStore } from '@/stores/sidebarStore';
@@ -16,7 +17,7 @@ import { FaMicrophone, FaMicrophoneSlash } from 'react-icons/fa';
 
 interface BottombarProps {
   roomId: string;
-  isGameStarted: boolean;
+  gameStatus: GameStatus;
   gamePublisher: GamePublisher;
   totalParticipants: number;
   situation: Situation | null;
@@ -27,7 +28,7 @@ interface BottombarProps {
 
 const Bottombar = ({
   roomId,
-  isGameStarted,
+  gameStatus,
   gamePublisher,
   totalParticipants,
   situation,
@@ -73,7 +74,7 @@ const Bottombar = ({
         onTouchEnd={onTouchEnd}
       >
         <div className='flex flex-row items-center gap-4'>
-          {gamePublisher.isRoomManager && !isGameStarted && (
+          {gamePublisher.isRoomManager && gameStatus === 'READY' && (
             <button
               className={[
                 `${totalParticipants !== Number(capacity) ? 'cursor-not-allowed opacity-50' : 'hover:scale-105'}`,

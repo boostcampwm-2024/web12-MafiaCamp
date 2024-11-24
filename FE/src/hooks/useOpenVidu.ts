@@ -1,3 +1,4 @@
+import { GameStatus } from '@/constants/gameStatus';
 import { useAuthStore } from '@/stores/authStore';
 import { useSocketStore } from '@/stores/socketStore';
 import { GamePublisher } from '@/types/gamePublisher';
@@ -11,7 +12,7 @@ import {
 import { Reducer, useEffect, useReducer } from 'react';
 
 type State = {
-  isGameStarted: boolean;
+  gameStatus: GameStatus;
   gamePublisher: GamePublisher;
   gameSubscribers: GameSubscriber[];
 };
@@ -33,7 +34,8 @@ type Action =
   | { type: 'INITIALIZE_VOTES' }
   | { type: 'SET_All_PARTICIPANTS_AS_CANDIDATES' }
   | { type: 'SET_TARGETS_OF_MAFIA' }
-  | { type: 'SET_TARGETS_OF_POLICE' };
+  | { type: 'SET_TARGETS_OF_POLICE' }
+  | { type: 'FINISH_GAME' };
 
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
@@ -69,7 +71,7 @@ const reducer = (state: State, action: Action): State => {
     case 'START_GAME':
       return {
         ...state,
-        isGameStarted: true,
+        gameStatus: 'RUNNING',
         gamePublisher: {
           ...state.gamePublisher,
           participant: action.payload.publisher,
@@ -194,6 +196,12 @@ const reducer = (state: State, action: Action): State => {
         })),
       };
 
+    case 'FINISH_GAME':
+      return {
+        ...state,
+        gameStatus: 'DONE',
+      };
+
     default:
       throw new Error('Unknown action type');
   }
@@ -203,7 +211,7 @@ export const useOpenVidu = () => {
   const { nickname } = useAuthStore();
   const { socket, session, setSocketState } = useSocketStore();
   const [state, dispatch] = useReducer<Reducer<State, Action>>(reducer, {
-    isGameStarted: false,
+    gameStatus: 'READY',
     gamePublisher: {
       isRoomManager: false,
       participant: null,
@@ -298,6 +306,10 @@ export const useOpenVidu = () => {
         isAlive: false,
       },
     });
+  };
+
+  const finishGame = () => {
+    dispatch({ type: 'FINISH_GAME' });
   };
 
   useEffect(() => {
@@ -445,7 +457,7 @@ export const useOpenVidu = () => {
   }, [session, state.gameSubscribers]);
 
   return {
-    isGameStarted: state.isGameStarted,
+    gameStatus: state.gameStatus,
     gamePublisher: state.gamePublisher,
     gameSubscribers: state.gameSubscribers,
     toggleAudio,
@@ -457,5 +469,6 @@ export const useOpenVidu = () => {
     setTargetsOfMafia,
     setTargetsOfPolice,
     eliminatePublisher,
+    finishGame,
   };
 };

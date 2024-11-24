@@ -20,7 +20,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
 
   const { socket } = useSocketStore();
   const {
-    isGameStarted,
+    gameStatus,
     gamePublisher,
     gameSubscribers,
     toggleAudio,
@@ -32,6 +32,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     setTargetsOfMafia,
     setTargetsOfPolice,
     eliminatePublisher,
+    finishGame,
   } = useOpenVidu();
 
   const [situation, setSituation] = useState<Situation | null>(null);
@@ -250,6 +251,8 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
           status: 'ALIVE' | 'DEAD';
         }[];
       }) => {
+        finishGame();
+
         // TODO: 수정 필요
         if (data.result === 'WIN') {
           notifyInfo('게임에서 승리하였습니다.');
@@ -269,11 +272,13 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       socket?.off('mafia-current-target');
       socket?.off('police-investigation-result');
       socket?.off('mafia-kill-result');
+      socket?.off('game-result');
     };
   }, [
     changePublisherStatus,
     changeSubscriberStatus,
     eliminatePublisher,
+    finishGame,
     gamePublisher.nickname,
     gamePublisher.role,
     initializeVotes,
@@ -289,7 +294,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       <ToastContainer style={{ width: '40rem' }} />
       <VideoViewer
         roomId={roomId}
-        isGameStarted={isGameStarted}
+        gameStatus={gameStatus}
         gamePublisher={gamePublisher}
         gameSubscribers={gameSubscribers}
         situation={situation}
@@ -299,7 +304,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       />
       <Bottombar
         roomId={roomId}
-        isGameStarted={isGameStarted}
+        gameStatus={gameStatus}
         gamePublisher={gamePublisher}
         totalParticipants={gameSubscribers.length + 1}
         situation={situation}
@@ -310,7 +315,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       <ChattingList
         roomId={roomId}
         isMafia={gamePublisher.role === 'MAFIA'}
-        chatEnabled={!isGameStarted || gamePublisher.isAlive}
+        chatEnabled={gameStatus !== 'RUNNING' || gamePublisher.isAlive}
         totalParticipants={gameSubscribers.length + 1}
       />
     </div>
