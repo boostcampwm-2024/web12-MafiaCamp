@@ -67,7 +67,7 @@ const AdminPanel = () => {
     }
 
     const result: User = await response.json();
-    setAuthState({ userId: Number(result.userId), nickname: result.nickname });
+    setAuthState({ ...result });
     router.replace('/');
   };
 

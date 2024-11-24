@@ -191,7 +191,7 @@ const reducer = (state: State, action: Action): State => {
 
 export const useOpenVidu = () => {
   const { nickname } = useAuthStore();
-  const { socket, session, setSocketState: setState } = useSocketStore();
+  const { socket, session, setSocketState } = useSocketStore();
   const [state, dispatch] = useReducer<Reducer<State, Action>>(reducer, {
     isGameStarted: false,
     gamePublisher: {
@@ -318,7 +318,7 @@ export const useOpenVidu = () => {
           console.warn(exception);
         });
 
-        setState({ session });
+        setSocketState({ session });
 
         socket?.on(
           'video-info',
@@ -359,16 +359,16 @@ export const useOpenVidu = () => {
       socket?.off('participants');
       socket?.off('video-info');
     };
-  }, [nickname, setState, socket]);
+  }, [nickname, setSocketState, socket]);
 
   useEffect(() => {
     return () => {
       if (session) {
         session.disconnect();
-        setState({ session: null });
+        setSocketState({ session: null });
       }
     };
-  }, [session, setState]);
+  }, [session, setSocketState]);
 
   useEffect(() => {
     if (session) {

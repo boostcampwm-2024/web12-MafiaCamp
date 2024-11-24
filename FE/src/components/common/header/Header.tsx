@@ -15,7 +15,7 @@ import ProfileModal from './ProfileModal';
 import { useAuthStore } from '@/stores/authStore';
 
 const Header = () => {
-  const { setAuthState } = useAuthStore();
+  const { initialize, setAuthState } = useAuthStore();
   const { nickname, handleSignout } = useSignout();
   const [isScrolled, setIsScrolled] = useState(false);
   const [headerSidebarVisible, setHeaderSidebarVisible] = useState(false);
@@ -38,21 +38,19 @@ const Header = () => {
       });
 
       if (!response.ok) {
+        initialize();
         return;
       }
 
       const result: User = await response.json();
-      setAuthState({
-        userId: Number(result.userId),
-        nickname: result.nickname,
-      });
+      setAuthState({ ...result });
     })();
 
     window.addEventListener('scroll', handleScroll);
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [setAuthState]);
+  }, [initialize, setAuthState]);
 
   if (
     pathname.startsWith('/game') ||
@@ -115,7 +113,9 @@ const Header = () => {
                   onMouseEnter={() => setProfileModalVisible(true)}
                   onMouseLeave={() => setProfileModalVisible(false)}
                 >
-                  <p className='truncate text-nowrap py-1'>{nickname}</p>
+                  <p className='max-w-44 truncate text-nowrap p-1'>
+                    {nickname}
+                  </p>
                   {profileModalVisible && (
                     <ProfileModal
                       closeModal={() => setProfileModalVisible(false)}

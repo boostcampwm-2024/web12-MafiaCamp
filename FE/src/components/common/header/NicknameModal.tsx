@@ -1,18 +1,22 @@
 'use client';
 
+import 'react-toastify/dist/ReactToastify.css';
 import CloseIcon from '../icons/CloseIcon';
-import { FormEvent } from 'react';
+import { FormEvent, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { NicknameChangeFormSchema } from '@/libs/zod/nicknameChangeFormSchema';
 import { useAuthStore } from '@/stores/authStore';
+import { toast, ToastContainer } from 'react-toastify';
+import { TOAST_OPTION } from '@/constants/toastOption';
 
 interface NicknameModalProps {
   closeModal: () => void;
 }
 
 const NicknameModal = ({ closeModal }: NicknameModalProps) => {
-  const { nickname } = useAuthStore();
+  const { userId, nickname, setAuthState } = useAuthStore();
+  const [loading, setLoading] = useState(false);
 
   const methods = useForm<{ newNickname: string }>({
     resolver: zodResolver(NicknameChangeFormSchema),
@@ -22,6 +26,8 @@ const NicknameModal = ({ closeModal }: NicknameModalProps) => {
     mode: 'onChange',
   });
 
+  const notifyError = (message: string) => toast.error(message, TOAST_OPTION);
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -30,19 +36,29 @@ const NicknameModal = ({ closeModal }: NicknameModalProps) => {
       return;
     }
 
-    // const response = await fetch('/api/user/nickname', {
-    //   method: 'PATCH',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify()
-    //   cache: 'no-store',
-    // });
+    setLoading(true);
 
-    // if (!response.ok){
+    const response = await fetch('/api/user/nickname', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId: userId.toString(), // TODO: 수정 필요
+        nickname: methods.getValues('newNickname'),
+      }),
+      cache: 'no-store',
+    });
 
-    //   return;
-    // }
+    setLoading(false);
+
+    if (!response.ok) {
+      notifyError(await response.text());
+      return;
+    }
+
+    setAuthState({ nickname: methods.getValues('newNickname') });
+    closeModal();
   };
 
   return (
@@ -50,6 +66,7 @@ const NicknameModal = ({ closeModal }: NicknameModalProps) => {
       className='fixed left-0 top-0 z-30 flex h-full w-full items-center justify-center bg-black/25'
       onSubmit={handleSubmit}
     >
+      <ToastContainer style={{ width: '35rem' }} />
       <div className='flex w-[25rem] flex-col gap-8 rounded-2xl bg-white p-8'>
         <div className='flex flex-row items-center justify-between'>
           <h2 className='text-2xl text-slate-800'>닉네임 변경하기</h2>
@@ -58,7 +75,7 @@ const NicknameModal = ({ closeModal }: NicknameModalProps) => {
             onClick={() => closeModal()}
           />
         </div>
-        <div className='flex flex-col gap-12 rounded-2xl bg-slate-100 p-6 text-slate-800'>
+        <div className='flex flex-col gap-12 rounded-2xl bg-slate-100 p-6 pb-10 text-slate-800'>
           <div className='relative flex flex-col gap-3'>
             <label className='text-lg' htmlFor='newNickname'>
               닉네임
@@ -92,7 +109,10 @@ const NicknameModal = ({ closeModal }: NicknameModalProps) => {
             취소
           </button>
           <button
-            className='h-[2.75rem] w-[7.75rem] rounded-3xl border border-slate-400 bg-slate-600 text-white drop-shadow-sm hover:scale-105'
+            className={[
+              `${loading ? 'cursor-wait bg-transparent/10' : 'hover:scale-105'}`,
+              'h-[2.75rem] w-[7.75rem] rounded-3xl bg-slate-600 text-white drop-shadow-sm hover:scale-105',
+            ].join(' ')}
             type='submit'
           >
             변경하기

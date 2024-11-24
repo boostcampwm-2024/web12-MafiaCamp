@@ -2,7 +2,7 @@ import { create, StateCreator } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
 interface AuthState {
-  userId: number;
+  userId: string;
   nickname: string;
 }
 
@@ -12,7 +12,7 @@ interface AuthAction {
 }
 
 const initialState: AuthState = {
-  userId: -1,
+  userId: '',
   nickname: '',
 };
 
@@ -20,7 +20,7 @@ type AuthStoreType = AuthState & AuthAction;
 
 const authStore: StateCreator<AuthStoreType> = (set) => ({
   ...initialState,
-  initialize: () => set({ ...initialState }),
+  initialize: () => set({ userId: '0', nickname: '' }),
   setAuthState: (data: Partial<AuthState>) => set({ ...data }),
 });
 
