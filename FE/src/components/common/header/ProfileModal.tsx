@@ -15,7 +15,7 @@ const ProfileModal = ({ closeModal, handleSignout }: ProfileModalProps) => {
 
   return (
     <motion.div
-      className='absolute right-0 top-8 z-50 flex flex-col items-start text-nowrap rounded-2xl bg-slate-600 p-4 text-slate-200'
+      className='absolute right-0 top-8 z-50 flex flex-col items-start text-nowrap rounded-2xl border border-slate-500 bg-slate-600 p-4 text-slate-200'
       initial={{ y: '-1rem', opacity: 0.5 }}
       animate={{ y: '0rem', opacity: 1 }}
     >
