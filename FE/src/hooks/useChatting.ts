@@ -1,5 +1,6 @@
 'use client';
 
+import { useAuthStore } from '@/stores/authStore';
 import { useSidebarStore } from '@/stores/sidebarStore';
 import { useSocketStore } from '@/stores/socketStore';
 import { Chat } from '@/types/chat';
@@ -9,7 +10,8 @@ import { FormEvent, useEffect, useRef, useState } from 'react';
 export const useChatting = (roomId: string, isMafia: boolean) => {
   // TODO: reducer로 변경하기
   const { isOpen, initialize, closeSidebar } = useSidebarStore();
-  const { nickname, socket } = useSocketStore();
+  const { nickname } = useAuthStore();
+  const { socket } = useSocketStore();
   const [chatList, setChatList] = useState<Chat[]>([]);
   const [message, setMessage] = useState('');
   const [isMafiaOnly, setIsMafiaOnly] = useState(false);
