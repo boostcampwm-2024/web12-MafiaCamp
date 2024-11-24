@@ -66,7 +66,7 @@ const Header = () => {
     >
       <HeaderSidebar
         visible={headerSidebarVisible}
-        close={() => setHeaderSidebarVisible(false)}
+        closeHeaderSidebar={() => setHeaderSidebarVisible(false)}
       />
       <motion.div
         className={`${pathname === '/' && !isScrolled ? 'bg-transparent' : 'bg-slate-600/50'} fixed top-0 z-10 flex h-20 w-[80rem] flex-row items-center justify-between self-center rounded-b-3xl px-24 max-[1280px]:w-full max-[1280px]:px-12 max-[768px]:px-6`}
