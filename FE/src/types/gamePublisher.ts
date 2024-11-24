@@ -9,4 +9,5 @@ export interface GamePublisher {
   videoEnabled: boolean;
   votes: number;
   isCandidate: boolean;
+  isAlive: boolean;
 }

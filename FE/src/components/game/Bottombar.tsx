@@ -9,6 +9,7 @@ import { Situation } from '@/constants/situation';
 import { useDragScroll } from '@/hooks/useDragScroll';
 import { useSidebarStore } from '@/stores/sidebarStore';
 import { useSocketStore } from '@/stores/socketStore';
+import { GamePublisher } from '@/types/gamePublisher';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { FaMicrophone, FaMicrophoneSlash } from 'react-icons/fa';
@@ -16,12 +17,10 @@ import { FaMicrophone, FaMicrophoneSlash } from 'react-icons/fa';
 interface BottombarProps {
   roomId: string;
   isGameStarted: boolean;
-  isPublisherAlive: boolean;
+  gamePublisher: GamePublisher;
   totalParticipants: number;
   situation: Situation | null;
   timeLeft: number;
-  audioEnabled: boolean;
-  videoEnabled: boolean;
   toggleAudio: () => void;
   toggleVideo: () => void;
 }
@@ -29,12 +28,10 @@ interface BottombarProps {
 const Bottombar = ({
   roomId,
   isGameStarted,
-  isPublisherAlive,
+  gamePublisher,
   totalParticipants,
   situation,
   timeLeft,
-  audioEnabled,
-  videoEnabled,
   toggleAudio,
   toggleVideo,
 }: BottombarProps) => {
@@ -86,12 +83,12 @@ const Bottombar = ({
               게임 시작
             </button>
           )}
-          {isPublisherAlive && (
+          {gamePublisher.isAlive && (
             <button
               className='flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105'
               onClick={() => toggleAudio()}
             >
-              {audioEnabled ? (
+              {gamePublisher.audioEnabled ? (
                 <FaMicrophone className='scale-125 cursor-pointer text-slate-200 hover:text-white' />
               ) : (
                 <FaMicrophoneSlash className='scale-150 cursor-pointer text-slate-200 hover:text-white' />
@@ -99,12 +96,12 @@ const Bottombar = ({
               오디오
             </button>
           )}
-          {isPublisherAlive && (
+          {gamePublisher.isAlive && (
             <button
               className='flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105'
               onClick={() => toggleVideo()}
             >
-              {videoEnabled ? (
+              {gamePublisher.videoEnabled ? (
                 <VideoCameraIcon className='scale-90 cursor-pointer fill-slate-200 hover:fill-white' />
               ) : (
                 <VideoCameraSlashIcon className='scale-90 cursor-pointer fill-slate-200 hover:fill-white' />

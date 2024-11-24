@@ -9,4 +9,5 @@ export interface GameSubscriber {
   videoEnabled: boolean;
   votes: number;
   isCandidate: boolean;
+  isAlive: boolean;
 }

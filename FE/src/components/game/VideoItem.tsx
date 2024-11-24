@@ -35,7 +35,7 @@ const VideoItem = ({
   const { socket } = useSocketStore();
 
   const handleClick = () => {
-    if (!situation || !gameParticipant.isCandidate) {
+    if (!situation || !isPublisherAlive || !gameParticipant.isCandidate) {
       return;
     }
 

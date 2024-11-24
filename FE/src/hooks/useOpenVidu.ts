@@ -45,6 +45,7 @@ const reducer = (state: State, action: Action): State => {
           videoEnabled: false,
           votes: 0,
           isCandidate: false,
+          isAlive: true,
         })),
       };
 
@@ -106,6 +107,7 @@ const reducer = (state: State, action: Action): State => {
                 participant: null,
                 audioEnabled: false,
                 videoEnabled: false,
+                isAlive: false,
               }
             : gameSubscriber,
         ),
@@ -202,6 +204,7 @@ export const useOpenVidu = () => {
       videoEnabled: false,
       votes: 0,
       isCandidate: false,
+      isAlive: true,
     },
     gameSubscribers: [],
   });
@@ -279,7 +282,12 @@ export const useOpenVidu = () => {
     session?.unpublish(state.gamePublisher.participant!);
     dispatch({
       type: 'CHANGE_PUBLISHER_STATUS',
-      payload: { participant: null, audioEnabled: false, videoEnabled: false },
+      payload: {
+        participant: null,
+        audioEnabled: false,
+        videoEnabled: false,
+        isAlive: false,
+      },
     });
   };
 

@@ -290,9 +290,9 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       <VideoViewer
         roomId={roomId}
         isGameStarted={isGameStarted}
-        situation={situation}
         gamePublisher={gamePublisher}
         gameSubscribers={gameSubscribers}
+        situation={situation}
         target={target}
         invalidityCount={invalidityCount}
         setTarget={(nickname: string | null) => setTarget(nickname)}
@@ -300,21 +300,17 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       <Bottombar
         roomId={roomId}
         isGameStarted={isGameStarted}
-        isPublisherAlive={gamePublisher.participant ? true : false}
+        gamePublisher={gamePublisher}
         totalParticipants={gameSubscribers.length + 1}
         situation={situation}
         timeLeft={timeLeft}
-        audioEnabled={gamePublisher.audioEnabled}
-        videoEnabled={gamePublisher.videoEnabled}
         toggleAudio={toggleAudio}
         toggleVideo={toggleVideo}
       />
       <ChattingList
         roomId={roomId}
         isMafia={gamePublisher.role === 'MAFIA'}
-        chatEnabled={
-          !isGameStarted || (gamePublisher.participant ? true : false)
-        }
+        chatEnabled={!isGameStarted || gamePublisher.isAlive}
         totalParticipants={gameSubscribers.length + 1}
       />
     </div>

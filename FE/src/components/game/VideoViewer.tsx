@@ -13,9 +13,9 @@ import { useAuthStore } from '@/stores/authStore';
 interface VideoViewerProps {
   roomId: string;
   isGameStarted: boolean;
-  situation: Situation | null;
   gamePublisher: GamePublisher;
   gameSubscribers: GameSubscriber[];
+  situation: Situation | null;
   target: string | null;
   invalidityCount: number;
   setTarget: (nickname: string | null) => void;
@@ -24,9 +24,9 @@ interface VideoViewerProps {
 const VideoViewer = ({
   roomId,
   isGameStarted,
-  situation,
   gamePublisher,
   gameSubscribers,
+  situation,
   target,
   invalidityCount,
   setTarget,
@@ -47,14 +47,13 @@ const VideoViewer = ({
   const totalSurvivors = useMemo(
     () =>
       isGameStarted
-        ? (gamePublisher.participant ? 1 : 0) +
+        ? (gamePublisher.isAlive ? 1 : 0) +
           gameSubscribers.reduce(
-            (total, gameSubscriber) =>
-              total + (gameSubscriber.participant ? 1 : 0),
+            (total, gameSubscriber) => total + (gameSubscriber.isAlive ? 1 : 0),
             0,
           )
         : gameSubscribers.length + 1,
-    [gamePublisher.participant, gameSubscribers, isGameStarted],
+    [gamePublisher.isAlive, gameSubscribers, isGameStarted],
   );
 
   const handleInvalityButtonClick = () => {
@@ -96,7 +95,7 @@ const VideoViewer = ({
       onTouchEnd={onTouchEnd}
     >
       {
-        gamePublisher.participant &&
+        gamePublisher.isAlive &&
           /* eslint-disable indent */
           (situation === 'VOTE' ||
             situation === 'ARGUMENT' ||
@@ -107,7 +106,7 @@ const VideoViewer = ({
           )
         /* eslint-enable indent */
       }
-      {gamePublisher.participant && situation === 'VOTE' && (
+      {gamePublisher.isAlive && situation === 'VOTE' && (
         <div
           className={[
             `${isOpen ? 'right-[21.5rem]' : 'right-6'}`,
@@ -132,10 +131,10 @@ const VideoViewer = ({
           'grid h-full min-w-[67.5rem] gap-6',
         ].join(' ')}
       >
-        {(!isGameStarted || gamePublisher.participant) && (
+        {(!isGameStarted || gamePublisher.isAlive) && (
           <VideoItem
             roomId={roomId}
-            isPublisherAlive={gamePublisher.participant ? true : false}
+            isPublisherAlive={gamePublisher.isAlive}
             gamePublisherRole={gamePublisher.role}
             gameParticipant={gamePublisher}
             situation={situation}
@@ -144,14 +143,12 @@ const VideoViewer = ({
           />
         )}
         {gameSubscribers
-          .filter(
-            (gameSubscriber) => !isGameStarted || gameSubscriber.participant,
-          )
+          .filter((gameSubscriber) => !isGameStarted || gameSubscriber.isAlive)
           .map((gameSubscriber) => (
             <VideoItem
               key={gameSubscriber.nickname}
               roomId={roomId}
-              isPublisherAlive={gamePublisher.participant ? true : false}
+              isPublisherAlive={gamePublisher.isAlive}
               gamePublisherRole={gamePublisher.role}
               gameParticipant={gameSubscriber}
               situation={situation}
