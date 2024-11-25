@@ -460,21 +460,19 @@ export class TotalGameManager
     gameRoom: GameRoom,
     saveTarget: string,
   ): Promise<void> {
-    return await this.lockManager.withKeyLock(gameRoom.roomId, async () => {
-      const mafiaSelectLog = this.mafiaSelectLogs.get(gameRoom.roomId);
+    const mafiaSelectLog = this.mafiaSelectLogs.get(gameRoom.roomId);
 
-      if (!mafiaSelectLog || mafiaSelectLog.length === 0) {
-        throw new NotFoundMafiaSelectLogException();
-      }
+    if (!mafiaSelectLog || mafiaSelectLog.length === 0) {
+      throw new NotFoundMafiaSelectLogException();
+    }
 
-      if (mafiaSelectLog[mafiaSelectLog.length - 1].target === saveTarget) {
-        const lastLog = mafiaSelectLog[mafiaSelectLog.length - 1];
-        if (lastLog.shouldBeKilled) {
-          lastLog.shouldBeKilled = false;
-          this.mafiaSelectLogs.set(gameRoom.roomId, mafiaSelectLog);
-        }
+    if (mafiaSelectLog[mafiaSelectLog.length - 1].target === saveTarget) {
+      const lastLog = mafiaSelectLog[mafiaSelectLog.length - 1];
+      if (lastLog.shouldBeKilled) {
+        lastLog.shouldBeKilled = false;
+        this.mafiaSelectLogs.set(gameRoom.roomId, mafiaSelectLog);
       }
-    });
+    }
   }
 
   async determineKillTarget(gameRoom: GameRoom): Promise<void> {

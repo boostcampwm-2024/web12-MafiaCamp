@@ -73,7 +73,7 @@ export class PoliceState extends GameState {
   }
 
   private investigate(room: GameRoom, cleanups): Promise<void> {
-    const polices = room.clients.filter(c => c.job === MAFIA_ROLE.POLICE);
+    const police = room.clients.find(c => c.job === MAFIA_ROLE.POLICE);
 
     return new Promise((resolve) => {
       const listener = async (data: PoliceInvestigationRequest) => {
@@ -82,9 +82,9 @@ export class PoliceState extends GameState {
       };
   
       cleanups.push(() => {
-        polices.forEach(police => police.removeListener('police-investigate', listener));
+        police.removeListener('police-investigate', listener);
       });
-      polices.forEach(police => police.once('police-investigate', listener));
+      police.once('police-investigate', listener);
     });
   }
 
