@@ -9,7 +9,9 @@ export class GameRoomService {
   private rooms: GameRoom[] = [];
 
   findVacantRoomId(): string {
-    const vacantRoom = this.rooms.find((gameRoom) => !gameRoom.isFull());
+    const vacantRoom = this.rooms
+      .filter((gameRoom) => !gameRoom.isFull())
+      .sort((a, b) => a.createdAt - b.createdAt)[0];
     if (!vacantRoom) {
       return null;
     }

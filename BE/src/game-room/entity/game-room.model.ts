@@ -13,7 +13,7 @@ export class GameRoom {
   private _gameId: number = null;
   private participants = 0;
   private _status: GameRoomStatus = GameRoomStatus.READY;
-  private createdAt: number = Date.now();
+  private _createdAt: number = Date.now();
   private _result: GAME_HISTORY_RESULT = null;
   private _clients: GameClient[] = [];
   private readonly _mafias: GameClient[] = [];
@@ -45,6 +45,10 @@ export class GameRoom {
 
   get result(): GAME_HISTORY_RESULT {
     return this._result;
+  }
+
+  get createdAt(): number {
+    return this._createdAt;
   }
 
   set result(result: GAME_HISTORY_RESULT) {
@@ -106,7 +110,7 @@ export class GameRoom {
       capacity: this.capacity,
       participants: this.participants,
       status: this._status,
-      createdAt: this.createdAt,
+      createdAt: this._createdAt,
     };
   }
 
