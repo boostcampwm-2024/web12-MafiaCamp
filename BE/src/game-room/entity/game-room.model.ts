@@ -20,7 +20,7 @@ export class GameRoom {
 
   constructor(
     private owner: string,
-    private title: string,
+    private _title: string,
     private _capacity: number,
   ) {
   }
@@ -50,6 +50,10 @@ export class GameRoom {
 
   get capacity(): number {
     return this._capacity;
+  }
+
+  get title(): string {
+    return this._title;
   }
 
   get result(): GAME_HISTORY_RESULT {
@@ -111,7 +115,7 @@ export class GameRoom {
     return {
       roomId: this._roomId,
       owner: this.owner,
-      title: this.title,
+      title: this._title,
       capacity: this._capacity,
       participants: this.participants,
       status: this._status,

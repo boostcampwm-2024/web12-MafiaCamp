@@ -8,19 +8,21 @@ import { GameClient } from './entity/game-client.model';
 export class GameRoomService {
   private rooms: GameRoom[] = [];
 
-  findVacantRoomId(): Record<string,any> {
+  findVacantRoomId(): Record<string, any> {
     const vacantRoom = this.rooms
       .filter((gameRoom) => !gameRoom.isFull())
       .sort((a, b) => a.createdAt - b.createdAt)[0];
     if (!vacantRoom) {
       return {
-        "roomId":null,
-        "capacity":null,
+        'roomId': null,
+        'capacity': null,
+        'title': null,
       };
     }
     return {
-      "roomId":vacantRoom.roomId,
-      "capacity":vacantRoom.capacity,
+      'roomId': vacantRoom.roomId,
+      'capacity': vacantRoom.capacity,
+      'title': vacantRoom.title,
     };
   }
 
