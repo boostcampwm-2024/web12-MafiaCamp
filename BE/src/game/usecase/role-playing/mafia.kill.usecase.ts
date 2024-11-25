@@ -9,8 +9,6 @@ export interface MafiaKillUsecase {
     killTarget: string,
   ): Promise<void>;
 
-  sendCurrentTarget(killTarget: string, gameRoom: GameRoom): Promise<void>;
-
   initMafia(gameRoom: GameRoom): Promise<void>;
 
   decisionMafiaTarget(gameRoom: GameRoom): Promise<void>;
