@@ -66,63 +66,6 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
   }, [roomId, socket]);
 
   useEffect(() => {
-    // 카운트 다운
-    socket?.on(
-      'countdown',
-      (data: { situation: Situation; timeLeft: number }) => {
-        if (data.situation === 'DISCUSSION' && data.timeLeft === 150) {
-          notifyInfo(SITUATION_MESSAGE.DISCUSSION);
-        }
-
-        if (data.situation === 'ARGUMENT' && data.timeLeft === 90) {
-          setTarget(null);
-          setInvalidityCount(0);
-          notifyInfo(SITUATION_MESSAGE.ARGUMENT);
-        }
-
-        if (data.situation === 'VOTE' && data.timeLeft === 15) {
-          if (situation === 'DISCUSSION') {
-            notifyInfo(SITUATION_MESSAGE.PRIMARY_VOTE);
-          } else if (situation === 'ARGUMENT') {
-            notifyInfo(SITUATION_MESSAGE.FINAL_VOTE);
-          }
-        }
-
-        if (data.situation === 'MAFIA' && data.timeLeft === 30) {
-          if (gamePublisher.role === 'MAFIA') {
-            setTargetsOfMafia();
-          } else {
-            initializeVotes();
-          }
-          setTarget(null);
-          notifyInfo(SITUATION_MESSAGE.MAFIA);
-        }
-
-        if (data.situation === 'DOCTOR' && data.timeLeft === 20) {
-          if (gamePublisher.role === 'DOCTOR') {
-            setAllParticipantsAsCandidates();
-          } else {
-            initializeVotes();
-          }
-          setTarget(null);
-          notifyInfo(SITUATION_MESSAGE.DOCTOR);
-        }
-
-        if (data.situation === 'POLICE' && data.timeLeft === 20) {
-          if (gamePublisher.role === 'POLICE') {
-            setTargetsOfPolice();
-          } else {
-            initializeVotes();
-          }
-          setTarget(null);
-          notifyInfo(SITUATION_MESSAGE.POLICE);
-        }
-
-        setSituation(data.situation);
-        setTimeLeft(data.timeLeft);
-      },
-    );
-
     // 직업 확인
     socket?.once(
       'player-role',
@@ -131,10 +74,69 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
         data.another?.forEach((value) => {
           changeSubscriberStatus(value[0], { role: value[1] });
         });
-
-        notifyInfo(SITUATION_MESSAGE.INTERMISSION);
       },
     );
+
+    // 카운트 다운
+    socket?.on(
+      'countdown',
+      (data: { situation: Situation; timeLeft: number }) => {
+        setSituation(data.situation);
+        setTimeLeft(data.timeLeft);
+      },
+    );
+
+    socket?.on('countdown-start', (newSituation: Situation) => {
+      switch (newSituation) {
+        case 'INTERMISSION':
+          notifyInfo(SITUATION_MESSAGE.INTERMISSION);
+          break;
+        case 'DISCUSSION':
+          notifyInfo(SITUATION_MESSAGE.DISCUSSION);
+          break;
+        case 'ARGUMENT':
+          setTarget(null);
+          setInvalidityCount(0);
+          notifyInfo(SITUATION_MESSAGE.ARGUMENT);
+          break;
+        case 'VOTE':
+          if (situation === 'DISCUSSION') {
+            notifyInfo(SITUATION_MESSAGE.PRIMARY_VOTE);
+          } else if (situation === 'ARGUMENT') {
+            notifyInfo(SITUATION_MESSAGE.FINAL_VOTE);
+          }
+          break;
+        case 'MAFIA':
+          if (gamePublisher.role === 'MAFIA') {
+            setTargetsOfMafia();
+          } else {
+            initializeVotes();
+          }
+          setTarget(null);
+          notifyInfo(SITUATION_MESSAGE.MAFIA);
+          break;
+        case 'DOCTOR':
+          if (gamePublisher.role === 'DOCTOR') {
+            setAllParticipantsAsCandidates();
+          } else {
+            initializeVotes();
+          }
+          setTarget(null);
+          notifyInfo(SITUATION_MESSAGE.DOCTOR);
+          break;
+        case 'POLICE':
+          if (gamePublisher.role === 'POLICE') {
+            setTargetsOfPolice();
+          } else {
+            initializeVotes();
+          }
+          setTarget(null);
+          notifyInfo(SITUATION_MESSAGE.POLICE);
+          break;
+        default:
+          break;
+      }
+    });
 
     // 투표 시작 시 투표 대상 후보자 설정
     socket?.on('send-vote-candidates', (candidates: string[]) => {
@@ -255,6 +257,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
 
     return () => {
       socket?.off('countdown');
+      socket?.off('countdown-start');
       socket?.off('player-role');
       socket?.off('vote-current-state');
       socket?.off('primary-vote-result');
