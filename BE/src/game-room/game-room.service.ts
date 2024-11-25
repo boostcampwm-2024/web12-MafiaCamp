@@ -8,13 +8,21 @@ import { GameClient } from './entity/game-client.model';
 export class GameRoomService {
   private rooms: GameRoom[] = [];
 
+  findVacantRoomId(): string {
+    const vacantRoom = this.rooms.find((gameRoom) => !gameRoom.isFull());
+    if (!vacantRoom) {
+      return null;
+    }
+    return vacantRoom.roomId;
+  }
+
   getRooms() {
     return this.rooms.map((r) => r.toResponse());
   }
 
   createRoom(client: EventClient, createRoomRequest: CreateRoomRequest): string {
     const { title, capacity } = createRoomRequest;
-    const room = GameRoom.of(client.nickname, title, capacity)
+    const room = GameRoom.of(client.nickname, title, capacity);
     this.rooms.push(room);
     return room.roomId;
   }
