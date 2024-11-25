@@ -56,7 +56,7 @@ jobs:
           proxy_port: ${{ secrets.PROXY_PORT }}
           proxy_key: ${{ secrets.PROXY_KEY }}
           script: |
-            docker pull ${{ secrets.NCP_CONTAINER_REGISTRY }}/mafiacamp-fe
+            docker pull ${{ secrets.NCP_PRIVATE_ENDPOINT }}/mafiacamp-fe
             docker stop mafiacamp-fe || true
             docker rm mafiacamp-fe || true
-            docker run -p 3000:3000 -d --restart unless-stopped --name mafiacamp-fe ${{ secrets.NCP_CONTAINER_REGISTRY }}/mafiacamp-fe
+            docker run -p 3000:3000 -d --restart unless-stopped --name mafiacamp-fe ${{ secrets.NCP_PRIVATE_ENDPOINT }}/mafiacamp-fe
