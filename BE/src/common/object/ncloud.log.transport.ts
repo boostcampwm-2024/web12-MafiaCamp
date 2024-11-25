@@ -31,7 +31,7 @@ export class NcloudLogTransport extends Transport {
 
     this.uploadInterval = setInterval(async () => {
       await this.uploadLogs();
-    }, 20 * 1000);
+    }, 60 * 1000);
 
     this.checkDateChange();
   }
