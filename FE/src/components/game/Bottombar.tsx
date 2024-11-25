@@ -6,7 +6,7 @@ import PlayIcon from '@/components/common/icons/PlayIcon';
 import VideoCameraIcon from '@/components/common/icons/VideoCameraIcon';
 import VideoCameraSlashIcon from '@/components/common/icons/VideoCameraSlashIcon';
 import { GameStatus } from '@/constants/gameStatus';
-import { Situation } from '@/constants/situation';
+import { SITUATION, Situation } from '@/constants/situation';
 import { useDragScroll } from '@/hooks/useDragScroll';
 import { useSidebarStore } from '@/stores/sidebarStore';
 import { useSocketStore } from '@/stores/socketStore';
@@ -58,8 +58,12 @@ const Bottombar = ({
       ].join(' ')}
     >
       {situation !== null && (
-        <h1 className='text-lg text-white'>
-          {situation} / 남은 시간 / {timeLeft}
+        <h1 className='flex items-center gap-4 rounded-full border border-slate-300 bg-slate-800 px-4 py-2 text-lg text-white'>
+          <span>{SITUATION[situation]}</span>
+          <span>|</span>
+          <span>남은 시간</span>
+          <span>|</span>
+          <span>{timeLeft}</span>
         </h1>
       )}
       <div

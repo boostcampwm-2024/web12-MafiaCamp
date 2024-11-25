@@ -1,4 +1,4 @@
-export type GameStatus = 'READY' | 'RUNNING' | 'DONE';
+export type GameStatus = 'READY' | 'RUNNING';
 
 export const GAME_STATUS = {
   READY: '게임 진행 전',

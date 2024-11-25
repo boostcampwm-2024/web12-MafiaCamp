@@ -208,7 +208,7 @@ const reducer = (state: State, action: Action): State => {
     case 'FINISH_GAME':
       return {
         ...state,
-        gameStatus: 'DONE',
+        gameStatus: 'READY',
       };
 
     default:
