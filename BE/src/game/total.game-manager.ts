@@ -537,6 +537,7 @@ export class TotalGameManager
     return await this.lockManager.withKeyLock(gameRoom.roomId, async () => {
       this.sendResultToClient(gameRoom);
       await this.saveGameResult(gameRoom);
+      gameRoom.reset();
     });
   }
 
