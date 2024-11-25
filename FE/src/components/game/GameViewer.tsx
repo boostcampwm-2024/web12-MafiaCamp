@@ -123,15 +123,6 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       },
     );
 
-    // 특정 단계 카운트 다운 종료
-    socket?.on(
-      'countdown-exit',
-      (data: { situation: Situation; timeLeft: number }) => {
-        setSituation(data.situation);
-        setTimeLeft(data.timeLeft);
-      },
-    );
-
     // 직업 확인
     socket?.once(
       'player-role',
@@ -264,7 +255,6 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
 
     return () => {
       socket?.off('countdown');
-      socket?.off('countdown-exit');
       socket?.off('player-role');
       socket?.off('vote-current-state');
       socket?.off('primary-vote-result');

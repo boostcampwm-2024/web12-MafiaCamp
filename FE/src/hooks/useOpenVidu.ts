@@ -20,7 +20,7 @@ type State = {
 type Action =
   | {
       type: 'PARTICIPATE';
-      payload: { roomManager: string; participantList: string[] };
+      payload: { participantList: { nickname: string; isOwner: boolean }[] };
     }
   | { type: 'LEAVE'; payload: { nickname: string } }
   | { type: 'START_GAME'; payload: { publisher: Publisher } }
@@ -37,6 +37,13 @@ type Action =
   | { type: 'SET_TARGETS_OF_POLICE' }
   | { type: 'FINISH_GAME' };
 
+/*
+participants.filter(
+              (participant) => participant !== nickname,
+            )
+
+*/
+
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case 'PARTICIPATE':
@@ -45,18 +52,27 @@ const reducer = (state: State, action: Action): State => {
         gamePublisher: {
           ...state.gamePublisher,
           isRoomManager:
-            state.gamePublisher.nickname === action.payload.roomManager,
+            action.payload.participantList.find(
+              (participant) =>
+                participant.nickname === state.gamePublisher.nickname,
+            )?.isOwner ?? false,
         },
-        gameSubscribers: action.payload.participantList.map((participant) => ({
-          participant: null,
-          nickname: participant,
-          role: null,
-          audioEnabled: false,
-          videoEnabled: false,
-          votes: 0,
-          isCandidate: false,
-          isAlive: true,
-        })),
+        gameSubscribers: action.payload.participantList
+          .filter(
+            (participant) =>
+              participant.nickname !== state.gamePublisher.nickname,
+          )
+          .map((participant) => ({
+            isRoomManager: participant.isOwner,
+            participant: null,
+            nickname: participant.nickname,
+            role: null,
+            audioEnabled: false,
+            videoEnabled: false,
+            votes: 0,
+            isCandidate: false,
+            isAlive: true,
+          })),
       };
 
     case 'LEAVE':
@@ -314,17 +330,15 @@ export const useOpenVidu = () => {
 
   useEffect(() => {
     // 게임 참가
-    socket?.on('participants', (participants: string[]) => {
-      dispatch({
-        type: 'PARTICIPATE',
-        payload: {
-          roomManager: participants[0],
-          participantList: participants.filter(
-            (participant) => participant !== nickname,
-          ),
-        },
-      });
-    });
+    socket?.on(
+      'participants',
+      (data: { nickname: string; isOwner: boolean }[]) => {
+        dispatch({
+          type: 'PARTICIPATE',
+          payload: { participantList: data },
+        });
+      },
+    );
 
     // 다른 플레이어가 방을 나간 경우
     socket?.on('leave-user-nickname', (nickname: string) => {
