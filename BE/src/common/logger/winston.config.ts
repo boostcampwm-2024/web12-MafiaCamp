@@ -42,16 +42,6 @@ export const winstonConfig = (configService: ConfigService) => {
           createLokiFormat(configService),
         ),
       }),
-      new DailyRotateFile({
-        dirname: path.join(process.cwd(), 'logs'),
-        filename: '%DATE%.log',
-        datePattern: 'YYYY-MM-DD',
-        maxFiles: '7d',
-        format: winston.format.combine(
-          winston.format.timestamp(koreanTimestamp),
-          createLokiFormat(configService),
-        ),
-      }),
       new NcloudLogTransport(configService),
     ],
   };
