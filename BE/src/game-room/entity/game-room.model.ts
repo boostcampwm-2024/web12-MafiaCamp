@@ -76,6 +76,12 @@ export class GameRoom {
     return new GameRoom(owner, title, capacity);
   }
 
+  reset() {
+    this._gameId = null;
+    this._status = GameRoomStatus.READY;
+    this._result = null;
+  }
+
   enter(client: GameClient) {
     if (this.participants >= this._capacity) {
       throw new BadRequestException(); // todo: 적절한 예외 클래스 사용
