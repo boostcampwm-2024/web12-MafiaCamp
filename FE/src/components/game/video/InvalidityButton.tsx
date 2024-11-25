@@ -53,11 +53,7 @@ const InvalidityButton = ({
     setTarget('INVALIDITY');
   };
 
-  if (
-    gameStatus === 'RUNNING' &&
-    gamePublisher.isAlive &&
-    situation === 'VOTE'
-  ) {
+  if (gameStatus === 'RUNNING' && situation === 'VOTE') {
     return (
       <div
         className={[
@@ -68,9 +64,11 @@ const InvalidityButton = ({
         <button
           className={[
             `${target === 'INVALIDITY' ? 'border-2 bg-slate-600 text-white' : 'bg-white font-bold text-slate-800'}`,
-            'h-full w-full rounded-2xl border border-slate-400 font-bold hover:bg-slate-600 hover:text-white',
+            `${gamePublisher.isAlive && 'hover:bg-slate-600 hover:text-white'}`,
+            'h-full w-full rounded-2xl border border-slate-400 font-bold',
           ].join(' ')}
           onClick={handleInvalityButtonClick}
+          disabled={!gamePublisher.isAlive}
         >
           {`기권 ${invalidityCount}`}
         </button>
