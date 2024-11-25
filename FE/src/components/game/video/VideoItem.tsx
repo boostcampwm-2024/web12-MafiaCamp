@@ -108,7 +108,7 @@ const VideoItem = ({
           {ROLE[gameParticipant.role]}
         </div>
       )}
-      {gameParticipant.isRoomManager && (
+      {gameParticipant.isOwner && (
         <div className='absolute right-4 top-4 z-10 flex h-8 w-20 items-center justify-center rounded-2xl border border-blue-200 bg-blue-50 text-xs text-blue-800'>
           방장
         </div>

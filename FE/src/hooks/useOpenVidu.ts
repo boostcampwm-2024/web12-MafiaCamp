@@ -37,13 +37,6 @@ type Action =
   | { type: 'SET_TARGETS_OF_POLICE' }
   | { type: 'FINISH_GAME' };
 
-/*
-participants.filter(
-              (participant) => participant !== nickname,
-            )
-
-*/
-
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case 'PARTICIPATE':
@@ -51,7 +44,7 @@ const reducer = (state: State, action: Action): State => {
         ...state,
         gamePublisher: {
           ...state.gamePublisher,
-          isRoomManager:
+          isOwner:
             action.payload.participantList.find(
               (participant) =>
                 participant.nickname === state.gamePublisher.nickname,
@@ -63,7 +56,7 @@ const reducer = (state: State, action: Action): State => {
               participant.nickname !== state.gamePublisher.nickname,
           )
           .map((participant) => ({
-            isRoomManager: participant.isOwner,
+            isOwner: participant.isOwner,
             participant: null,
             nickname: participant.nickname,
             role: null,
@@ -229,7 +222,7 @@ export const useOpenVidu = () => {
   const [state, dispatch] = useReducer<Reducer<State, Action>>(reducer, {
     gameStatus: 'READY',
     gamePublisher: {
-      isRoomManager: false,
+      isOwner: false,
       participant: null,
       nickname: nickname,
       role: null,
@@ -341,9 +334,26 @@ export const useOpenVidu = () => {
     );
 
     // 다른 플레이어가 방을 나간 경우
-    socket?.on('leave-user-nickname', (nickname: string) => {
-      dispatch({ type: 'LEAVE', payload: { nickname } });
-    });
+    socket?.on(
+      'leave-user-nickname',
+      (data: { nickname: string; newOwner: string | null }) => {
+        dispatch({ type: 'LEAVE', payload: { nickname: data.nickname } });
+
+        if (data.newOwner !== null) {
+          if (state.gamePublisher.nickname === data.newOwner) {
+            dispatch({
+              type: 'CHANGE_PUBLISHER_STATUS',
+              payload: { isOwner: true },
+            });
+          } else {
+            dispatch({
+              type: 'CHANGE_SUBSCRIBER_STATUS',
+              payload: { nickname: data.newOwner, data: { isOwner: true } },
+            });
+          }
+        }
+      },
+    );
 
     (async () => {
       try {
@@ -403,7 +413,7 @@ export const useOpenVidu = () => {
       socket?.off('participants');
       socket?.off('video-info');
     };
-  }, [nickname, setSocketState, socket]);
+  }, [nickname, setSocketState, socket, state.gamePublisher.nickname]);
 
   useEffect(() => {
     return () => {

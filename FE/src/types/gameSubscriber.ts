@@ -2,7 +2,7 @@ import { Role } from '@/constants/role';
 import { Subscriber } from 'openvidu-browser';
 
 export interface GameSubscriber {
-  isRoomManager: boolean;
+  isOwner: boolean;
   participant: Subscriber | null;
   nickname: string;
   role: Role | null;

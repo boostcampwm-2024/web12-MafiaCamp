@@ -74,7 +74,7 @@ const Bottombar = ({
         onTouchEnd={onTouchEnd}
       >
         <div className='flex flex-row items-center gap-4'>
-          {gamePublisher.isRoomManager && gameStatus === 'READY' && (
+          {gamePublisher.isOwner && gameStatus === 'READY' && (
             <button
               className={[
                 `${totalParticipants !== Number(capacity) ? 'cursor-not-allowed opacity-50' : 'hover:scale-105'}`,
