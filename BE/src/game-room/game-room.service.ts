@@ -3,6 +3,7 @@ import { CreateRoomRequest } from './dto/create-room.request';
 import { GameRoom } from './entity/game-room.model';
 import { EventClient } from 'src/event/event-client.model';
 import { GameClient } from './entity/game-client.model';
+import { GameRoomStatus } from './entity/game-room.status';
 
 @Injectable()
 export class GameRoomService {
@@ -30,7 +31,10 @@ export class GameRoomService {
     return this.rooms.map((r) => r.toResponse());
   }
 
-  createRoom(client: EventClient, createRoomRequest: CreateRoomRequest): string {
+  createRoom(
+    client: EventClient,
+    createRoomRequest: CreateRoomRequest,
+  ): string {
     const { title, capacity } = createRoomRequest;
     const room = GameRoom.of(client.nickname, title, capacity);
     this.rooms.push(room);
@@ -42,7 +46,11 @@ export class GameRoomService {
   }
 
   leaveRoom(nickname: string, roomId: string) {
-    this.findRoomById(roomId).leave(nickname);
+    const room = this.findRoomById(roomId);
+    room.leave(nickname);
+    if (room.status === GameRoomStatus.DONE) {
+      this.rooms = this.rooms.filter((r) => r.roomId !== roomId);
+    }
   }
 
   findRoomById(roomId: string) {
