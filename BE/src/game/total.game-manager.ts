@@ -546,13 +546,11 @@ export class TotalGameManager
     if (!gameInfo) {
       throw new NotFoundGameRoomException();
     }
-    const playerInfo = [];
-    for (const entry of gameInfo.entries()) {
-      playerInfo.push({
-        nickname: entry[0],
-        ...entry[1],
-      });
-    }
+    const playerInfo = [ ...gameInfo.entries() ].map(([nickname, data]) => ({
+      nickname,
+      ...data
+    }))
+
     const result = gameRoom.result;
     const clients = gameRoom.clients;
     clients.forEach(c => {
