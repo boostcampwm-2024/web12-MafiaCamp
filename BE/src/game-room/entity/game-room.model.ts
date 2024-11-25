@@ -21,8 +21,9 @@ export class GameRoom {
   constructor(
     private owner: string,
     private title: string,
-    private capacity: number,
-  ) {}
+    private _capacity: number,
+  ) {
+  }
 
   get roomId() {
     return this._roomId;
@@ -43,12 +44,16 @@ export class GameRoom {
     return this._clients;
   }
 
-  get result(): GAME_HISTORY_RESULT {
-    return this._result;
-  }
-
   get createdAt(): number {
     return this._createdAt;
+  }
+
+  get capacity(): number {
+    return this._capacity;
+  }
+
+  get result(): GAME_HISTORY_RESULT {
+    return this._result;
   }
 
   set result(result: GAME_HISTORY_RESULT) {
@@ -64,7 +69,7 @@ export class GameRoom {
   }
 
   enter(client: GameClient) {
-    if (this.participants >= this.capacity) {
+    if (this.participants >= this._capacity) {
       throw new BadRequestException(); // todo: 적절한 예외 클래스 사용
     }
     this.participants++;
@@ -99,7 +104,7 @@ export class GameRoom {
   }
 
   isFull() {
-    return this.participants === this.capacity;
+    return this.participants === this._capacity;
   }
 
   toResponse() {
@@ -107,7 +112,7 @@ export class GameRoom {
       roomId: this._roomId,
       owner: this.owner,
       title: this.title,
-      capacity: this.capacity,
+      capacity: this._capacity,
       participants: this.participants,
       status: this._status,
       createdAt: this._createdAt,

@@ -11,9 +11,7 @@ export class GameRoomController {
   @Get('vacant')
   @UseGuards(CommonJwtGuard)
   getVacantRoom() {
-    return {
-      roomId: this.gameRoomService.findVacantRoomId(),
-    };
+    return this.gameRoomService.findVacantRoomId();
   }
 
 }
