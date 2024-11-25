@@ -10,9 +10,12 @@ export class NcloudLogTransport extends Transport {
   private logBuffer: string[] = [];
   private uploadInterval: NodeJS.Timeout;
   private isUploading: boolean;
+  public format: any;
 
-  constructor(configService: ConfigService) {
+  constructor(options: { configService: ConfigService, format?: any }) {
     super();
+    const { configService, format } = options;
+    this.format = format;
     this.s3 = new AWS.S3({
       endpoint: configService.get('NCLOUD_ENDPOINT'),
       region: configService.get<string>('NCLOUD_REGION'),
@@ -28,9 +31,8 @@ export class NcloudLogTransport extends Transport {
 
     this.uploadInterval = setInterval(async () => {
       await this.uploadLogs();
-    }, 5 * 60 * 1000);
+    }, 20 * 1000);
 
-    // 날짜 변경 체크
     this.checkDateChange();
   }
 
@@ -88,7 +90,9 @@ export class NcloudLogTransport extends Transport {
       this.emit('logged', info);
     });
 
-    this.logBuffer.push(JSON.stringify(info));
+    const logEntry = this.format.transform(info);
+    const symbolMessage = JSON.parse(logEntry[Symbol.for('message')]);
+    this.logBuffer.push(JSON.stringify(symbolMessage));
     callback();
   }
 
