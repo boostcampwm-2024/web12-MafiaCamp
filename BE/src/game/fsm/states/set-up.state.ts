@@ -37,7 +37,6 @@ export class SetUpState extends GameState {
     room.status = GameRoomStatus.RUNNING;
     await this.startVideo(room);
     await this.allocateUserRole(room);
-
     await this.countdownTimeoutUsecase.countdownStart(
       new StartCountdownRequest(room, 'INTERMISSION'),
     );

@@ -16,10 +16,8 @@ export class MafiaCountdownTimer implements CountdownTimer {
     if (this.stopSignals.has(room)) {
       throw new DuplicateTimerException();
     }
-
     this.stopSignals.set(room, new Subject());
     this.pauses.set(room, false);
-
     let timeLeft: number = TIMEOUT_SITUATION[situation];
     const currentSignal = this.stopSignals.get(room);
     let paused = this.pauses.get(room);
