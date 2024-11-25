@@ -87,7 +87,7 @@ const Bottombar = ({
               게임 시작
             </button>
           )}
-          {gamePublisher.isAlive && (
+          {gameStatus === 'RUNNING' && gamePublisher.isAlive && (
             <button
               className='flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105'
               onClick={() => toggleAudio()}
@@ -100,7 +100,7 @@ const Bottombar = ({
               오디오
             </button>
           )}
-          {gamePublisher.isAlive && (
+          {gameStatus === 'RUNNING' && gamePublisher.isAlive && (
             <button
               className='flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105'
               onClick={() => toggleVideo()}

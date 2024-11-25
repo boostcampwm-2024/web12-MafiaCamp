@@ -86,6 +86,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       },
     );
 
+    // 각 단계 시작
     socket?.on('countdown-start', (newSituation: Situation) => {
       switch (newSituation) {
         case 'INTERMISSION':
@@ -95,8 +96,6 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
           notifyInfo(SITUATION_MESSAGE.DISCUSSION);
           break;
         case 'ARGUMENT':
-          setTarget(null);
-          setInvalidityCount(0);
           notifyInfo(SITUATION_MESSAGE.ARGUMENT);
           break;
         case 'VOTE':
@@ -141,6 +140,8 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     // 투표 시작 시 투표 대상 후보자 설정
     socket?.on('send-vote-candidates', (candidates: string[]) => {
       initializeVotes();
+      setTarget(null);
+      setInvalidityCount(0);
 
       for (const nickname of candidates) {
         if (nickname === gamePublisher.nickname) {
@@ -216,6 +217,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       );
     }
 
+    // 밤 중 사망한 플레이어 확인
     socket?.on(
       'mafia-kill-result',
       (data: { player: string; job: Role } | null) => {
@@ -234,6 +236,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       },
     );
 
+    // 게임 결과 확인
     socket?.on(
       'game-result',
       (data: {
