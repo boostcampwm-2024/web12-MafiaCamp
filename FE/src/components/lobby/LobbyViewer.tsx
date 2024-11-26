@@ -11,7 +11,7 @@ import { useAuthStore } from '@/stores/authStore';
 import ConnectedUserList from './ConnectedUserList';
 
 const LobbyViewer = () => {
-  const { nickname } = useAuthStore();
+  const { userId, nickname } = useAuthStore();
   const { setSocketState } = useSocketStore();
   const [hasNickname, setHasNickname] = useState(false);
   const router = useRouter();
@@ -42,7 +42,40 @@ const LobbyViewer = () => {
       {!hasNickname && (
         <NicknameModal setHasNickname={() => setHasNickname(true)} />
       )}
-      <ConnectedUserList userList={[]} />
+      {userId !== '' && (
+        <ConnectedUserList
+          userList={[
+            {
+              nickname:
+                '일이삼사오육칠팔구십일이삼사오육칠팔구십일이삼사오육칠팔구십',
+              isInLobby: true,
+            },
+            { nickname: 'AB', isInLobby: true },
+            { nickname: 'ABCD', isInLobby: false },
+            { nickname: 'ABCDE', isInLobby: true },
+            { nickname: 'B', isInLobby: true },
+            { nickname: 'BBBB', isInLobby: true },
+            { nickname: '닉네임_TEST', isInLobby: false },
+            { nickname: '테스트', isInLobby: true },
+            { nickname: '마피아', isInLobby: true },
+            { nickname: '유저', isInLobby: true },
+            { nickname: 'HyunJinNo', isInLobby: false },
+            { nickname: 'Mafia', isInLobby: true },
+            { nickname: 'A', isInLobby: true },
+            { nickname: 'AB', isInLobby: true },
+            { nickname: 'ABCD', isInLobby: false },
+            { nickname: 'ABCDE', isInLobby: true },
+            { nickname: 'B', isInLobby: true },
+            { nickname: 'BBBB', isInLobby: true },
+            { nickname: '닉네임_TEST', isInLobby: false },
+            { nickname: '테스트', isInLobby: true },
+            { nickname: '마피아', isInLobby: true },
+            { nickname: '유저', isInLobby: true },
+            { nickname: 'HyunJinNo', isInLobby: false },
+            { nickname: 'Mafia', isInLobby: true },
+          ]}
+        />
+      )}
       <LobbyBanner />
       <LobbyList />
     </div>
