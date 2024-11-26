@@ -14,6 +14,7 @@ import { WebsocketLoggerInterceptor } from './common/logger/websocket.logger.int
 import { EventModule } from './event/event.module';
 import { AuthModule } from './auth/auth.module';
 import { OnlineStateModule } from './online-state/online-state.module';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -33,7 +34,8 @@ import { OnlineStateModule } from './online-state/online-state.module';
     EventModule,
     LoggerModule,
     AuthModule,
-    OnlineStateModule
+    OnlineStateModule,
+    RedisModule
   ],
   providers: [
     {
