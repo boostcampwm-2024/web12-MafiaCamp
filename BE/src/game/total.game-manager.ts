@@ -535,6 +535,11 @@ export class TotalGameManager
     return await this.lockManager.withKeyLock(gameRoom.roomId, async () => {
       this.sendResultToClient(gameRoom);
       await this.saveGameResult(gameRoom);
+      const roomId = gameRoom.roomId;
+      this.games.delete(roomId);
+      this.ballotBoxs.delete(roomId);
+      this.mafiaCurrentTarget.delete(roomId);
+      this.mafiaSelectLogs.delete(roomId);
       gameRoom.reset();
     });
   }
