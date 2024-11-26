@@ -72,8 +72,14 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     // 방 입장
     socket?.emit('enter-room', { roomId });
 
+    const handleBeforeUnload = () => {
+      socket?.emit('leave-room', { roomId });
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
     return () => {
-      // 방 나가기
+      window.removeEventListener('beforeunload', handleBeforeUnload);
       socket?.emit('leave-room', { roomId });
     };
   }, [roomId, router, socket]);
