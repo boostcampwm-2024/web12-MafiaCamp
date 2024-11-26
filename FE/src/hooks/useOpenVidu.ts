@@ -34,7 +34,8 @@ type Action =
       payload: { nickname: string; data: Partial<GameSubscriber> };
     }
   | { type: 'INITIALIZE_VOTES' }
-  | { type: 'SET_All_PARTICIPANTS_AS_CANDIDATES' }
+  | { type: 'INITIALIZE_CANDIDATES' }
+  | { type: 'SET_ALL_PARTICIPANTS_AS_CANDIDATES' }
   | { type: 'SET_TARGETS_OF_MAFIA' }
   | { type: 'SET_TARGETS_OF_POLICE' }
   | { type: 'FINISH_GAME' };
@@ -171,7 +172,17 @@ const reducer = (state: State, action: Action): State => {
         })),
       };
 
-    case 'SET_All_PARTICIPANTS_AS_CANDIDATES':
+    case 'INITIALIZE_CANDIDATES':
+      return {
+        ...state,
+        gamePublisher: { ...state.gamePublisher, isCandidate: false },
+        gameSubscribers: state.gameSubscribers.map((gameSubscriber) => ({
+          ...gameSubscriber,
+          isCandidate: false,
+        })),
+      };
+
+    case 'SET_ALL_PARTICIPANTS_AS_CANDIDATES':
       return {
         ...state,
         gamePublisher: { ...state.gamePublisher, isCandidate: true },
@@ -312,8 +323,12 @@ export const useOpenVidu = () => {
     dispatch({ type: 'INITIALIZE_VOTES' });
   };
 
+  const initializeCandidates = () => {
+    dispatch({ type: 'INITIALIZE_CANDIDATES' });
+  };
+
   const setAllParticipantsAsCandidates = () => {
-    dispatch({ type: 'SET_All_PARTICIPANTS_AS_CANDIDATES' });
+    dispatch({ type: 'SET_ALL_PARTICIPANTS_AS_CANDIDATES' });
   };
 
   const setTargetsOfMafia = () => {
@@ -518,6 +533,7 @@ export const useOpenVidu = () => {
     changePublisherStatus,
     changeSubscriberStatus,
     initializeVotes,
+    initializeCandidates,
     setAllParticipantsAsCandidates,
     setTargetsOfMafia,
     setTargetsOfPolice,

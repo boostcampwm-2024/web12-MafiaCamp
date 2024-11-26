@@ -30,6 +30,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     changePublisherStatus,
     changeSubscriberStatus,
     initializeVotes,
+    initializeCandidates,
     setAllParticipantsAsCandidates,
     setTargetsOfMafia,
     setTargetsOfPolice,
@@ -113,7 +114,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
           if (gamePublisher.role === 'MAFIA') {
             setTargetsOfMafia();
           } else {
-            initializeVotes();
+            initializeCandidates();
           }
           setTarget(null);
           notifyInfo(SITUATION_MESSAGE.MAFIA);
@@ -122,7 +123,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
           if (gamePublisher.role === 'DOCTOR') {
             setAllParticipantsAsCandidates();
           } else {
-            initializeVotes();
+            initializeCandidates();
           }
           setTarget(null);
           notifyInfo(SITUATION_MESSAGE.DOCTOR);
@@ -131,7 +132,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
           if (gamePublisher.role === 'POLICE') {
             setTargetsOfPolice();
           } else {
-            initializeVotes();
+            initializeCandidates();
           }
           setTarget(null);
           notifyInfo(SITUATION_MESSAGE.POLICE);
@@ -171,7 +172,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
 
     // 1차 투표 결과 확인
     socket?.on('primary-vote-result', (candidates: string[]) => {
-      initializeVotes();
+      initializeCandidates();
       setTarget(null);
       setInvalidityCount(0);
 
@@ -251,6 +252,8 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
           status: 'ALIVE' | 'DEAD';
         }[];
       }) => {
+        setSituation(null);
+        setTimeLeft(0);
         finishGame();
         setGameResult(data.result);
         setPlayerInfoList(data.playerInfo);
@@ -277,9 +280,9 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     finishGame,
     gamePublisher.nickname,
     gamePublisher.role,
+    initializeCandidates,
     initializeVotes,
     setAllParticipantsAsCandidates,
-    setPlayerInfoList,
     setTargetsOfMafia,
     setTargetsOfPolice,
     situation,
