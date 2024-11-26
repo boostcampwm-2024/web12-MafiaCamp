@@ -83,6 +83,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private parseToken(headers): string {
     const cookies = headers.cookie?.split(';').map((keyVal) => keyVal.split('=')).reduce((cookies, [key, val]) => {
       cookies[key.trim()] = val.trim();
+      return cookies;
     }, {});
     return cookies?.access_token;
   }
