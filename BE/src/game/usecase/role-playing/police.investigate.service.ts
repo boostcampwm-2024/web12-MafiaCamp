@@ -12,6 +12,10 @@ export class PoliceInvestigateService implements PoliceInvestigateUsecase {
   ) {
   }
 
+  async isPoliceAlive(gameRoom: GameRoom): Promise<boolean> {
+    return await this.policeManager.isPoliceAlive(gameRoom);
+  }
+
   async executePolice(gameRoom: GameRoom, police: string, criminal: string): Promise<void> {
     await this.policeManager.executePolice(gameRoom, police, criminal);
   }

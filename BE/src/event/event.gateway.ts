@@ -19,10 +19,10 @@ import { VOTE_MAFIA_USECASE, VoteMafiaUsecase } from '../game/usecase/vote-manag
 import { VoteCandidateRequest } from '../game/dto/vote.candidate.request';
 import { SelectMafiaTargetRequest } from '../game/dto/select.mafia.target.request';
 import { MAFIA_KILL_USECASE, MafiaKillUsecase } from '../game/usecase/role-playing/mafia.kill.usecase';
-import { SelectDoctorTargetRequest } from '../game/dto/select.doctor.target.request';
 import { DOCTOR_CURE_USECASE, DoctorCureUsecase } from '../game/usecase/role-playing/doctor.cure.usecase';
 import { WebsocketLoggerInterceptor } from '../common/logger/websocket.logger.interceptor';
 import { WebsocketExceptionFilter } from '../common/filter/websocket.exception.filter';
+
 
 @UseFilters(WebsocketExceptionFilter)
 @UseInterceptors(WebsocketLoggerInterceptor)
@@ -201,19 +201,6 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
       room,
       selectMafiaTargetRequest.from,
       selectMafiaTargetRequest.target,
-    );
-  }
-
-  @SubscribeMessage('select-doctor-target')
-  async selectDoctorTarget(
-    @MessageBody() selectDoctorTarget: SelectDoctorTargetRequest,
-  ) {
-    const room = this.gameRoomService.findRoomById(selectDoctorTarget.roomId);
-
-    await this.doctorCureUsecase.selectDoctorTarget(
-      room,
-      selectDoctorTarget.from,
-      selectDoctorTarget.target,
     );
   }
 
