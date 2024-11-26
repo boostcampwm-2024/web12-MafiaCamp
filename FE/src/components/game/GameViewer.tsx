@@ -75,6 +75,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     socket?.once(
       'player-role',
       (data: { role: Role; another: [string, Role][] | null }) => {
+        setGameResultVisible(false);
         changePublisherStatus({ role: data.role });
         data.another?.forEach((value) => {
           changeSubscriberStatus(value[0], { role: value[1] });
@@ -252,6 +253,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
           status: 'ALIVE' | 'DEAD';
         }[];
       }) => {
+        notifyInfo('게임이 종료되었습니다.');
         setSituation(null);
         setTimeLeft(0);
         finishGame();
