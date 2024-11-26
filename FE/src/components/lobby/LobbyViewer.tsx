@@ -8,6 +8,7 @@ import { useSocketStore } from '@/stores/socketStore';
 import NicknameModal from './NicknameModal';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
+import ConnectedUserList from './ConnectedUserList';
 
 const LobbyViewer = () => {
   const { nickname } = useAuthStore();
@@ -24,12 +25,15 @@ const LobbyViewer = () => {
       socket.on('connect_error', (error) => {
         console.error(`연결 실패: ${error}`);
         alert('서버와의 연결에 실패하였습니다. 잠시 후에 다시 시도해 주세요.');
+        socket.disconnect();
+        setSocketState({ socket: null });
         router.replace('/');
       });
 
       setSocketState({ socket });
       socket.emit('set-nickname', { nickname });
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasNickname, router, setSocketState]);
 
@@ -38,6 +42,7 @@ const LobbyViewer = () => {
       {!hasNickname && (
         <NicknameModal setHasNickname={() => setHasNickname(true)} />
       )}
+      <ConnectedUserList userList={[]} />
       <LobbyBanner />
       <LobbyList />
     </div>
