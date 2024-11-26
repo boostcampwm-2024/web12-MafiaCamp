@@ -7,7 +7,10 @@ import { usePathname } from 'next/navigation';
 const Footer = () => {
   const pathname = usePathname();
 
-  if (pathname.startsWith('/game')) {
+  if (
+    pathname.startsWith('/game') ||
+    pathname.startsWith('/login/kakao/callback')
+  ) {
     return null;
   }
 

@@ -102,8 +102,8 @@ const RoleInfo = () => {
           >
             <h3 className='text-3xl font-semibold'>마피아</h3>
             <p>
-              마피아는 마피아끼리 인지할 수 있으며 밤마다 다수결의 투표를 통해
-              사람을 죽일 수 있습니다.
+              마피아는 마피아끼리 인지할 수 있으며 밤마다 한 명의 플레이어를
+              선택함으로써 사람을 죽일 수 있습니다.
             </p>
           </motion.div>
         </motion.div>

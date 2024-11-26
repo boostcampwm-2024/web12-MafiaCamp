@@ -57,6 +57,7 @@ const AdminPanel = () => {
         email: methods.getValues('email'),
         password: methods.getValues('password'),
       }),
+      cache: 'no-store',
     });
 
     if (!response.ok) {
@@ -68,7 +69,6 @@ const AdminPanel = () => {
     const result: User = await response.json();
     setState({ nickname: result.nickname });
     router.replace('/');
-    router.refresh();
   };
 
   const handleSignUp = async (e: FormEvent<HTMLFormElement>) => {
@@ -91,6 +91,7 @@ const AdminPanel = () => {
         body: JSON.stringify({
           ...methods.getValues(),
         }),
+        cache: 'no-store',
       },
     );
 

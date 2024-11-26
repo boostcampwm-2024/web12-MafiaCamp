@@ -7,6 +7,7 @@ export async function GET(request: NextRequest) {
     headers: {
       Authorization: `Bearer ${accessToken?.value}`,
     },
+    cache: 'no-store',
   });
 
   if (!response.ok) {
