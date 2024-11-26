@@ -1,4 +1,5 @@
 import { GameStatus } from '@/constants/gameStatus';
+import { TOAST_OPTION } from '@/constants/toastOption';
 import { useAuthStore } from '@/stores/authStore';
 import { useSocketStore } from '@/stores/socketStore';
 import { GamePublisher } from '@/types/gamePublisher';
@@ -10,6 +11,7 @@ import {
   VideoInsertMode,
 } from 'openvidu-browser';
 import { Reducer, useEffect, useReducer } from 'react';
+import { toast } from 'react-toastify';
 
 type State = {
   gameStatus: GameStatus;
@@ -209,6 +211,26 @@ const reducer = (state: State, action: Action): State => {
       return {
         ...state,
         gameStatus: 'READY',
+        gamePublisher: {
+          ...state.gamePublisher,
+          participant: null,
+          role: null,
+          audioEnabled: false,
+          videoEnabled: false,
+          votes: 0,
+          isCandidate: false,
+          isAlive: true,
+        },
+        gameSubscribers: state.gameSubscribers.map((gameSubscriber) => ({
+          ...gameSubscriber,
+          participant: null,
+          role: null,
+          audioEnabled: false,
+          videoEnabled: false,
+          votes: 0,
+          isCandidate: false,
+          isAlive: true,
+        })),
       };
 
     default:
@@ -318,6 +340,11 @@ export const useOpenVidu = () => {
   };
 
   const finishGame = () => {
+    if (state.gamePublisher.isAlive && state.gamePublisher.participant) {
+      state.gamePublisher?.participant?.publishAudio(false);
+      state.gamePublisher.participant?.publishVideo(false);
+      session?.unpublish(state.gamePublisher.participant!);
+    }
     dispatch({ type: 'FINISH_GAME' });
   };
 
@@ -351,6 +378,8 @@ export const useOpenVidu = () => {
               payload: { nickname: data.newOwner, data: { isOwner: true } },
             });
           }
+
+          toast.info(`${data.newOwner} 님이 방장이 되었습니다.`, TOAST_OPTION);
         }
       },
     );

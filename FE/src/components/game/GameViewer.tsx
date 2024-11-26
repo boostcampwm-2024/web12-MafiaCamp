@@ -7,10 +7,11 @@ import ChattingList from './chatting/ChattingList';
 import { useEffect, useState } from 'react';
 import { useSocketStore } from '@/stores/socketStore';
 import { ROLE, Role } from '@/constants/role';
-import { Slide, toast, ToastContainer } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import { Situation, SITUATION_MESSAGE } from '@/constants/situation';
 import VideoViewer from './video/VideoViewer';
 import GameResultBoard from './GameResultBoard';
+import { TOAST_OPTION } from '@/constants/toastOption';
 
 interface GameViewerProps {
   roomId: string;
@@ -53,17 +54,9 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
 
   const notifyInfo = (message: string) =>
     toast.info(message, {
+      ...TOAST_OPTION,
       toastId: message,
-      position: 'top-center',
       autoClose: 5000,
-      closeButton: false,
-      hideProgressBar: false,
-      closeOnClick: false,
-      pauseOnHover: false,
-      draggable: false,
-      progress: undefined,
-      theme: 'light',
-      transition: Slide,
     });
 
   useEffect(() => {
@@ -298,7 +291,11 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       <ToastContainer style={{ width: '40rem' }} />
       {gameResultVisible && (
         <GameResultBoard
-          gamePublisherRole={gamePublisher.role}
+          gamePublisherRole={
+            playerInfoList.find(
+              (playerInfo) => playerInfo.nickname === gamePublisher.nickname,
+            )?.role ?? 'CITIZEN'
+          }
           gameResult={gameResult}
           playerInfo={playerInfoList}
           closeBoard={() => setGameResultVisible(false)}

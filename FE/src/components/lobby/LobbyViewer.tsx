@@ -30,7 +30,8 @@ const LobbyViewer = () => {
       setSocketState({ socket });
       socket.emit('set-nickname', { nickname });
     }
-  }, [hasNickname, nickname, router, setSocketState]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasNickname, router, setSocketState]);
 
   return (
     <div className='flex flex-col items-center'>
