@@ -13,6 +13,7 @@ import { TraceMiddleware } from './common/logger/trace.middleware';
 import { WebsocketLoggerInterceptor } from './common/logger/websocket.logger.interceptor';
 import { EventModule } from './event/event.module';
 import { AuthModule } from './auth/auth.module';
+import { OnlineStateModule } from './online-state/online-state.module';
 
 @Module({
   imports: [
@@ -31,7 +32,8 @@ import { AuthModule } from './auth/auth.module';
     VideoServerModule,
     EventModule,
     LoggerModule,
-    AuthModule
+    AuthModule,
+    OnlineStateModule
   ],
   providers: [
     {
