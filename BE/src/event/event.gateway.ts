@@ -28,6 +28,11 @@ import {
   MAFIA_KILL_USECASE,
   MafiaKillUsecase,
 } from '../game/usecase/role-playing/mafia.kill.usecase';
+import { FINISH_GAME_USECASE } from '../game/usecase/finish-game/finish-game.usecase';
+import {
+  CONNECTED_USER_USECASE,
+  ConnectedUserUsecase,
+} from '../online-state/connected-user.usecase';
 
 // @UseInterceptors(WebsocketLoggerInterceptor)
 @WebSocketGateway({
@@ -39,7 +44,8 @@ import {
 export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private logger = new Logger(EventGateway.name);
   private connectedClients: Map<Socket, EventClient> = new Map();
-
+  // 임시 user_id
+  private tmpUserId = 1;
   constructor(
     private readonly eventManager: EventManager,
     private readonly gameRoomService: GameRoomService,
@@ -49,21 +55,37 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly voteMafiaUsecase: VoteMafiaUsecase,
     @Inject(MAFIA_KILL_USECASE)
     private readonly mafiaKillUseCase: MafiaKillUsecase,
+    @Inject(CONNECTED_USER_USECASE)
+    private readonly connectUserUseCase: ConnectedUserUsecase,
   ) {}
 
-  handleConnection(socket: Socket) {
+  async handleConnection(socket: Socket) {
     this.logger.log(`client connected: ${socket.id}`);
     const client = new EventClient(socket, this.eventManager);
+
+    //임시 닉네임 및 ID 설정
+    client.nickname = socket.id;
+    client.tmpUserId = this.tmpUserId++;
+
+    await this.connectUserUseCase.enter({
+      userId: String(client.tmpUserId),
+      userNickName: client.nickname,
+    });
+
     client.subscribe(Event.ROOM_DATA_CHANGED);
+    client.subscribe(Event.USER_DATA_CHANGED);
     this.connectedClients.set(socket, client);
     this.publishRoomDataChangedEvent();
+    await this.publishUserDataChangedEvent();
   }
 
-  handleDisconnect(socket: Socket) {
+  async handleDisconnect(socket: Socket) {
     this.logger.log(`client disconnected: ${socket.id}`);
     const client = this.connectedClients.get(socket);
+    await this.connectUserUseCase.leave(String(client.tmpUserId));
     client.unsubscribeAll();
     this.connectedClients.delete(socket);
+    await this.publishUserDataChangedEvent();
   }
 
   @SubscribeMessage('set-nickname')
@@ -97,29 +119,43 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
       event: 'create-room',
       data: {
         success: true,
-        roomId
+        roomId,
       },
     };
   }
 
   @SubscribeMessage('enter-room')
-  enterRoom(
+  async enterRoom(
     @MessageBody('roomId') roomId: string,
     @ConnectedSocket() socket: Socket,
   ) {
     const client = this.connectedClients.get(socket);
     this.gameRoomService.enterRoom(client, roomId);
+
+    await this.connectUserUseCase.enterRoom({
+      userId: String(client.tmpUserId),
+      userNickName: client.nickname,
+    });
+
     this.publishRoomDataChangedEvent();
+    await this.publishUserDataChangedEvent();
   }
 
   @SubscribeMessage('leave-room')
-  leaveRoom(
+  async leaveRoom(
     @MessageBody('roomId') roomId: string,
     @ConnectedSocket() socket: Socket,
   ) {
     const client = this.connectedClients.get(socket);
     this.gameRoomService.leaveRoom(client.nickname, roomId);
+
+    await this.connectUserUseCase.leaveRoom({
+      userId: String(client.tmpUserId),
+      userNickName: client.nickname,
+    });
+
     this.publishRoomDataChangedEvent();
+    await this.publishUserDataChangedEvent();
   }
 
   @SubscribeMessage('send-chat')
@@ -190,7 +226,6 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
   }
 
-
   @SubscribeMessage('select-mafia-target')
   async selectMafiaTarget(
     @MessageBody() selectMafiaTargetRequest: SelectMafiaTargetRequest,
@@ -209,6 +244,14 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.eventManager.publish(Event.ROOM_DATA_CHANGED, {
       event: 'room-list',
       data: this.gameRoomService.getRooms(),
+    });
+  }
+
+  private async publishUserDataChangedEvent() {
+    const onLineUserList = await this.connectUserUseCase.getOnLineUserList();
+    this.eventManager.publish(Event.USER_DATA_CHANGED, {
+      event: 'online-user-list',
+      data: onLineUserList,
     });
   }
 }

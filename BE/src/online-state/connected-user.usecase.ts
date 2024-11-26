@@ -1,16 +1,15 @@
-import { UserEnterRequest } from './dto/user.enter.request';
-import { UserLeaveRequest } from './dto/user.leave.request';
-import { UserEnterRoomRequest } from './dto/user.enter-room.request';
-import { UserLeaveRoomRequest } from './dto/user.leave-room.request';
+import { UserConnectRequest } from './dto/user.connect.request';
 
 export const CONNECTED_USER_USECASE = Symbol('CONNECTED_USER_USECASE');
 
 export interface ConnectedUserUsecase {
-  enter(userEnterRequest: UserEnterRequest): void;
+  enter(userEnterRequest: UserConnectRequest): Promise<void>;
 
-  leave(userLeaveRequest:UserLeaveRequest): void;
+  leave(userId: string): Promise<void>;
 
-  enterRoom(userEnterRoomRequest: UserEnterRoomRequest): void;
+  enterRoom(userEnterRoomRequest: UserConnectRequest): Promise<void>;
 
-  leaveRoom(userLeaveRoomRequest: UserLeaveRoomRequest): void;
+  leaveRoom(userLeaveRoomRequest: UserConnectRequest): Promise<void>;
+
+  getOnLineUserList(): Promise<Record<string, string>>;
 }
