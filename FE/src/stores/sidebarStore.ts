@@ -18,7 +18,7 @@ const initialState: SidebarState = {
   isOpen: true,
 };
 
-export type SidebarStoreType = SidebarState & SidebarAction;
+type SidebarStoreType = SidebarState & SidebarAction;
 
 const sidebarStore: StateCreator<SidebarStoreType> = (set) => ({
   ...initialState,

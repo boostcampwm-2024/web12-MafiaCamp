@@ -1,8 +1,8 @@
-import { useSocketStore } from '@/stores/socketStore';
+import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'next/navigation';
 
 export const useSignout = () => {
-  const { nickname, setState } = useSocketStore();
+  const { nickname, setAuthState } = useAuthStore();
   const router = useRouter();
 
   const handleSignout = async () => {
@@ -15,7 +15,7 @@ export const useSignout = () => {
       throw new Error(response.statusText);
     }
 
-    setState({ nickname: '' });
+    setAuthState({ nickname: '' });
     router.replace('/');
   };
 

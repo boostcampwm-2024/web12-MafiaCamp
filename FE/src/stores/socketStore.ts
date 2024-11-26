@@ -5,7 +5,6 @@ import { devtools } from 'zustand/middleware';
 
 // 상태 인터페이스 정의
 interface SocketState {
-  nickname: string;
   socket: Socket | null;
   session: Session | null;
 }
@@ -13,22 +12,21 @@ interface SocketState {
 // 액션 인터페이스 정의
 interface SocketAction {
   initialize: () => void;
-  setState: (data: Partial<SocketState>) => void;
+  setSocketState: (data: Partial<SocketState>) => void;
 }
 
 // 초기 상태 정의
 const initialState: SocketState = {
-  nickname: '',
   socket: null,
   session: null,
 };
 
-export type SocketStoreType = SocketState & SocketAction;
+type SocketStoreType = SocketState & SocketAction;
 
 const socketStore: StateCreator<SocketStoreType> = (set) => ({
   ...initialState,
   initialize: () => set({ ...initialState }),
-  setState: (data: Partial<SocketState>) => set({ ...data }),
+  setSocketState: (data: Partial<SocketState>) => set({ ...data }),
 });
 
 export const useSocketStore = create<SocketStoreType>()(

@@ -10,14 +10,16 @@ import { useEffect, useState } from 'react';
 import { MdOutlineMenu } from 'react-icons/md';
 import HeaderSidebar from './HeaderSidebar';
 import { useSignout } from '@/hooks/useSignout';
-import { useSocketStore } from '@/stores/socketStore';
 import { User } from '@/types/user';
+import ProfileModal from './ProfileModal';
+import { useAuthStore } from '@/stores/authStore';
 
 const Header = () => {
+  const { initialize, setAuthState } = useAuthStore();
   const { nickname, handleSignout } = useSignout();
-  const { setState } = useSocketStore();
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
+  const [headerSidebarVisible, setHeaderSidebarVisible] = useState(false);
+  const [profileModalVisible, setProfileModalVisible] = useState(false);
   const pathname = usePathname();
 
   const handleScroll = () => {
@@ -36,18 +38,19 @@ const Header = () => {
       });
 
       if (!response.ok) {
+        initialize();
         return;
       }
 
       const result: User = await response.json();
-      setState({ nickname: result.nickname });
+      setAuthState({ ...result });
     })();
 
     window.addEventListener('scroll', handleScroll);
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [setState]);
+  }, [initialize, setAuthState]);
 
   if (
     pathname.startsWith('/game') ||
@@ -60,7 +63,10 @@ const Header = () => {
     <header
       className={`${pathname === '/' && !isScrolled ? 'bg-slate-600/50' : 'bg-transparent'} ${pathname === '/' ? 'h-[37.5rem] max-[1080px]:h-[45rem]' : 'h-20'} flex w-[80rem] flex-col rounded-b-[11.25rem] px-24 pb-6 transition-all duration-500 max-[1280px]:w-full max-[1024px]:px-6`}
     >
-      <HeaderSidebar visible={isVisible} close={() => setIsVisible(false)} />
+      <HeaderSidebar
+        visible={headerSidebarVisible}
+        close={() => setHeaderSidebarVisible(false)}
+      />
       <motion.div
         className={`${pathname === '/' && !isScrolled ? 'bg-transparent' : 'bg-slate-600/50'} fixed top-0 z-10 flex h-20 w-[80rem] flex-row items-center justify-between self-center rounded-b-3xl px-24 max-[1280px]:w-full max-[1280px]:px-12 max-[768px]:px-6`}
         initial={{ y: '-0.5rem', opacity: 0 }}
@@ -89,7 +95,6 @@ const Header = () => {
               <Link
                 className={`${pathname === '/lobby' ? 'font-semibold text-white' : 'hover:text-white'}`}
                 href='/lobby'
-                prefetch={false}
               >
                 로비
               </Link>
@@ -99,14 +104,28 @@ const Header = () => {
                 <Link
                   className={`${pathname === '/signin' ? 'font-semibold text-white' : 'hover:text-white'}`}
                   href='/signin'
-                  prefetch={false}
                 >
                   로그인
                 </Link>
               ) : (
-                <button className='hover:text-white' onClick={handleSignout}>
-                  로그아웃
-                </button>
+                <div
+                  className='relative'
+                  onMouseEnter={() => setProfileModalVisible(true)}
+                  onMouseLeave={() => setProfileModalVisible(false)}
+                >
+                  <p className='max-w-44 truncate text-nowrap p-1'>
+                    {nickname}
+                  </p>
+                  {profileModalVisible && (
+                    <ProfileModal
+                      closeModal={() => setProfileModalVisible(false)}
+                      handleSignout={() => {
+                        setProfileModalVisible(false);
+                        handleSignout();
+                      }}
+                    />
+                  )}
+                </div>
               )}
             </li>
           </ul>
@@ -114,7 +133,7 @@ const Header = () => {
         <MdOutlineMenu
           className='hidden cursor-pointer text-slate-200 hover:text-white max-[768px]:block'
           size='2rem'
-          onClick={() => setIsVisible(true)}
+          onClick={() => setHeaderSidebarVisible(true)}
         />
       </motion.div>
       {pathname === '/' && !isScrolled && (
@@ -148,8 +167,8 @@ const Header = () => {
             transition={{ delay: 1, duration: 0.5 }}
           >
             <Lottie
-              animationData={LottieFile}
               className='h-[22.5rem] max-[768px]:h-full'
+              animationData={LottieFile}
             />
           </motion.div>
         </div>

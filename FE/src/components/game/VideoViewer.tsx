@@ -8,6 +8,7 @@ import { GamePublisher } from '@/types/gamePublisher';
 import { GameSubscriber } from '@/types/gameSubscriber';
 import { Situation } from '@/constants/situation';
 import { useMemo } from 'react';
+import { useAuthStore } from '@/stores/authStore';
 
 interface VideoViewerProps {
   roomId: string;
@@ -31,7 +32,8 @@ const VideoViewer = ({
   setTarget,
 }: VideoViewerProps) => {
   const { isOpen } = useSidebarStore();
-  const { nickname, socket } = useSocketStore();
+  const { nickname } = useAuthStore();
+  const { socket } = useSocketStore();
   const {
     listRef,
     onDragStart,

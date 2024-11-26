@@ -7,9 +7,11 @@ import { useEffect, useState } from 'react';
 import { useSocketStore } from '@/stores/socketStore';
 import NicknameModal from './NicknameModal';
 import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/stores/authStore';
 
 const LobbyViewer = () => {
-  const { nickname, setState } = useSocketStore();
+  const { nickname } = useAuthStore();
+  const { setSocketState } = useSocketStore();
   const [hasNickname, setHasNickname] = useState(false);
   const router = useRouter();
 
@@ -25,11 +27,10 @@ const LobbyViewer = () => {
         router.replace('/');
       });
 
-      setState({ socket });
+      setSocketState({ socket });
       socket.emit('set-nickname', { nickname });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasNickname]);
+  }, [hasNickname, nickname, router, setSocketState]);
 
   return (
     <div className='flex flex-col items-center'>

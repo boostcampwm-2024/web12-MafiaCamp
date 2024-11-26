@@ -2,15 +2,15 @@
 
 import { FormEvent } from 'react';
 import CloseIcon from '../common/icons/CloseIcon';
-import { useSocketStore } from '@/stores/socketStore';
 import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/stores/authStore';
 
 interface NicknameModalProps {
   setHasNickname: () => void;
 }
 
 const NicknameModal = ({ setHasNickname }: NicknameModalProps) => {
-  const { nickname, setState } = useSocketStore();
+  const { nickname, setAuthState } = useAuthStore();
   const router = useRouter();
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -50,7 +50,7 @@ const NicknameModal = ({ setHasNickname }: NicknameModalProps) => {
               autoComplete='off'
               maxLength={20}
               onChange={(e) => {
-                setState({ nickname: e.target.value });
+                setAuthState({ nickname: e.target.value });
               }}
             />
           </div>
