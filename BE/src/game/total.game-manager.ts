@@ -460,21 +460,19 @@ export class TotalGameManager
     gameRoom: GameRoom,
     saveTarget: string,
   ): Promise<void> {
-    return await this.lockManager.withKeyLock(gameRoom.roomId, async () => {
-      const mafiaSelectLog = this.mafiaSelectLogs.get(gameRoom.roomId);
+    const mafiaSelectLog = this.mafiaSelectLogs.get(gameRoom.roomId);
 
-      if (!mafiaSelectLog || mafiaSelectLog.length === 0) {
-        throw new NotFoundMafiaSelectLogException();
-      }
+    if (!mafiaSelectLog || mafiaSelectLog.length === 0) {
+      throw new NotFoundMafiaSelectLogException();
+    }
 
-      if (mafiaSelectLog[mafiaSelectLog.length - 1].target === saveTarget) {
-        const lastLog = mafiaSelectLog[mafiaSelectLog.length - 1];
-        if (lastLog.shouldBeKilled) {
-          lastLog.shouldBeKilled = false;
-          this.mafiaSelectLogs.set(gameRoom.roomId, mafiaSelectLog);
-        }
+    if (mafiaSelectLog[mafiaSelectLog.length - 1].target === saveTarget) {
+      const lastLog = mafiaSelectLog[mafiaSelectLog.length - 1];
+      if (lastLog.shouldBeKilled) {
+        lastLog.shouldBeKilled = false;
+        this.mafiaSelectLogs.set(gameRoom.roomId, mafiaSelectLog);
       }
-    });
+    }
   }
 
   async determineKillTarget(gameRoom: GameRoom): Promise<void> {
@@ -537,6 +535,7 @@ export class TotalGameManager
     return await this.lockManager.withKeyLock(gameRoom.roomId, async () => {
       this.sendResultToClient(gameRoom);
       await this.saveGameResult(gameRoom);
+      gameRoom.reset();
     });
   }
 
@@ -545,13 +544,11 @@ export class TotalGameManager
     if (!gameInfo) {
       throw new NotFoundGameRoomException();
     }
-    const playerInfo = [];
-    for (const entry of gameInfo.entries()) {
-      playerInfo.push({
-        nickname: entry[0],
-        ...entry[1],
-      });
-    }
+    const playerInfo = [ ...gameInfo.entries() ].map(([nickname, data]) => ({
+      nickname,
+      ...data
+    }))
+
     const result = gameRoom.result;
     const clients = gameRoom.clients;
     clients.forEach(c => {

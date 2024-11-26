@@ -28,11 +28,6 @@ import {
   MAFIA_KILL_USECASE,
   MafiaKillUsecase,
 } from '../game/usecase/role-playing/mafia.kill.usecase';
-import { SelectDoctorTargetRequest } from '../game/dto/select.doctor.target.request';
-import {
-  DOCTOR_CURE_USECASE,
-  DoctorCureUsecase,
-} from '../game/usecase/role-playing/doctor.cure.usecase';
 
 // @UseInterceptors(WebsocketLoggerInterceptor)
 @WebSocketGateway({
@@ -54,8 +49,6 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly voteMafiaUsecase: VoteMafiaUsecase,
     @Inject(MAFIA_KILL_USECASE)
     private readonly mafiaKillUseCase: MafiaKillUsecase,
-    @Inject(DOCTOR_CURE_USECASE)
-    private readonly doctorCureUsecase: DoctorCureUsecase,
   ) {}
 
   handleConnection(socket: Socket) {
@@ -209,19 +202,6 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
       room,
       selectMafiaTargetRequest.from,
       selectMafiaTargetRequest.target,
-    );
-  }
-
-  @SubscribeMessage('select-doctor-target')
-  async selectDoctorTarget(
-    @MessageBody() selectDoctorTarget: SelectDoctorTargetRequest,
-  ) {
-    const room = this.gameRoomService.findRoomById(selectDoctorTarget.roomId);
-
-    await this.doctorCureUsecase.selectDoctorTarget(
-      room,
-      selectDoctorTarget.from,
-      selectDoctorTarget.target,
     );
   }
 
