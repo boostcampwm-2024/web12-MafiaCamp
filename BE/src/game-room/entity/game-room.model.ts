@@ -64,12 +64,22 @@ export class GameRoom {
     this._result = result;
   }
 
+  get status() {
+    return this._status;
+  }
+
   set status(status: GameRoomStatus) {
     this._status = status;
   }
 
   static of(owner: string, title: string, capacity: number) {
     return new GameRoom(owner, title, capacity);
+  }
+
+  reset() {
+    this._gameId = null;
+    this._status = GameRoomStatus.READY;
+    this._result = null;
   }
 
   enter(client: GameClient) {
@@ -82,9 +92,21 @@ export class GameRoom {
   }
 
   leave(nickname: string) {
-    this._clients = this.clients.filter((c) => c.nickname !== nickname);
     this.participants--;
-    this.sendAll('leave-user-nickname', nickname);
+    if (this.participants === 0) {
+      this._status = GameRoomStatus.DONE;
+      return;
+    }
+    this._clients = this.clients.filter((c) => c.nickname !== nickname);
+    let newOwner = null;
+    if (nickname === this.owner) {
+      newOwner = this.delegateOwner();
+      this.owner = newOwner;
+    }
+    this.sendAll('leave-user-nickname', {
+      nickname,
+      newOwner
+    });
   }
 
   sendAll(event: string, ...args) {
@@ -124,7 +146,15 @@ export class GameRoom {
   }
 
   private sendParticipantInfo() {
-    const participants = this._clients.map((c) => c.nickname);
+    const participants = this._clients.map((c) => ({
+      nickname: c.nickname,
+      isOwner: this.owner === c.nickname,
+    }));
     this.sendAll('participants', participants);
+  }
+
+  private delegateOwner() {
+    const nicknames = this._clients.map((c) => c.nickname);
+    return nicknames.sort(() => Math.random() - 0.5).pop();
   }
 }

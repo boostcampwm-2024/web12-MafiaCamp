@@ -11,6 +11,11 @@ import {
   DOCTOR_MANAGER,
   DoctorManager,
 } from '../../usecase/role-playing/doctor-manager';
+import { GameRoom } from 'src/game-room/entity/game-room.model';
+import { StopCountdownRequest } from 'src/game/dto/stop.countdown.request';
+import { DOCTOR_CURE_USECASE, DoctorCureUsecase } from 'src/game/usecase/role-playing/doctor.cure.usecase';
+import { SelectDoctorTargetRequest } from 'src/game/dto/select.doctor.target.request';
+import { MAFIA_ROLE } from 'src/game/mafia-role';
 
 @Injectable()
 export class DoctorState extends GameState {
@@ -21,19 +26,54 @@ export class DoctorState extends GameState {
     private readonly policeState: PoliceState,
     @Inject(DOCTOR_MANAGER)
     private readonly doctorManager: DoctorManager,
+    @Inject(DOCTOR_CURE_USECASE)
+    private readonly doctorCureUsecase: DoctorCureUsecase,
   ) {
     super();
   }
 
   async handle(context: GameContext, next: TransitionHandler) {
+    const cleanups = [];
     const room = context.room;
-    //의사의 생존 유무에 따른 카운터 함수 실행
-    if (await this.doctorManager.isDoctorAlive(room)) {
-      await this.countdownTimeoutUsecase.countdownStart(
-        new StartCountdownRequest(room, 'DOCTOR'),
-      );
+
+    if (!await this.doctorManager.isDoctorAlive(room)) {
+      return next(this.policeState);
     }
 
+    await Promise.race([this.timeout(room, cleanups), this.selectDoctorTarget(room, cleanups)]);
+    this.cleanup(cleanups);
     next(this.policeState);
+  }
+
+  private async timeout(room: GameRoom, cleanups) {
+    cleanups.push(() => {
+      this.countdownTimeoutUsecase.countdownStop(
+        new StopCountdownRequest(room),
+      );
+    });
+    return await this.countdownTimeoutUsecase.countdownStart(
+      new StartCountdownRequest(room, 'DOCTOR'),
+    );
+  }
+
+
+  private selectDoctorTarget(room: GameRoom, cleanups): Promise<void> {
+    const doctor = room.clients.find(c => c.job === MAFIA_ROLE.DOCTOR);
+
+    return new Promise((resolve) => {
+      const listener = async (data: SelectDoctorTargetRequest) => {
+        await this.doctorCureUsecase.selectDoctorTarget(room, data.from, data.target);
+        resolve();
+      };
+
+      cleanups.push(() => {
+        doctor.removeListener('select-doctor-target', listener);
+      });
+      doctor.once('select-doctor-target', listener);
+    });
+  }
+
+  private cleanup(cleanups) {
+    cleanups.forEach(fn => fn());
   }
 }
