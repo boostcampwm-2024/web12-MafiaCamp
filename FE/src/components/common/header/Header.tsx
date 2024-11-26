@@ -16,7 +16,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { FaChevronDown } from 'react-icons/fa';
 
 const Header = () => {
-  const { userId, initialize, setAuthState } = useAuthStore();
+  const { userId, initializeAuthState, setAuthState } = useAuthStore();
   const { nickname, handleSignout } = useSignout();
   const [isScrolled, setIsScrolled] = useState(false);
   const [headerSidebarVisible, setHeaderSidebarVisible] = useState(false);
@@ -39,7 +39,7 @@ const Header = () => {
       });
 
       if (!response.ok) {
-        initialize();
+        initializeAuthState();
         return;
       }
 
@@ -51,7 +51,7 @@ const Header = () => {
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [initialize, setAuthState]);
+  }, [initializeAuthState, setAuthState]);
 
   if (
     pathname.startsWith('/game') ||

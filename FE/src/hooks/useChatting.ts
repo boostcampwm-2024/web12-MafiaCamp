@@ -9,7 +9,7 @@ import { FormEvent, useEffect, useRef, useState } from 'react';
 
 export const useChatting = (roomId: string, isMafia: boolean) => {
   // TODO: reducer로 변경하기
-  const { isOpen, initialize, closeSidebar } = useSidebarStore();
+  const { isOpen, initializeSidebarState, closeSidebar } = useSidebarStore();
   const { nickname } = useAuthStore();
   const { socket } = useSocketStore();
   const [chatList, setChatList] = useState<Chat[]>([]);
@@ -58,9 +58,9 @@ export const useChatting = (roomId: string, isMafia: boolean) => {
     return () => {
       socket?.off('chat');
       socket?.off('chat-mafia');
-      initialize();
+      initializeSidebarState();
     };
-  }, [chatList, initialize, isMafia, socket]);
+  }, [chatList, initializeSidebarState, isMafia, socket]);
 
   return {
     isOpen,

@@ -11,7 +11,7 @@ interface SocketState {
 
 // 액션 인터페이스 정의
 interface SocketAction {
-  initialize: () => void;
+  initializeSocketState: () => void;
   setSocketState: (data: Partial<SocketState>) => void;
 }
 
@@ -25,7 +25,7 @@ type SocketStoreType = SocketState & SocketAction;
 
 const socketStore: StateCreator<SocketStoreType> = (set) => ({
   ...initialState,
-  initialize: () => set({ ...initialState }),
+  initializeSocketState: () => set({ ...initialState }),
   setSocketState: (data: Partial<SocketState>) => set({ ...data }),
 });
 
