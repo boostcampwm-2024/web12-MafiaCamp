@@ -20,7 +20,7 @@ type AuthStoreType = AuthState & AuthAction;
 
 const authStore: StateCreator<AuthStoreType> = (set) => ({
   ...initialState,
-  initializeAuthState: () => set({ userId: '0', nickname: '' }),
+  initializeAuthState: () => set({ ...initialState }),
   setAuthState: (data: Partial<AuthState>) => set({ ...data }),
 });
 

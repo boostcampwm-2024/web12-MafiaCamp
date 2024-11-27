@@ -18,12 +18,14 @@ import { io } from 'socket.io-client';
 import { useSocketStore } from '@/stores/socketStore';
 
 const Header = () => {
-  const { userId, initializeAuthState, setAuthState } = useAuthStore();
+  const { userId, nickname, initializeAuthState, setAuthState } =
+    useAuthStore();
   const { socket, setSocketState } = useSocketStore();
-  const { nickname, handleSignout } = useSignout();
+  const { handleSignout } = useSignout();
   const [scrolled, setScrolled] = useState(false);
   const [headerSidebarVisible, setHeaderSidebarVisible] = useState(false);
   const [profileModalVisible, setProfileModalVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -37,18 +39,22 @@ const Header = () => {
 
   useEffect(() => {
     (async () => {
+      setLoading(true);
+
       const response = await fetch('/api/user/info', {
         method: 'GET',
         cache: 'no-store',
       });
 
       if (!response.ok) {
+        setLoading(false);
         initializeAuthState();
         return;
       }
 
       const result: User = await response.json();
       setAuthState({ ...result });
+      setLoading(false);
     })();
 
     window.addEventListener('scroll', handleScroll);
@@ -59,22 +65,19 @@ const Header = () => {
 
   useEffect(() => {
     if (userId !== '' && !socket) {
-      const socket = io(`${process.env.NEXT_PUBLIC_BACKEND_URL}/ws`, {
+      const newSocket = io(`${process.env.NEXT_PUBLIC_BACKEND_URL}/ws`, {
         transports: ['websocket', 'polling'], // use WebSocket first, if available
       });
 
-      setSocketState({ socket });
+      setSocketState({ socket: newSocket });
 
-      socket.on('connect_error', (error) => {
+      newSocket.on('connect_error', (error) => {
         console.error(`연결 실패: ${error}`);
         alert('서버와의 연결에 실패하였습니다. 잠시 후에 다시 시도해 주세요.');
-        socket.disconnect();
+        newSocket.disconnect();
         setSocketState({ socket: null });
         router.replace('/');
       });
-    } else {
-      socket?.disconnect();
-      setSocketState({ socket: null });
     }
   }, [router, setSocketState, socket, userId]);
 
@@ -133,7 +136,7 @@ const Header = () => {
               </Link>
             </li>
             <li>
-              {userId === '' ? (
+              {loading ? (
                 <div className='h-6 w-12 animate-pulse rounded-lg bg-slate-400' />
               ) : nickname === '' ? (
                 <Link

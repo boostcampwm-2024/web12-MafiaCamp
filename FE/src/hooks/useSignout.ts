@@ -1,8 +1,10 @@
 import { useAuthStore } from '@/stores/authStore';
+import { useSocketStore } from '@/stores/socketStore';
 import { useRouter } from 'next/navigation';
 
 export const useSignout = () => {
-  const { nickname, setAuthState } = useAuthStore();
+  const { initializeAuthState } = useAuthStore();
+  const { socket, initializeSocketState } = useSocketStore();
   const router = useRouter();
 
   const handleSignout = async () => {
@@ -15,9 +17,11 @@ export const useSignout = () => {
       throw new Error(response.statusText);
     }
 
-    setAuthState({ nickname: '' });
+    socket?.disconnect();
+    initializeAuthState();
+    initializeSocketState();
     router.replace('/');
   };
 
-  return { nickname, handleSignout };
+  return { handleSignout };
 };
