@@ -1,13 +1,22 @@
+'use client';
+
 import { Room } from '@/types/room';
 import UsersIcon from '../common/icons/UsersIcon';
 import { ROOM_STATUS } from '@/constants/roomStatus';
-import Link from 'next/link';
+import { useSocketStore } from '@/stores/socketStore';
 
 interface LobbyItemProps {
   room: Room;
+  setTargetRoom: () => void;
 }
 
-const LobbyItem = ({ room }: LobbyItemProps) => {
+const LobbyItem = ({ room, setTargetRoom }: LobbyItemProps) => {
+  const { socket } = useSocketStore();
+
+  const handleEnterRoom = () => {
+    socket?.emit('enter-room', { roomId: room.roomId });
+  };
+
   return (
     <div
       className={`${(room.participants === room.capacity || room.status === 'RUNNING') && 'opacity-50'} flex h-60 flex-col justify-between rounded-3xl border border-slate-200 bg-slate-600/50 p-6 duration-300 hover:bg-slate-400/50`}
@@ -31,12 +40,15 @@ const LobbyItem = ({ room }: LobbyItemProps) => {
               참가하기
             </div>
           ) : (
-            <Link
+            <button
               className='flex h-9 w-[7.5rem] items-center justify-center rounded-2xl bg-white text-sm font-semibold text-slate-800 hover:scale-105'
-              href={`/game/${room.roomId}?roomName=${room.title}&capacity=${room.capacity}`}
+              onClick={() => {
+                setTargetRoom();
+                handleEnterRoom();
+              }}
             >
               참가하기
-            </Link>
+            </button>
           )}
         </div>
       </div>

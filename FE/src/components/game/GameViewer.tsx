@@ -69,9 +69,6 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       return;
     }
 
-    // 방 입장
-    socket?.emit('enter-room', { roomId });
-
     const handleBeforeUnload = () => {
       socket?.emit('leave-room', { roomId });
     };

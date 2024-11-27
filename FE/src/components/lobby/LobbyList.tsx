@@ -14,6 +14,11 @@ import { useRouter } from 'next/navigation';
 const LobbyList = () => {
   const { socket } = useSocketStore();
   const [roomList, setRoomList] = useState<Room[]>([]);
+  const [targetRoom, setTargetRoom] = useState<{
+    roomId: string;
+    title: string;
+    capacity: number;
+  }>();
   const router = useRouter();
 
   const notifyError = (message: string) => {
@@ -42,19 +47,34 @@ const LobbyList = () => {
       return;
     }
 
-    router.push(
-      `/game/${result.roomId}?roomName=${result.title}&capacity=${result.capacity}`,
-    );
+    setTargetRoom({
+      roomId: result.roomId!,
+      title: result.title!,
+      capacity: result.capacity!,
+    });
+    socket?.emit('enter-room', { roomId: result.roomId });
   };
 
   useEffect(() => {
     socket?.on('room-list', (rooms: Room[]) => setRoomList(rooms));
+    socket?.on('error', () => {
+      notifyError('방 입장에 실패하였습니다.');
+    });
+    socket?.once('participants', () => {
+      if (targetRoom) {
+        router.push(
+          `/game/${targetRoom.roomId}?roomName=${targetRoom.title}&capacity=${targetRoom.capacity}`,
+        );
+      }
+    });
     socket?.emit('room-list');
 
     return () => {
       socket?.off('room-list');
+      socket?.off('error');
+      socket?.off('participants');
     };
-  }, [socket]);
+  }, [router, socket, targetRoom]);
 
   return (
     <div className='flex w-full flex-col gap-8 pb-20 pt-24'>
@@ -80,7 +100,17 @@ const LobbyList = () => {
       ) : (
         <div className='grid grid-cols-3 gap-3 max-[1080px]:grid-cols-2 max-[768px]:grid-cols-1'>
           {roomList.map((room) => (
-            <LobbyItem key={room.roomId} room={room} />
+            <LobbyItem
+              key={room.roomId}
+              room={room}
+              setTargetRoom={() =>
+                setTargetRoom({
+                  roomId: room.roomId,
+                  title: room.title,
+                  capacity: room.capacity,
+                })
+              }
+            />
           ))}
         </div>
       )}
