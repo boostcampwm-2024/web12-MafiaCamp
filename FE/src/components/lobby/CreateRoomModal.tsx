@@ -1,6 +1,6 @@
 'use client';
 
-import React, { FormEvent, useEffect, useState } from 'react';
+import React, { FormEvent, useEffect } from 'react';
 import CloseIcon from '../common/icons/CloseIcon';
 import { useForm } from 'react-hook-form';
 import { RoomCreateFormSchema } from '@/libs/zod/roomCreateFormSchema';
