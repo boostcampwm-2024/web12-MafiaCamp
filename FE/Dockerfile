@@ -20,12 +20,10 @@ RUN npm install --force
 # 현재 디렉토리의 모든 파일을 /app 디렉토리로 복사합니다.
 COPY . .
 
-# 1-5. 환경 변수 설정
+# 1-5. client-side 환경 변수 설정
 ARG ARG_NEXT_PUBLIC_BACKEND_URL
-ARG ARG_BACKEND_API_URL
 ARG ARG_NEXT_PUBLIC_BACKEND_API_URL
 ENV NEXT_PUBLIC_BACKEND_URL=${ARG_NEXT_PUBLIC_BACKEND_URL}
-ENV BACKEND_API_URL=${ARG_BACKEND_API_URL}
 ENV NEXT_PUBLIC_BACKEND_API_URL=${ARG_NEXT_PUBLIC_BACKEND_API_URL}
 
 # 1-6. 애플리케이션 빌드
@@ -40,11 +38,15 @@ COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
 COPY --from=build /app/public ./public
 
-# 2-2. 포트 설정
+# 2-2. server-side 환경 변수 설정
+ARG ARG_BACKEND_API_URL
+ENV BACKEND_API_URL=${ARG_BACKEND_API_URL}
+
+# 2-3. 포트 설정
 # 컨테이너가 사용하는 포트를 명시적으로 지정하는 명령어로, 호스트와 통신할 포트를 설정합니다.
 EXPOSE 3000
 
-# 2-3. 애플리케이션 실행
+# 2-4. 애플리케이션 실행
 # 컨테이너가 시작될 때 실행할 기본 명령어를 지정합니다.
 # CMD는 Dockerfile에서 한 번만 사용할 수 있습니다.
 CMD [ "node", "server.js" ]
