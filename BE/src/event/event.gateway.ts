@@ -24,7 +24,6 @@ import {
 } from '../game/usecase/vote-manager/vote.mafia.usecase';
 import { VoteCandidateRequest } from '../game/dto/vote.candidate.request';
 import { SelectMafiaTargetRequest } from '../game/dto/select.mafia.target.request';
-import { FINISH_GAME_USECASE } from '../game/usecase/finish-game/finish-game.usecase';
 import {
   CONNECTED_USER_USECASE,
   ConnectedUserUsecase,
@@ -33,10 +32,6 @@ import {
   MAFIA_KILL_USECASE,
   MafiaKillUsecase,
 } from '../game/usecase/role-playing/mafia.kill.usecase';
-import {
-  DOCTOR_CURE_USECASE,
-  DoctorCureUsecase,
-} from '../game/usecase/role-playing/doctor.cure.usecase';
 import { WebsocketLoggerInterceptor } from '../common/logger/websocket.logger.interceptor';
 import { WebsocketExceptionFilter } from '../common/filter/websocket.exception.filter';
 import {
@@ -66,8 +61,6 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly voteMafiaUsecase: VoteMafiaUsecase,
     @Inject(MAFIA_KILL_USECASE)
     private readonly mafiaKillUseCase: MafiaKillUsecase,
-    @Inject(DOCTOR_CURE_USECASE)
-    private readonly doctorCureUsecase: DoctorCureUsecase,
     @Inject(FIND_USERINFO_USECASE)
     private readonly findUserInfoUsecase: FindUserInfoUsecase,
     @Inject(CONNECTED_USER_USECASE)
@@ -89,9 +82,14 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.userId = userId;
 
     await this.connectUserUseCase.enter({
-      userId: String(userId),
+      userId: String(this.tmpUserId++),
       userNickName: nickname,
     });
+
+    const onLineUserList = await this.connectUserUseCase.getOnLineUserList();
+    //todo : 처음 접속 유저에게 online userList 보내주기
+    //client.e
+
     client.subscribe(Event.ROOM_DATA_CHANGED);
     client.subscribe(Event.USER_DATA_CHANGED);
     this.connectedClients.set(socket, client);
