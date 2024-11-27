@@ -5,17 +5,13 @@ import Lottie from 'lottie-react';
 import * as motion from 'framer-motion/client';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSocketStore } from '@/stores/socketStore';
 
 const Introduction = () => {
-  const { socket, initializeSocketState } = useSocketStore();
   const router = useRouter();
 
   useEffect(() => {
-    socket?.disconnect();
-    initializeSocketState();
     router.refresh();
-  }, [initializeSocketState, router, socket]);
+  }, [router]);
 
   return (
     <div className='flex w-full flex-col items-center gap-8 text-nowrap pt-[25rem]'>
