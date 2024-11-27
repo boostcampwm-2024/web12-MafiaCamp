@@ -20,7 +20,7 @@ const LobbyList = () => {
     roomId: string;
     title: string;
     capacity: number;
-  }>();
+  } | null>(null);
   const router = useRouter();
 
   const notifyError = (message: string) => {
@@ -60,6 +60,7 @@ const LobbyList = () => {
   useEffect(() => {
     socket?.on('room-list', (rooms: Room[]) => setRoomList(rooms));
     socket?.on('error', () => {
+      setTargetRoom(null);
       notifyError('방 입장에 실패하였습니다.');
     });
     socket?.once(

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { FormEvent, useEffect } from 'react';
+import React, { FormEvent, useEffect, useState } from 'react';
 import CloseIcon from '../common/icons/CloseIcon';
 import { useForm } from 'react-hook-form';
 import { RoomCreateFormSchema } from '@/libs/zod/roomCreateFormSchema';
@@ -8,13 +8,18 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useSocketStore } from '@/stores/socketStore';
 import { useRouter } from 'next/navigation';
 import useScrollLock from '@/hooks/useScrollLock';
+import { useParticipantListStore } from '@/stores/participantListStore';
+import { useAuthStore } from '@/stores/authStore';
 
 interface CreateRoomModalProps {
   close: () => void;
 }
 
 const CreateRoomModal = ({ close }: CreateRoomModalProps) => {
+  const { nickname } = useAuthStore();
+  const { setParticipantList } = useParticipantListStore();
   const { socket } = useSocketStore();
+  const [roomId, setRoomId] = useState('');
   const router = useRouter();
   const methods = useForm<{ title: string; capacity: string }>({
     resolver: zodResolver(RoomCreateFormSchema),
@@ -42,14 +47,18 @@ const CreateRoomModal = ({ close }: CreateRoomModalProps) => {
   useEffect(() => {
     socket?.on('create-room', (data: { success: boolean; roomId: string }) => {
       if (data.success) {
+        setRoomId(roomId);
         socket?.emit('enter-room', { roomId: data.roomId });
+        setParticipantList([{ nickname, isOwner: true }]);
+        const { title, capacity } = methods.getValues();
+        router.push(`/game/${roomId}?roomName=${title}&capacity=${capacity}`);
       }
     });
 
     return () => {
       socket?.off('create-room');
     };
-  }, [methods, router, socket]);
+  }, [methods, nickname, roomId, router, setParticipantList, socket]);
 
   return (
     <form
