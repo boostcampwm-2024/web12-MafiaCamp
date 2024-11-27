@@ -5,33 +5,28 @@ import {
   OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
-  WsException,
   WsResponse,
 } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
 import { CreateRoomRequest } from 'src/game-room/dto/create-room.request';
 import { GameRoomService } from 'src/game-room/game-room.service';
-import { Inject, Logger } from '@nestjs/common';
+import { Inject, Logger, UseFilters, UseInterceptors } from '@nestjs/common';
 import { EventClient } from './event-client.model';
 import { EventManager } from './event-manager';
 import { Event } from './event.const';
-import {
-  START_GAME_USECASE,
-  StartGameUsecase,
-} from 'src/game/usecase/start-game/start-game.usecase';
-import {
-  VOTE_MAFIA_USECASE,
-  VoteMafiaUsecase,
-} from '../game/usecase/vote-manager/vote.mafia.usecase';
+import { START_GAME_USECASE, StartGameUsecase } from 'src/game/usecase/start-game/start-game.usecase';
+import { VOTE_MAFIA_USECASE, VoteMafiaUsecase } from '../game/usecase/vote-manager/vote.mafia.usecase';
 import { VoteCandidateRequest } from '../game/dto/vote.candidate.request';
 import { SelectMafiaTargetRequest } from '../game/dto/select.mafia.target.request';
-import {
-  MAFIA_KILL_USECASE,
-  MafiaKillUsecase,
-} from '../game/usecase/role-playing/mafia.kill.usecase';
+import { MAFIA_KILL_USECASE, MafiaKillUsecase } from '../game/usecase/role-playing/mafia.kill.usecase';
+import { DOCTOR_CURE_USECASE, DoctorCureUsecase } from '../game/usecase/role-playing/doctor.cure.usecase';
+import { WebsocketLoggerInterceptor } from '../common/logger/websocket.logger.interceptor';
+import { WebsocketExceptionFilter } from '../common/filter/websocket.exception.filter';
 import { FIND_USERINFO_USECASE, FindUserInfoUsecase } from 'src/user/usecase/find.user-info.usecase';
 
-// @UseInterceptors(WebsocketLoggerInterceptor)
+
+@UseFilters(WebsocketExceptionFilter)
+@UseInterceptors(WebsocketLoggerInterceptor)
 @WebSocketGateway({
   namespace: 'ws',
   cors: {
@@ -51,9 +46,12 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly voteMafiaUsecase: VoteMafiaUsecase,
     @Inject(MAFIA_KILL_USECASE)
     private readonly mafiaKillUseCase: MafiaKillUsecase,
+    @Inject(DOCTOR_CURE_USECASE)
+    private readonly doctorCureUsecase: DoctorCureUsecase,
     @Inject(FIND_USERINFO_USECASE)
     private readonly findUserInfoUsecase: FindUserInfoUsecase,
-  ) {}
+  ) {
+  }
 
   async handleConnection(socket: Socket) {
     this.logger.log(`[${socket.id}] Client connected`);
@@ -122,7 +120,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
       event: 'create-room',
       data: {
         success: true,
-        roomId
+        roomId,
       },
     };
   }
@@ -188,7 +186,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
         data: { success: false },
       };
     }
-    this.startGameUsecase.start(room);
+    await this.startGameUsecase.start(room);
   }
 
   @SubscribeMessage('vote-candidate')
