@@ -19,7 +19,6 @@ const CreateRoomModal = ({ close }: CreateRoomModalProps) => {
   const { nickname } = useAuthStore();
   const { setParticipantList } = useParticipantListStore();
   const { socket } = useSocketStore();
-  const [roomId, setRoomId] = useState('');
   const router = useRouter();
   const methods = useForm<{ title: string; capacity: string }>({
     resolver: zodResolver(RoomCreateFormSchema),
@@ -47,18 +46,19 @@ const CreateRoomModal = ({ close }: CreateRoomModalProps) => {
   useEffect(() => {
     socket?.on('create-room', (data: { success: boolean; roomId: string }) => {
       if (data.success) {
-        setRoomId(roomId);
         socket?.emit('enter-room', { roomId: data.roomId });
         setParticipantList([{ nickname, isOwner: true }]);
         const { title, capacity } = methods.getValues();
-        router.push(`/game/${roomId}?roomName=${title}&capacity=${capacity}`);
+        router.push(
+          `/game/${data.roomId}?roomName=${title}&capacity=${capacity}`,
+        );
       }
     });
 
     return () => {
       socket?.off('create-room');
     };
-  }, [methods, nickname, roomId, router, setParticipantList, socket]);
+  }, [methods, nickname, router, setParticipantList, socket]);
 
   return (
     <form
