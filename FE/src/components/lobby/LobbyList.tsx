@@ -10,8 +10,10 @@ import { useSocketStore } from '@/stores/socketStore';
 import { toast, ToastContainer } from 'react-toastify';
 import { TOAST_OPTION } from '@/constants/toastOption';
 import { useRouter } from 'next/navigation';
+import { useParticipantListStore } from '@/stores/participantListStore';
 
 const LobbyList = () => {
+  const { setParticipantList } = useParticipantListStore();
   const { socket } = useSocketStore();
   const [roomList, setRoomList] = useState<Room[]>([]);
   const [targetRoom, setTargetRoom] = useState<{
@@ -60,13 +62,17 @@ const LobbyList = () => {
     socket?.on('error', () => {
       notifyError('방 입장에 실패하였습니다.');
     });
-    socket?.once('participants', () => {
-      if (targetRoom) {
-        router.push(
-          `/game/${targetRoom.roomId}?roomName=${targetRoom.title}&capacity=${targetRoom.capacity}`,
-        );
-      }
-    });
+    socket?.once(
+      'participants',
+      (data: { nickname: string; isOwner: boolean }[]) => {
+        if (targetRoom) {
+          setParticipantList(data);
+          router.push(
+            `/game/${targetRoom.roomId}?roomName=${targetRoom.title}&capacity=${targetRoom.capacity}`,
+          );
+        }
+      },
+    );
     socket?.emit('room-list');
 
     return () => {
@@ -74,7 +80,7 @@ const LobbyList = () => {
       socket?.off('error');
       socket?.off('participants');
     };
-  }, [router, socket, targetRoom]);
+  }, [router, setParticipantList, socket, targetRoom]);
 
   return (
     <div className='flex w-full flex-col gap-8 pb-20 pt-24'>

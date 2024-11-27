@@ -13,6 +13,7 @@ import VideoViewer from './video/VideoViewer';
 import GameResultBoard from './GameResultBoard';
 import { TOAST_OPTION } from '@/constants/toastOption';
 import { useRouter } from 'next/navigation';
+import { useParticipantListStore } from '@/stores/participantListStore';
 
 interface GameViewerProps {
   roomId: string;
@@ -21,6 +22,7 @@ interface GameViewerProps {
 const GameViewer = ({ roomId }: GameViewerProps) => {
   // TODO: 하단 코드 리팩토링 필요.
 
+  const { participantList } = useParticipantListStore();
   const { socket } = useSocketStore();
   const router = useRouter();
   const {
@@ -64,7 +66,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
 
   useEffect(() => {
     // 웹 사이트를 새로고침하거나 주소창 입력으로 게임 방에 접속하려는 경우 로비 페이지로 강제 이동
-    if (!socket) {
+    if (!participantList) {
       router.replace('/lobby');
       return;
     }
@@ -79,7 +81,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       socket?.emit('leave-room', { roomId });
     };
-  }, [roomId, router, socket]);
+  }, [participantList, roomId, router, socket]);
 
   useEffect(() => {
     // 직업 확인
