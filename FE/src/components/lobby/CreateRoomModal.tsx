@@ -7,14 +7,15 @@ import { RoomCreateFormSchema } from '@/libs/zod/roomCreateFormSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSocketStore } from '@/stores/socketStore';
 import { useRouter } from 'next/navigation';
+import useScrollLock from '@/hooks/useScrollLock';
 
 interface CreateRoomModalProps {
   close: () => void;
 }
 
 const CreateRoomModal = ({ close }: CreateRoomModalProps) => {
-  const router = useRouter();
   const { socket } = useSocketStore();
+  const router = useRouter();
   const methods = useForm<{ title: string; capacity: string }>({
     resolver: zodResolver(RoomCreateFormSchema),
     defaultValues: {
@@ -35,6 +36,8 @@ const CreateRoomModal = ({ close }: CreateRoomModalProps) => {
     const { title, capacity } = methods.getValues();
     socket?.emit('create-room', { title, capacity: Number(capacity) });
   };
+
+  useScrollLock();
 
   useEffect(() => {
     socket?.on('create-room', (data: { success: boolean; roomId: string }) => {

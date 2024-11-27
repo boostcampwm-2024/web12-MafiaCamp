@@ -3,19 +3,20 @@
 import { useSidebarStore } from '@/stores/sidebarStore';
 import VideoItem from './VideoItem';
 import { useDragScroll } from '@/hooks/useDragScroll';
-import { useSocketStore } from '@/stores/socketStore';
 import { GamePublisher } from '@/types/gamePublisher';
 import { GameSubscriber } from '@/types/gameSubscriber';
 import { Situation } from '@/constants/situation';
 import { useMemo } from 'react';
-import { useAuthStore } from '@/stores/authStore';
+import VideoFilter from './VideoFilter';
+import { GameStatus } from '@/constants/gameStatus';
+import InvalidityButton from './InvalidityButton';
 
 interface VideoViewerProps {
   roomId: string;
-  isGameStarted: boolean;
-  situation: Situation | null;
+  gameStatus: GameStatus;
   gamePublisher: GamePublisher;
   gameSubscribers: GameSubscriber[];
+  situation: Situation | null;
   target: string | null;
   invalidityCount: number;
   setTarget: (nickname: string | null) => void;
@@ -23,17 +24,15 @@ interface VideoViewerProps {
 
 const VideoViewer = ({
   roomId,
-  isGameStarted,
-  situation,
+  gameStatus,
   gamePublisher,
   gameSubscribers,
+  situation,
   target,
   invalidityCount,
   setTarget,
 }: VideoViewerProps) => {
   const { isOpen } = useSidebarStore();
-  const { nickname } = useAuthStore();
-  const { socket } = useSocketStore();
   const {
     listRef,
     onDragStart,
@@ -46,39 +45,15 @@ const VideoViewer = ({
 
   const totalSurvivors = useMemo(
     () =>
-      isGameStarted
-        ? (gamePublisher.participant ? 1 : 0) +
+      gameStatus === 'RUNNING'
+        ? (gamePublisher.isAlive ? 1 : 0) +
           gameSubscribers.reduce(
-            (total, gameSubscriber) =>
-              total + (gameSubscriber.participant ? 1 : 0),
+            (total, gameSubscriber) => total + (gameSubscriber.isAlive ? 1 : 0),
             0,
           )
         : gameSubscribers.length + 1,
-    [gamePublisher.participant, gameSubscribers, isGameStarted],
+    [gamePublisher.isAlive, gameStatus, gameSubscribers],
   );
-
-  const handleInvalityButtonClick = () => {
-    if (target !== null) {
-      socket?.emit('cancel-vote-candidate', {
-        roomId,
-        from: nickname,
-        to: target,
-      });
-    }
-
-    if (target === 'INVALIDITY') {
-      setTarget(null);
-      return;
-    }
-
-    socket?.emit('vote-candidate', {
-      roomId,
-      from: nickname,
-      to: 'INVALIDITY',
-    });
-
-    setTarget('INVALIDITY');
-  };
 
   return (
     <div
@@ -95,36 +70,20 @@ const VideoViewer = ({
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
-      {
-        gamePublisher.participant &&
-          /* eslint-disable indent */
-          (situation === 'VOTE' ||
-            situation === 'ARGUMENT' ||
-            (situation === 'MAFIA' && gamePublisher.role === 'MAFIA') ||
-            (situation === 'DOCTOR' && gamePublisher.role === 'DOCTOR') ||
-            (situation === 'POLICE' && gamePublisher.role === 'POLICE')) && (
-            <div className='pointer-events-none absolute bottom-0 left-0 z-10 h-full w-full bg-slate-800/75' />
-          )
-        /* eslint-enable indent */
-      }
-      {gamePublisher.participant && situation === 'VOTE' && (
-        <div
-          className={[
-            `${isOpen ? 'right-[21.5rem]' : 'right-6'}`,
-            'fixed bottom-3 z-20 h-20 w-40 transition-all duration-500 ease-out',
-          ].join(' ')}
-        >
-          <button
-            className={[
-              `${target === 'INVALIDITY' ? 'border-2 bg-slate-600 text-white' : 'bg-white font-bold text-slate-800'}`,
-              'h-full w-full rounded-2xl border border-slate-400 font-bold hover:bg-slate-600 hover:text-white',
-            ].join(' ')}
-            onClick={handleInvalityButtonClick}
-          >
-            {`기권 ${invalidityCount}`}
-          </button>
-        </div>
-      )}
+      <VideoFilter
+        gameStatus={gameStatus}
+        gamePublisher={gamePublisher}
+        situation={situation}
+      />
+      <InvalidityButton
+        roomId={roomId}
+        gameStatus={gameStatus}
+        gamePublisher={gamePublisher}
+        situation={situation}
+        target={target}
+        invalidityCount={invalidityCount}
+        setTarget={setTarget}
+      />
       <div
         className={[
           `${totalSurvivors <= 2 ? 'grid-rows-1' : 'grid-rows-2'}`,
@@ -132,10 +91,10 @@ const VideoViewer = ({
           'grid h-full min-w-[67.5rem] gap-6',
         ].join(' ')}
       >
-        {(!isGameStarted || gamePublisher.participant) && (
+        {(gameStatus !== 'RUNNING' || gamePublisher.isAlive) && (
           <VideoItem
             roomId={roomId}
-            isPublisherAlive={gamePublisher.participant ? true : false}
+            isPublisherAlive={gamePublisher.isAlive}
             gamePublisherRole={gamePublisher.role}
             gameParticipant={gamePublisher}
             situation={situation}
@@ -145,13 +104,14 @@ const VideoViewer = ({
         )}
         {gameSubscribers
           .filter(
-            (gameSubscriber) => !isGameStarted || gameSubscriber.participant,
+            (gameSubscriber) =>
+              gameStatus !== 'RUNNING' || gameSubscriber.isAlive,
           )
           .map((gameSubscriber) => (
             <VideoItem
               key={gameSubscriber.nickname}
               roomId={roomId}
-              isPublisherAlive={gamePublisher.participant ? true : false}
+              isPublisherAlive={gamePublisher.isAlive}
               gamePublisherRole={gamePublisher.role}
               gameParticipant={gameSubscriber}
               situation={situation}

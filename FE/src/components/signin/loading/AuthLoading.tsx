@@ -1,7 +1,5 @@
 'use client';
 
-import LottieFile from '@/../public/lottie/pulse.json';
-import Lottie from 'lottie-react';
 import { User } from '@/types/user';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
@@ -33,11 +31,7 @@ const AuthLoading = () => {
     }
   }, [code, router, setAuthState]);
 
-  return (
-    <div className='fixed left-0 top-0 flex h-full w-full items-center justify-center'>
-      <Lottie className='w-1/2' animationData={LottieFile} />
-    </div>
-  );
+  return null;
 };
 
 export default AuthLoading;

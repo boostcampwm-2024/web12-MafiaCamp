@@ -3,13 +3,13 @@
 import 'react-toastify/dist/ReactToastify.css';
 import { useOpenVidu } from '@/hooks/useOpenVidu';
 import Bottombar from './Bottombar';
-import ChattingList from './ChattingList';
-import VideoViewer from './VideoViewer';
+import ChattingList from './chatting/ChattingList';
 import { useEffect, useState } from 'react';
 import { useSocketStore } from '@/stores/socketStore';
 import { ROLE, Role } from '@/constants/role';
 import { Slide, toast, ToastContainer } from 'react-toastify';
 import { Situation, SITUATION_MESSAGE } from '@/constants/situation';
+import VideoViewer from './video/VideoViewer';
 
 interface GameViewerProps {
   roomId: string;
@@ -20,7 +20,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
 
   const { socket } = useSocketStore();
   const {
-    isGameStarted,
+    gameStatus,
     gamePublisher,
     gameSubscribers,
     toggleAudio,
@@ -32,6 +32,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     setTargetsOfMafia,
     setTargetsOfPolice,
     eliminatePublisher,
+    finishGame,
   } = useOpenVidu();
 
   const [situation, setSituation] = useState<Situation | null>(null);
@@ -250,6 +251,8 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
           status: 'ALIVE' | 'DEAD';
         }[];
       }) => {
+        finishGame();
+
         // TODO: 수정 필요
         if (data.result === 'WIN') {
           notifyInfo('게임에서 승리하였습니다.');
@@ -269,11 +272,13 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       socket?.off('mafia-current-target');
       socket?.off('police-investigation-result');
       socket?.off('mafia-kill-result');
+      socket?.off('game-result');
     };
   }, [
     changePublisherStatus,
     changeSubscriberStatus,
     eliminatePublisher,
+    finishGame,
     gamePublisher.nickname,
     gamePublisher.role,
     initializeVotes,
@@ -289,32 +294,28 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       <ToastContainer style={{ width: '40rem' }} />
       <VideoViewer
         roomId={roomId}
-        isGameStarted={isGameStarted}
-        situation={situation}
+        gameStatus={gameStatus}
         gamePublisher={gamePublisher}
         gameSubscribers={gameSubscribers}
+        situation={situation}
         target={target}
         invalidityCount={invalidityCount}
         setTarget={(nickname: string | null) => setTarget(nickname)}
       />
       <Bottombar
         roomId={roomId}
-        isGameStarted={isGameStarted}
-        isPublisherAlive={gamePublisher.participant ? true : false}
+        gameStatus={gameStatus}
+        gamePublisher={gamePublisher}
         totalParticipants={gameSubscribers.length + 1}
         situation={situation}
         timeLeft={timeLeft}
-        audioEnabled={gamePublisher.audioEnabled}
-        videoEnabled={gamePublisher.videoEnabled}
         toggleAudio={toggleAudio}
         toggleVideo={toggleVideo}
       />
       <ChattingList
         roomId={roomId}
         isMafia={gamePublisher.role === 'MAFIA'}
-        chatEnabled={
-          !isGameStarted || (gamePublisher.participant ? true : false)
-        }
+        chatEnabled={gameStatus !== 'RUNNING' || gamePublisher.isAlive}
         totalParticipants={gameSubscribers.length + 1}
       />
     </div>

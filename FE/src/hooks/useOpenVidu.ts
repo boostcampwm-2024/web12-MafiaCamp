@@ -1,3 +1,4 @@
+import { GameStatus } from '@/constants/gameStatus';
 import { useAuthStore } from '@/stores/authStore';
 import { useSocketStore } from '@/stores/socketStore';
 import { GamePublisher } from '@/types/gamePublisher';
@@ -11,13 +12,16 @@ import {
 import { Reducer, useEffect, useReducer } from 'react';
 
 type State = {
-  isGameStarted: boolean;
+  gameStatus: GameStatus;
   gamePublisher: GamePublisher;
   gameSubscribers: GameSubscriber[];
 };
 
 type Action =
-  | { type: 'PARTICIPATE'; payload: { participantList: string[] } }
+  | {
+      type: 'PARTICIPATE';
+      payload: { roomManager: string; participantList: string[] };
+    }
   | { type: 'LEAVE'; payload: { nickname: string } }
   | { type: 'START_GAME'; payload: { publisher: Publisher } }
   | { type: 'SUBSCRIBE'; payload: { subscriber: Subscriber } }
@@ -30,13 +34,19 @@ type Action =
   | { type: 'INITIALIZE_VOTES' }
   | { type: 'SET_All_PARTICIPANTS_AS_CANDIDATES' }
   | { type: 'SET_TARGETS_OF_MAFIA' }
-  | { type: 'SET_TARGETS_OF_POLICE' };
+  | { type: 'SET_TARGETS_OF_POLICE' }
+  | { type: 'FINISH_GAME' };
 
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case 'PARTICIPATE':
       return {
         ...state,
+        gamePublisher: {
+          ...state.gamePublisher,
+          isRoomManager:
+            state.gamePublisher.nickname === action.payload.roomManager,
+        },
         gameSubscribers: action.payload.participantList.map((participant) => ({
           participant: null,
           nickname: participant,
@@ -45,6 +55,7 @@ const reducer = (state: State, action: Action): State => {
           videoEnabled: false,
           votes: 0,
           isCandidate: false,
+          isAlive: true,
         })),
       };
 
@@ -60,7 +71,7 @@ const reducer = (state: State, action: Action): State => {
     case 'START_GAME':
       return {
         ...state,
-        isGameStarted: true,
+        gameStatus: 'RUNNING',
         gamePublisher: {
           ...state.gamePublisher,
           participant: action.payload.publisher,
@@ -106,6 +117,7 @@ const reducer = (state: State, action: Action): State => {
                 participant: null,
                 audioEnabled: false,
                 videoEnabled: false,
+                isAlive: false,
               }
             : gameSubscriber,
         ),
@@ -184,6 +196,12 @@ const reducer = (state: State, action: Action): State => {
         })),
       };
 
+    case 'FINISH_GAME':
+      return {
+        ...state,
+        gameStatus: 'DONE',
+      };
+
     default:
       throw new Error('Unknown action type');
   }
@@ -193,8 +211,9 @@ export const useOpenVidu = () => {
   const { nickname } = useAuthStore();
   const { socket, session, setSocketState } = useSocketStore();
   const [state, dispatch] = useReducer<Reducer<State, Action>>(reducer, {
-    isGameStarted: false,
+    gameStatus: 'READY',
     gamePublisher: {
+      isRoomManager: false,
       participant: null,
       nickname: nickname,
       role: null,
@@ -202,6 +221,7 @@ export const useOpenVidu = () => {
       videoEnabled: false,
       votes: 0,
       isCandidate: false,
+      isAlive: true,
     },
     gameSubscribers: [],
   });
@@ -279,8 +299,17 @@ export const useOpenVidu = () => {
     session?.unpublish(state.gamePublisher.participant!);
     dispatch({
       type: 'CHANGE_PUBLISHER_STATUS',
-      payload: { participant: null, audioEnabled: false, videoEnabled: false },
+      payload: {
+        participant: null,
+        audioEnabled: false,
+        videoEnabled: false,
+        isAlive: false,
+      },
     });
+  };
+
+  const finishGame = () => {
+    dispatch({ type: 'FINISH_GAME' });
   };
 
   useEffect(() => {
@@ -289,6 +318,7 @@ export const useOpenVidu = () => {
       dispatch({
         type: 'PARTICIPATE',
         payload: {
+          roomManager: participants[0],
           participantList: participants.filter(
             (participant) => participant !== nickname,
           ),
@@ -427,7 +457,7 @@ export const useOpenVidu = () => {
   }, [session, state.gameSubscribers]);
 
   return {
-    isGameStarted: state.isGameStarted,
+    gameStatus: state.gameStatus,
     gamePublisher: state.gamePublisher,
     gameSubscribers: state.gameSubscribers,
     toggleAudio,
@@ -439,5 +469,6 @@ export const useOpenVidu = () => {
     setTargetsOfMafia,
     setTargetsOfPolice,
     eliminatePublisher,
+    finishGame,
   };
 };

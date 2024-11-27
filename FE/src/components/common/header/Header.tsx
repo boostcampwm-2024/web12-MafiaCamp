@@ -13,9 +13,10 @@ import { useSignout } from '@/hooks/useSignout';
 import { User } from '@/types/user';
 import ProfileModal from './ProfileModal';
 import { useAuthStore } from '@/stores/authStore';
+import { FaChevronDown } from 'react-icons/fa';
 
 const Header = () => {
-  const { initialize, setAuthState } = useAuthStore();
+  const { userId, initialize, setAuthState } = useAuthStore();
   const { nickname, handleSignout } = useSignout();
   const [isScrolled, setIsScrolled] = useState(false);
   const [headerSidebarVisible, setHeaderSidebarVisible] = useState(false);
@@ -65,7 +66,7 @@ const Header = () => {
     >
       <HeaderSidebar
         visible={headerSidebarVisible}
-        close={() => setHeaderSidebarVisible(false)}
+        closeHeaderSidebar={() => setHeaderSidebarVisible(false)}
       />
       <motion.div
         className={`${pathname === '/' && !isScrolled ? 'bg-transparent' : 'bg-slate-600/50'} fixed top-0 z-10 flex h-20 w-[80rem] flex-row items-center justify-between self-center rounded-b-3xl px-24 max-[1280px]:w-full max-[1280px]:px-12 max-[768px]:px-6`}
@@ -100,7 +101,9 @@ const Header = () => {
               </Link>
             </li>
             <li>
-              {nickname === '' ? (
+              {userId === '' ? (
+                <div className='h-6 w-12 animate-pulse rounded-lg bg-slate-400' />
+              ) : nickname === '' ? (
                 <Link
                   className={`${pathname === '/signin' ? 'font-semibold text-white' : 'hover:text-white'}`}
                   href='/signin'
@@ -109,13 +112,12 @@ const Header = () => {
                 </Link>
               ) : (
                 <div
-                  className='relative'
+                  className='relative flex items-center gap-1 rounded-xl px-2 py-1 hover:bg-slate-600'
                   onMouseEnter={() => setProfileModalVisible(true)}
                   onMouseLeave={() => setProfileModalVisible(false)}
                 >
-                  <p className='max-w-44 truncate text-nowrap p-1'>
-                    {nickname}
-                  </p>
+                  <p className='max-w-44 truncate text-nowrap'>{nickname}</p>
+                  <FaChevronDown />
                   {profileModalVisible && (
                     <ProfileModal
                       closeModal={() => setProfileModalVisible(false)}
@@ -138,7 +140,7 @@ const Header = () => {
       </motion.div>
       {pathname === '/' && !isScrolled && (
         <div className='mt-20 flex flex-row items-center justify-between max-[1080px]:flex-col max-[1080px]:gap-6 max-[768px]:h-[40rem]'>
-          <div className='flex flex-col gap-24 pt-20 max-[1080px]:flex-row max-[1080px]:gap-6 max-[786px]:flex-col max-[768px]:items-center'>
+          <div className='flex flex-col gap-24 pt-20 max-[1080px]:flex-row max-[1080px]:gap-6 max-[768px]:flex-col max-[768px]:items-center'>
             <motion.h1
               className='flex flex-col text-nowrap text-4xl text-white max-[768px]:items-center max-[768px]:text-3xl'
               initial={{ y: '0.5rem', opacity: 0 }}
