@@ -10,7 +10,7 @@ import {
 import { Socket } from 'socket.io';
 import { CreateRoomRequest } from 'src/game-room/dto/create-room.request';
 import { GameRoomService } from 'src/game-room/game-room.service';
-import { Inject, Logger } from '@nestjs/common';
+import { Inject, Logger, UseFilters, UseInterceptors } from '@nestjs/common';
 import { EventClient } from './event-client.model';
 import { EventManager } from './event-manager';
 import { Event } from './event.const';
@@ -24,17 +24,28 @@ import {
 } from '../game/usecase/vote-manager/vote.mafia.usecase';
 import { VoteCandidateRequest } from '../game/dto/vote.candidate.request';
 import { SelectMafiaTargetRequest } from '../game/dto/select.mafia.target.request';
-import {
-  MAFIA_KILL_USECASE,
-  MafiaKillUsecase,
-} from '../game/usecase/role-playing/mafia.kill.usecase';
 import { FINISH_GAME_USECASE } from '../game/usecase/finish-game/finish-game.usecase';
 import {
   CONNECTED_USER_USECASE,
   ConnectedUserUsecase,
 } from '../online-state/connected-user.usecase';
+import {
+  MAFIA_KILL_USECASE,
+  MafiaKillUsecase,
+} from '../game/usecase/role-playing/mafia.kill.usecase';
+import {
+  DOCTOR_CURE_USECASE,
+  DoctorCureUsecase,
+} from '../game/usecase/role-playing/doctor.cure.usecase';
+import { WebsocketLoggerInterceptor } from '../common/logger/websocket.logger.interceptor';
+import { WebsocketExceptionFilter } from '../common/filter/websocket.exception.filter';
+import {
+  FIND_USERINFO_USECASE,
+  FindUserInfoUsecase,
+} from 'src/user/usecase/find.user-info.usecase';
 
-// @UseInterceptors(WebsocketLoggerInterceptor)
+@UseFilters(WebsocketExceptionFilter)
+@UseInterceptors(WebsocketLoggerInterceptor)
 @WebSocketGateway({
   namespace: 'ws',
   cors: {
@@ -55,23 +66,32 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly voteMafiaUsecase: VoteMafiaUsecase,
     @Inject(MAFIA_KILL_USECASE)
     private readonly mafiaKillUseCase: MafiaKillUsecase,
+    @Inject(DOCTOR_CURE_USECASE)
+    private readonly doctorCureUsecase: DoctorCureUsecase,
+    @Inject(FIND_USERINFO_USECASE)
+    private readonly findUserInfoUsecase: FindUserInfoUsecase,
     @Inject(CONNECTED_USER_USECASE)
     private readonly connectUserUseCase: ConnectedUserUsecase,
   ) {}
 
   async handleConnection(socket: Socket) {
-    this.logger.log(`client connected: ${socket.id}`);
+    this.logger.log(`[${socket.id}] Client connected`);
+    const headers = socket.handshake.headers;
+    const token = this.parseToken(headers);
+    if (!token) {
+      this.logger.log(`[${socket.id}] Unauthorized client`);
+      // todo: socket 연결 강제로 끊기
+      return;
+    }
+    const { nickname, userId } = await this.findUserInfoUsecase.find(token);
     const client = new EventClient(socket, this.eventManager);
-
-    //임시 닉네임 및 ID 설정
-    client.nickname = socket.id;
-    client.tmpUserId = this.tmpUserId++;
+    client.nickname = nickname;
+    client.userId = userId;
 
     await this.connectUserUseCase.enter({
-      userId: String(client.tmpUserId),
-      userNickName: client.nickname,
+      userId: String(userId),
+      userNickName: nickname,
     });
-
     client.subscribe(Event.ROOM_DATA_CHANGED);
     client.subscribe(Event.USER_DATA_CHANGED);
     this.connectedClients.set(socket, client);
@@ -79,10 +99,23 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     await this.publishUserDataChangedEvent();
   }
 
+  private parseToken(headers): string {
+    const cookies = headers.cookie
+      ?.split(';')
+      .map((keyVal) => keyVal.split('='))
+      .reduce((cookies, [key, val]) => {
+        cookies[key.trim()] = val.trim();
+        return cookies;
+      }, {});
+    return cookies?.access_token;
+  }
+
   async handleDisconnect(socket: Socket) {
-    this.logger.log(`client disconnected: ${socket.id}`);
+    this.logger.log(`[${socket.id}] Client disconnected`);
     const client = this.connectedClients.get(socket);
-    await this.connectUserUseCase.leave(String(client.tmpUserId));
+    if (!client) {
+      return;
+    }
     client.unsubscribeAll();
     this.connectedClients.delete(socket);
     await this.publishUserDataChangedEvent();
@@ -133,7 +166,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.gameRoomService.enterRoom(client, roomId);
 
     await this.connectUserUseCase.enterRoom({
-      userId: String(client.tmpUserId),
+      userId: String(client.userId),
       userNickName: client.nickname,
     });
 
@@ -150,7 +183,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.gameRoomService.leaveRoom(client.nickname, roomId);
 
     await this.connectUserUseCase.leaveRoom({
-      userId: String(client.tmpUserId),
+      userId: String(client.userId),
       userNickName: client.nickname,
     });
 
@@ -199,7 +232,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
         data: { success: false },
       };
     }
-    this.startGameUsecase.start(room);
+    await this.startGameUsecase.start(room);
   }
 
   @SubscribeMessage('vote-candidate')

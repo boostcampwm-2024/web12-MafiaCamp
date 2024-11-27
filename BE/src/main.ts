@@ -2,7 +2,9 @@ import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { initializeTransactionalContext } from 'typeorm-transactional';
 import { ConfigService } from '@nestjs/config';
-import { GlobalExceptionFilter } from './common/filter/global.exception.filter';
+import { HttpExceptionFilter } from './common/filter/http.exception.filter';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import * as process from 'process';
 
 async function bootstrap() {
   //process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; # Node.js 환경 변수로 SSL 검증 무시
@@ -23,8 +25,23 @@ async function bootstrap() {
     exposedHeaders: ['X-ACCESS-TOKEN'],
   });
 
+  const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
+
+  const shutdown = async () => {
+    try {
+      await logger.close();
+      await app.close();
+      process.exit(0);
+    } catch (error) {
+      process.exit(1);
+    }
+  };
+
+  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', shutdown);
+
   const httpAdapter = app.get(HttpAdapterHost);
-  app.useGlobalFilters(new GlobalExceptionFilter(httpAdapter));
+  app.useGlobalFilters(new HttpExceptionFilter(httpAdapter));
   await app.listen(configService.get<number>('PORT'));
 }
 
