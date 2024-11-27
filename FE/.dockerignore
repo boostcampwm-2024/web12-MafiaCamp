@@ -5,8 +5,12 @@ node_modules
 .git
 .gitignore
 
-# 환경 설정 파일
-.env
-
 # 빌드 결과물
 .next
+
+# 테스트 관련 파일
+__tests__
+.swc
+playwright-report
+test_results
+tests

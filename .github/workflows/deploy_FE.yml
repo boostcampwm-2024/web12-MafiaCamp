@@ -19,6 +19,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # .env 파일 생성
+      - name: Create .env file from GitHub Secrets
+        run: |
+          echo "NEXT_PUBLIC_BACKEND_URL=${{ secrets.BACKEND_URL }}" >> .env
+          echo "BACKEND_API_URL=${{ secrets.BACKEND_API_URL }}" >> .env
+          echo "NEXT_PUBLIC_BACKEND_API_URL=${{ secrets.NEXT_PUBLIC_BACKEND_API_URL }}" >> .env
+
       # Docker 이미지 빌더 설정
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -38,10 +45,6 @@ jobs:
           push: true
           tags: ${{ secrets.NCP_CONTAINER_REGISTRY }}/mafiacamp-fe
           context: ./FE
-          build-args: |
-            ARG_NEXT_PUBLIC_BACKEND_URL=${{ secrets.BACKEND_URL }}
-            ARG_BACKEND_API_URL=${{ secrets.BACKEND_API_URL }}
-            ARG_NEXT_PUBLIC_BACKEND_API_URL=${{ secrets.NEXT_PUBLIC_BACKEND_API_URL }}
 
       # ssh 원격 접속을 통해 빌드 파일 실행하기
       - name: Executing remote ssh commands using key
@@ -56,7 +59,8 @@ jobs:
           proxy_port: ${{ secrets.PROXY_PORT }}
           proxy_key: ${{ secrets.PROXY_KEY }}
           script: |
-            docker pull ${{ secrets.NCP_PRIVATE_ENDPOINT }}/mafiacamp-fe
             docker stop mafiacamp-fe || true
             docker rm mafiacamp-fe || true
+            docker rmi ${{ secrets.NCP_PRIVATE_ENDPOINT }}/mafiacamp-fe || true
+            docker pull ${{ secrets.NCP_PRIVATE_ENDPOINT }}/mafiacamp-fe
             docker run -p 3000:3000 -d --restart unless-stopped --name mafiacamp-fe ${{ secrets.NCP_PRIVATE_ENDPOINT }}/mafiacamp-fe
