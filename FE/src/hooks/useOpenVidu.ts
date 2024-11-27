@@ -340,8 +340,8 @@ export const useOpenVidu = () => {
   };
 
   const eliminatePublisher = () => {
-    state.gamePublisher?.participant?.publishAudio(false);
-    state.gamePublisher?.participant?.publishVideo(false);
+    state.gamePublisher.participant?.publishAudio(false);
+    state.gamePublisher.participant?.publishVideo(false);
     session?.unpublish(state.gamePublisher.participant!);
     dispatch({
       type: 'CHANGE_PUBLISHER_STATUS',
@@ -356,8 +356,8 @@ export const useOpenVidu = () => {
 
   const finishGame = () => {
     if (state.gamePublisher.isAlive && state.gamePublisher.participant) {
-      state.gamePublisher?.participant?.publishAudio(false);
-      state.gamePublisher.participant?.publishVideo(false);
+      state.gamePublisher.participant.publishAudio(false);
+      state.gamePublisher.participant.publishVideo(false);
       session?.unpublish(state.gamePublisher.participant!);
     }
     dispatch({ type: 'FINISH_GAME' });

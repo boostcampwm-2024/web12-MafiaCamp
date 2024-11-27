@@ -38,7 +38,7 @@ const LobbyList = () => {
     } = await response.json();
 
     if (result.roomId === null) {
-      notifyError('방이 존재하지 않습니다.');
+      notifyError('입장할 수 있는 방이 존재하지 않습니다.');
       return;
     }
 

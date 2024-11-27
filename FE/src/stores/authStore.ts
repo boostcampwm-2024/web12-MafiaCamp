@@ -7,7 +7,7 @@ interface AuthState {
 }
 
 interface AuthAction {
-  initialize: () => void;
+  initializeAuthState: () => void;
   setAuthState: (date: Partial<AuthState>) => void;
 }
 
@@ -20,7 +20,7 @@ type AuthStoreType = AuthState & AuthAction;
 
 const authStore: StateCreator<AuthStoreType> = (set) => ({
   ...initialState,
-  initialize: () => set({ userId: '0', nickname: '' }),
+  initializeAuthState: () => set({ userId: '0', nickname: '' }),
   setAuthState: (data: Partial<AuthState>) => set({ ...data }),
 });
 
