@@ -42,9 +42,7 @@ const CreateRoomModal = ({ close }: CreateRoomModalProps) => {
   useEffect(() => {
     socket?.on('create-room', (data: { success: boolean; roomId: string }) => {
       if (data.success) {
-        router.push(
-          `/game/${data.roomId}?roomName=${methods.getValues('title')}&capacity=${methods.getValues('capacity')}`,
-        );
+        socket?.emit('enter-room', { roomId: data.roomId });
       }
     });
 
