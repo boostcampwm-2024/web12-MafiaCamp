@@ -5,9 +5,10 @@ import { EventManager } from './event-manager';
 import { GameModule } from 'src/game/game.module';
 import { APP_FILTER } from '@nestjs/core';
 import { WebsocketExceptionFilter } from '../common/filter/websocket.exception.filter';
+import { UserModule } from 'src/user/user.module';
 
 @Module({
-  imports: [GameRoomModule, GameModule],
+  imports: [GameRoomModule, GameModule, UserModule],
   providers: [EventGateway, EventManager, {
     provide: APP_FILTER,
     useClass: WebsocketExceptionFilter,

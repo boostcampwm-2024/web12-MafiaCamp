@@ -52,7 +52,7 @@ import { FIND_USERINFO_USECASE } from './usecase/find.user-info.usecase';
       useClass: UserService
     }
   ],
-  exports: [FIND_USER_USECASE, REGISTER_USER_USECASE],
+  exports: [FIND_USER_USECASE, REGISTER_USER_USECASE, FIND_USERINFO_USECASE],
 })
 export class UserModule {
 }

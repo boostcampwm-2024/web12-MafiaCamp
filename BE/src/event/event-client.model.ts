@@ -4,6 +4,7 @@ import { EventManager, Subscriber, Subscription } from './event-manager';
 export class EventClient {
   private readonly subscriptions: Subscription[] = [];
   private _nickname: string;
+  private _userId: number;
 
   constructor(
     private readonly _socket: Socket,
@@ -16,6 +17,14 @@ export class EventClient {
 
   set nickname(nickname: string) {
     this._nickname = nickname;
+  }
+
+  get userId() {
+    return this._userId;
+  }
+
+  set userId(userId: number) {
+    this._userId = userId;
   }
 
   get socket(): Socket {
