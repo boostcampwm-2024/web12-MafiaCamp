@@ -5,6 +5,9 @@ node_modules
 .git
 .gitignore
 
+# env 파일
+.env
+
 # 빌드 결과물
 .next
 
