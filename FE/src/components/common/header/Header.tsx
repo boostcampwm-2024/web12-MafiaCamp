@@ -153,15 +153,16 @@ const Header = () => {
                 MafiaCamp
               </p>
             </motion.h1>
-            <motion.button
-              className='h-[3.75rem] w-[11.25rem] rounded-2xl bg-white font-bold text-slate-800 hover:bg-slate-800 hover:text-white max-[768px]:h-12 max-[768px]:w-36 max-[768px]:text-sm'
-              initial={{ y: '0.5rem', opacity: 0 }}
-              animate={{ y: '0rem', opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.5 }}
-              onClick={() => alert('TODO: 구현 예정')}
-            >
-              QUICK START
-            </motion.button>
+            <Link href='/lobby'>
+              <motion.div
+                className='flex h-[3.75rem] w-[11.25rem] items-center justify-center rounded-2xl bg-white font-bold text-slate-800 hover:bg-slate-800 hover:text-white max-[768px]:h-12 max-[768px]:w-36 max-[768px]:text-sm'
+                initial={{ y: '0.5rem', opacity: 0 }}
+                animate={{ y: '0rem', opacity: 1 }}
+                transition={{ delay: 0.5, duration: 0.5 }}
+              >
+                게임 시작하기
+              </motion.div>
+            </Link>
           </div>
           <motion.div
             initial={{ opacity: 0 }}

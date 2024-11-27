@@ -20,7 +20,7 @@ type State = {
 type Action =
   | {
       type: 'PARTICIPATE';
-      payload: { roomManager: string; participantList: string[] };
+      payload: { participantList: { nickname: string; isOwner: boolean }[] };
     }
   | { type: 'LEAVE'; payload: { nickname: string } }
   | { type: 'START_GAME'; payload: { publisher: Publisher } }
@@ -44,19 +44,28 @@ const reducer = (state: State, action: Action): State => {
         ...state,
         gamePublisher: {
           ...state.gamePublisher,
-          isRoomManager:
-            state.gamePublisher.nickname === action.payload.roomManager,
+          isOwner:
+            action.payload.participantList.find(
+              (participant) =>
+                participant.nickname === state.gamePublisher.nickname,
+            )?.isOwner ?? false,
         },
-        gameSubscribers: action.payload.participantList.map((participant) => ({
-          participant: null,
-          nickname: participant,
-          role: null,
-          audioEnabled: false,
-          videoEnabled: false,
-          votes: 0,
-          isCandidate: false,
-          isAlive: true,
-        })),
+        gameSubscribers: action.payload.participantList
+          .filter(
+            (participant) =>
+              participant.nickname !== state.gamePublisher.nickname,
+          )
+          .map((participant) => ({
+            isOwner: participant.isOwner,
+            participant: null,
+            nickname: participant.nickname,
+            role: null,
+            audioEnabled: false,
+            videoEnabled: false,
+            votes: 0,
+            isCandidate: false,
+            isAlive: true,
+          })),
       };
 
     case 'LEAVE':
@@ -199,7 +208,7 @@ const reducer = (state: State, action: Action): State => {
     case 'FINISH_GAME':
       return {
         ...state,
-        gameStatus: 'DONE',
+        gameStatus: 'READY',
       };
 
     default:
@@ -213,7 +222,7 @@ export const useOpenVidu = () => {
   const [state, dispatch] = useReducer<Reducer<State, Action>>(reducer, {
     gameStatus: 'READY',
     gamePublisher: {
-      isRoomManager: false,
+      isOwner: false,
       participant: null,
       nickname: nickname,
       role: null,
@@ -314,22 +323,37 @@ export const useOpenVidu = () => {
 
   useEffect(() => {
     // 게임 참가
-    socket?.on('participants', (participants: string[]) => {
-      dispatch({
-        type: 'PARTICIPATE',
-        payload: {
-          roomManager: participants[0],
-          participantList: participants.filter(
-            (participant) => participant !== nickname,
-          ),
-        },
-      });
-    });
+    socket?.on(
+      'participants',
+      (data: { nickname: string; isOwner: boolean }[]) => {
+        dispatch({
+          type: 'PARTICIPATE',
+          payload: { participantList: data },
+        });
+      },
+    );
 
     // 다른 플레이어가 방을 나간 경우
-    socket?.on('leave-user-nickname', (nickname: string) => {
-      dispatch({ type: 'LEAVE', payload: { nickname } });
-    });
+    socket?.on(
+      'leave-user-nickname',
+      (data: { nickname: string; newOwner: string | null }) => {
+        dispatch({ type: 'LEAVE', payload: { nickname: data.nickname } });
+
+        if (data.newOwner !== null) {
+          if (state.gamePublisher.nickname === data.newOwner) {
+            dispatch({
+              type: 'CHANGE_PUBLISHER_STATUS',
+              payload: { isOwner: true },
+            });
+          } else {
+            dispatch({
+              type: 'CHANGE_SUBSCRIBER_STATUS',
+              payload: { nickname: data.newOwner, data: { isOwner: true } },
+            });
+          }
+        }
+      },
+    );
 
     (async () => {
       try {
@@ -389,7 +413,7 @@ export const useOpenVidu = () => {
       socket?.off('participants');
       socket?.off('video-info');
     };
-  }, [nickname, setSocketState, socket]);
+  }, [nickname, setSocketState, socket, state.gamePublisher.nickname]);
 
   useEffect(() => {
     return () => {

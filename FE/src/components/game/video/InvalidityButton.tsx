@@ -53,24 +53,22 @@ const InvalidityButton = ({
     setTarget('INVALIDITY');
   };
 
-  if (
-    gameStatus === 'RUNNING' &&
-    gamePublisher.isAlive &&
-    situation === 'VOTE'
-  ) {
+  if (gameStatus === 'RUNNING' && situation === 'VOTE') {
     return (
       <div
         className={[
           `${isOpen ? 'right-[21.5rem]' : 'right-6'}`,
-          'fixed bottom-3 z-20 h-20 w-40 transition-all duration-500 ease-out',
+          'fixed bottom-3 z-20 h-16 w-40 transition-all duration-500 ease-out',
         ].join(' ')}
       >
         <button
           className={[
             `${target === 'INVALIDITY' ? 'border-2 bg-slate-600 text-white' : 'bg-white font-bold text-slate-800'}`,
-            'h-full w-full rounded-2xl border border-slate-400 font-bold hover:bg-slate-600 hover:text-white',
+            `${gamePublisher.isAlive ? 'hover:bg-slate-600 hover:text-white' : 'cursor-default'}`,
+            'h-full w-full rounded-2xl border border-slate-400 font-bold',
           ].join(' ')}
           onClick={handleInvalityButtonClick}
+          disabled={!gamePublisher.isAlive}
         >
           {`기권 ${invalidityCount}`}
         </button>

@@ -8,13 +8,13 @@ export type Situation =
   | 'POLICE';
 
 export const SITUATION = {
-  INTERMISSION: 10,
-  DISCUSSION: 150,
-  ARGUMENT: 90,
-  VOTE: 15,
-  MAFIA: 30,
-  DOCTOR: 20,
-  POLICE: 20,
+  INTERMISSION: '게임 준비',
+  DISCUSSION: '토론',
+  ARGUMENT: '최종 변론',
+  VOTE: '투표',
+  MAFIA: '마피아',
+  DOCTOR: '의사',
+  POLICE: '경찰',
 } as const;
 
 export const SITUATION_MESSAGE = {

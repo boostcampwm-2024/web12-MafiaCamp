@@ -103,14 +103,16 @@ const VideoItem = ({
       ].join(' ')}
       onClick={handleClick}
     >
-      <div
-        className={[
-          `${gameParticipant.role === null && 'hidden'}`,
-          'absolute left-4 top-4 z-10 flex h-8 w-20 items-center justify-center rounded-2xl border border-blue-200 bg-blue-50 text-xs text-blue-800',
-        ].join(' ')}
-      >
-        {ROLE[gameParticipant.role ?? 'CITIZEN']}
-      </div>
+      {gameParticipant.role !== null && (
+        <div className='absolute left-4 top-4 z-10 flex h-8 w-20 items-center justify-center rounded-2xl border border-blue-200 bg-blue-50 text-xs text-blue-800'>
+          {ROLE[gameParticipant.role]}
+        </div>
+      )}
+      {gameParticipant.isOwner && (
+        <div className='absolute right-4 top-4 z-10 flex h-8 w-20 items-center justify-center rounded-2xl border border-blue-200 bg-blue-50 text-xs text-blue-800'>
+          방장
+        </div>
+      )}
       {situation === 'VOTE' && gameParticipant.isCandidate && (
         <p className='absolute top-0 z-10 flex h-full w-full items-center justify-center text-5xl text-white'>
           {gameParticipant.votes}

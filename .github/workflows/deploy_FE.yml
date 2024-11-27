@@ -39,9 +39,9 @@ jobs:
           tags: ${{ secrets.NCP_CONTAINER_REGISTRY }}/mafiacamp-fe
           context: ./FE
           build-args: |
-            NEXT_PUBLIC_BACKEND_URL=${{ secrets.BACKEND_URL }}
-            BACKEND_API_URL=${{ secrets.BACKEND_API_URL }}
-            NEXT_PUBLIC_BACKEND_API_URL=${{ secrets.NEXT_PUBLIC_BACKEND_API_URL }}
+            ARG_NEXT_PUBLIC_BACKEND_URL=${{ secrets.BACKEND_URL }}
+            ARG_BACKEND_API_URL=${{ secrets.BACKEND_API_URL }}
+            ARG_NEXT_PUBLIC_BACKEND_API_URL=${{ secrets.NEXT_PUBLIC_BACKEND_API_URL }}
 
       # ssh 원격 접속을 통해 빌드 파일 실행하기
       - name: Executing remote ssh commands using key

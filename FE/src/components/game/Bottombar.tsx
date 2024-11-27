@@ -6,7 +6,7 @@ import PlayIcon from '@/components/common/icons/PlayIcon';
 import VideoCameraIcon from '@/components/common/icons/VideoCameraIcon';
 import VideoCameraSlashIcon from '@/components/common/icons/VideoCameraSlashIcon';
 import { GameStatus } from '@/constants/gameStatus';
-import { Situation } from '@/constants/situation';
+import { SITUATION, Situation } from '@/constants/situation';
 import { useDragScroll } from '@/hooks/useDragScroll';
 import { useSidebarStore } from '@/stores/sidebarStore';
 import { useSocketStore } from '@/stores/socketStore';
@@ -58,8 +58,12 @@ const Bottombar = ({
       ].join(' ')}
     >
       {situation !== null && (
-        <h1 className='text-lg text-white'>
-          {situation} / 남은 시간 / {timeLeft}
+        <h1 className='flex items-center gap-4 rounded-full border border-slate-300 bg-slate-800 px-4 py-2 text-lg text-white'>
+          <span>{SITUATION[situation]}</span>
+          <span>|</span>
+          <span>남은 시간</span>
+          <span>|</span>
+          <span>{timeLeft}</span>
         </h1>
       )}
       <div
@@ -74,7 +78,7 @@ const Bottombar = ({
         onTouchEnd={onTouchEnd}
       >
         <div className='flex flex-row items-center gap-4'>
-          {gamePublisher.isRoomManager && gameStatus === 'READY' && (
+          {gamePublisher.isOwner && gameStatus === 'READY' && (
             <button
               className={[
                 `${totalParticipants !== Number(capacity) ? 'cursor-not-allowed opacity-50' : 'hover:scale-105'}`,
@@ -87,7 +91,7 @@ const Bottombar = ({
               게임 시작
             </button>
           )}
-          {gamePublisher.isAlive && (
+          {gameStatus === 'RUNNING' && gamePublisher.isAlive && (
             <button
               className='flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105'
               onClick={() => toggleAudio()}
@@ -100,7 +104,7 @@ const Bottombar = ({
               오디오
             </button>
           )}
-          {gamePublisher.isAlive && (
+          {gameStatus === 'RUNNING' && gamePublisher.isAlive && (
             <button
               className='flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105'
               onClick={() => toggleVideo()}

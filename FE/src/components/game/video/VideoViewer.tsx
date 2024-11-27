@@ -59,7 +59,7 @@ const VideoViewer = ({
     <div
       className={[
         `${isOpen ? 'right-[21.5rem]' : 'right-6'}`,
-        'absolute bottom-[6.5rem] left-6 top-6 max-h-screen overflow-auto transition-all duration-500 ease-out',
+        'absolute bottom-[5.5rem] left-6 top-6 max-h-screen overflow-auto transition-all duration-500 ease-out',
       ].join(' ')}
       ref={listRef}
       onMouseDown={onDragStart}

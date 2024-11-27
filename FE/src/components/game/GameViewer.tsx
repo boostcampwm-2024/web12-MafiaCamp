@@ -10,6 +10,7 @@ import { ROLE, Role } from '@/constants/role';
 import { Slide, toast, ToastContainer } from 'react-toastify';
 import { Situation, SITUATION_MESSAGE } from '@/constants/situation';
 import VideoViewer from './video/VideoViewer';
+import GameResultBoard from './GameResultBoard';
 
 interface GameViewerProps {
   roomId: string;
@@ -40,6 +41,16 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
   const [target, setTarget] = useState<string | null>(null);
   const [invalidityCount, setInvalidityCount] = useState(0);
 
+  const [gameResultVisible, setGameResultVisible] = useState(false);
+  const [gameResult, setGameResult] = useState<'WIN' | 'LOSE'>('WIN');
+  const [playerInfoList, setPlayerInfoList] = useState<
+    {
+      nickname: string;
+      role: Role;
+      status: 'ALIVE' | 'DEAD';
+    }[]
+  >([]);
+
   const notifyInfo = (message: string) =>
     toast.info(message, {
       toastId: message,
@@ -66,72 +77,6 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
   }, [roomId, socket]);
 
   useEffect(() => {
-    // 카운트 다운
-    socket?.on(
-      'countdown',
-      (data: { situation: Situation; timeLeft: number }) => {
-        if (data.situation === 'DISCUSSION' && data.timeLeft === 150) {
-          notifyInfo(SITUATION_MESSAGE.DISCUSSION);
-        }
-
-        if (data.situation === 'ARGUMENT' && data.timeLeft === 90) {
-          setTarget(null);
-          setInvalidityCount(0);
-          notifyInfo(SITUATION_MESSAGE.ARGUMENT);
-        }
-
-        if (data.situation === 'VOTE' && data.timeLeft === 15) {
-          if (situation === 'DISCUSSION') {
-            notifyInfo(SITUATION_MESSAGE.PRIMARY_VOTE);
-          } else if (situation === 'ARGUMENT') {
-            notifyInfo(SITUATION_MESSAGE.FINAL_VOTE);
-          }
-        }
-
-        if (data.situation === 'MAFIA' && data.timeLeft === 30) {
-          if (gamePublisher.role === 'MAFIA') {
-            setTargetsOfMafia();
-          } else {
-            initializeVotes();
-          }
-          setTarget(null);
-          notifyInfo(SITUATION_MESSAGE.MAFIA);
-        }
-
-        if (data.situation === 'DOCTOR' && data.timeLeft === 20) {
-          if (gamePublisher.role === 'DOCTOR') {
-            setAllParticipantsAsCandidates();
-          } else {
-            initializeVotes();
-          }
-          setTarget(null);
-          notifyInfo(SITUATION_MESSAGE.DOCTOR);
-        }
-
-        if (data.situation === 'POLICE' && data.timeLeft === 20) {
-          if (gamePublisher.role === 'POLICE') {
-            setTargetsOfPolice();
-          } else {
-            initializeVotes();
-          }
-          setTarget(null);
-          notifyInfo(SITUATION_MESSAGE.POLICE);
-        }
-
-        setSituation(data.situation);
-        setTimeLeft(data.timeLeft);
-      },
-    );
-
-    // 특정 단계 카운트 다운 종료
-    socket?.on(
-      'countdown-exit',
-      (data: { situation: Situation; timeLeft: number }) => {
-        setSituation(data.situation);
-        setTimeLeft(data.timeLeft);
-      },
-    );
-
     // 직업 확인
     socket?.once(
       'player-role',
@@ -140,14 +85,74 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
         data.another?.forEach((value) => {
           changeSubscriberStatus(value[0], { role: value[1] });
         });
-
-        notifyInfo(SITUATION_MESSAGE.INTERMISSION);
       },
     );
+
+    // 카운트 다운
+    socket?.on(
+      'countdown',
+      (data: { situation: Situation; timeLeft: number }) => {
+        setSituation(data.situation);
+        setTimeLeft(data.timeLeft);
+      },
+    );
+
+    // 각 단계 시작
+    socket?.on('countdown-start', (newSituation: Situation) => {
+      switch (newSituation) {
+        case 'INTERMISSION':
+          notifyInfo(SITUATION_MESSAGE.INTERMISSION);
+          break;
+        case 'DISCUSSION':
+          notifyInfo(SITUATION_MESSAGE.DISCUSSION);
+          break;
+        case 'ARGUMENT':
+          notifyInfo(SITUATION_MESSAGE.ARGUMENT);
+          break;
+        case 'VOTE':
+          if (situation === 'DISCUSSION') {
+            notifyInfo(SITUATION_MESSAGE.PRIMARY_VOTE);
+          } else if (situation === 'ARGUMENT') {
+            notifyInfo(SITUATION_MESSAGE.FINAL_VOTE);
+          }
+          break;
+        case 'MAFIA':
+          if (gamePublisher.role === 'MAFIA') {
+            setTargetsOfMafia();
+          } else {
+            initializeVotes();
+          }
+          setTarget(null);
+          notifyInfo(SITUATION_MESSAGE.MAFIA);
+          break;
+        case 'DOCTOR':
+          if (gamePublisher.role === 'DOCTOR') {
+            setAllParticipantsAsCandidates();
+          } else {
+            initializeVotes();
+          }
+          setTarget(null);
+          notifyInfo(SITUATION_MESSAGE.DOCTOR);
+          break;
+        case 'POLICE':
+          if (gamePublisher.role === 'POLICE') {
+            setTargetsOfPolice();
+          } else {
+            initializeVotes();
+          }
+          setTarget(null);
+          notifyInfo(SITUATION_MESSAGE.POLICE);
+          break;
+        default:
+          break;
+      }
+    });
 
     // 투표 시작 시 투표 대상 후보자 설정
     socket?.on('send-vote-candidates', (candidates: string[]) => {
       initializeVotes();
+      setTarget(null);
+      setInvalidityCount(0);
 
       for (const nickname of candidates) {
         if (nickname === gamePublisher.nickname) {
@@ -223,6 +228,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       );
     }
 
+    // 밤 중 사망한 플레이어 확인
     socket?.on(
       'mafia-kill-result',
       (data: { player: string; job: Role } | null) => {
@@ -241,6 +247,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       },
     );
 
+    // 게임 결과 확인
     socket?.on(
       'game-result',
       (data: {
@@ -252,19 +259,15 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
         }[];
       }) => {
         finishGame();
-
-        // TODO: 수정 필요
-        if (data.result === 'WIN') {
-          notifyInfo('게임에서 승리하였습니다.');
-        } else {
-          notifyInfo('게임에서 패배하였습니다.');
-        }
+        setGameResult(data.result);
+        setPlayerInfoList(data.playerInfo);
+        setGameResultVisible(true);
       },
     );
 
     return () => {
       socket?.off('countdown');
-      socket?.off('countdown-exit');
+      socket?.off('countdown-start');
       socket?.off('player-role');
       socket?.off('vote-current-state');
       socket?.off('primary-vote-result');
@@ -283,6 +286,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     gamePublisher.role,
     initializeVotes,
     setAllParticipantsAsCandidates,
+    setPlayerInfoList,
     setTargetsOfMafia,
     setTargetsOfPolice,
     situation,
@@ -292,6 +296,14 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
   return (
     <div className='absolute left-0 top-0 h-screen w-screen overflow-x-hidden'>
       <ToastContainer style={{ width: '40rem' }} />
+      {gameResultVisible && (
+        <GameResultBoard
+          gamePublisherRole={gamePublisher.role}
+          gameResult={gameResult}
+          playerInfo={playerInfoList}
+          closeBoard={() => setGameResultVisible(false)}
+        />
+      )}
       <VideoViewer
         roomId={roomId}
         gameStatus={gameStatus}

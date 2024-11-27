@@ -10,12 +10,10 @@ interface LobbyItemProps {
 const LobbyItem = ({ room }: LobbyItemProps) => {
   return (
     <div
-      className={`${room.participants === room.capacity && 'opacity-50'} flex h-60 flex-col justify-between rounded-3xl border border-slate-200 bg-slate-600/50 p-6 duration-300 hover:bg-slate-400/50`}
+      className={`${(room.participants === room.capacity || room.status === 'RUNNING') && 'opacity-50'} flex h-60 flex-col justify-between rounded-3xl border border-slate-200 bg-slate-600/50 p-6 duration-300 hover:bg-slate-400/50`}
     >
       <div className='flex h-8 w-20 items-center justify-center rounded-2xl border border-blue-200 bg-blue-50 text-xs text-blue-800'>
-        {room.participants === room.capacity
-          ? '모집 완료'
-          : ROOM_STATUS[room.status]}
+        {ROOM_STATUS[room.status]}
       </div>
       <div className='flex flex-col gap-3'>
         <h2 className='line-clamp-2 text-lg text-white'>{room.title}</h2>
@@ -28,7 +26,7 @@ const LobbyItem = ({ room }: LobbyItemProps) => {
               <span className='font-bold'>{room.capacity}</span>
             </p>
           </div>
-          {room.participants === room.capacity ? (
+          {room.participants === room.capacity || room.status === 'RUNNING' ? (
             <div className='flex h-9 w-[7.5rem] cursor-not-allowed items-center justify-center rounded-2xl bg-white text-sm font-semibold text-slate-800'>
               참가하기
             </div>
