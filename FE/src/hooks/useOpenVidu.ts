@@ -1,4 +1,5 @@
 import { GameStatus } from '@/constants/gameStatus';
+import { TOAST_OPTION } from '@/constants/toastOption';
 import { useAuthStore } from '@/stores/authStore';
 import { useSocketStore } from '@/stores/socketStore';
 import { GamePublisher } from '@/types/gamePublisher';
@@ -10,6 +11,7 @@ import {
   VideoInsertMode,
 } from 'openvidu-browser';
 import { Reducer, useEffect, useReducer } from 'react';
+import { toast } from 'react-toastify';
 
 type State = {
   gameStatus: GameStatus;
@@ -32,7 +34,8 @@ type Action =
       payload: { nickname: string; data: Partial<GameSubscriber> };
     }
   | { type: 'INITIALIZE_VOTES' }
-  | { type: 'SET_All_PARTICIPANTS_AS_CANDIDATES' }
+  | { type: 'INITIALIZE_CANDIDATES' }
+  | { type: 'SET_ALL_PARTICIPANTS_AS_CANDIDATES' }
   | { type: 'SET_TARGETS_OF_MAFIA' }
   | { type: 'SET_TARGETS_OF_POLICE' }
   | { type: 'FINISH_GAME' };
@@ -169,7 +172,17 @@ const reducer = (state: State, action: Action): State => {
         })),
       };
 
-    case 'SET_All_PARTICIPANTS_AS_CANDIDATES':
+    case 'INITIALIZE_CANDIDATES':
+      return {
+        ...state,
+        gamePublisher: { ...state.gamePublisher, isCandidate: false },
+        gameSubscribers: state.gameSubscribers.map((gameSubscriber) => ({
+          ...gameSubscriber,
+          isCandidate: false,
+        })),
+      };
+
+    case 'SET_ALL_PARTICIPANTS_AS_CANDIDATES':
       return {
         ...state,
         gamePublisher: { ...state.gamePublisher, isCandidate: true },
@@ -209,6 +222,26 @@ const reducer = (state: State, action: Action): State => {
       return {
         ...state,
         gameStatus: 'READY',
+        gamePublisher: {
+          ...state.gamePublisher,
+          participant: null,
+          role: null,
+          audioEnabled: false,
+          videoEnabled: false,
+          votes: 0,
+          isCandidate: false,
+          isAlive: true,
+        },
+        gameSubscribers: state.gameSubscribers.map((gameSubscriber) => ({
+          ...gameSubscriber,
+          participant: null,
+          role: null,
+          audioEnabled: false,
+          videoEnabled: false,
+          votes: 0,
+          isCandidate: false,
+          isAlive: true,
+        })),
       };
 
     default:
@@ -290,8 +323,12 @@ export const useOpenVidu = () => {
     dispatch({ type: 'INITIALIZE_VOTES' });
   };
 
+  const initializeCandidates = () => {
+    dispatch({ type: 'INITIALIZE_CANDIDATES' });
+  };
+
   const setAllParticipantsAsCandidates = () => {
-    dispatch({ type: 'SET_All_PARTICIPANTS_AS_CANDIDATES' });
+    dispatch({ type: 'SET_ALL_PARTICIPANTS_AS_CANDIDATES' });
   };
 
   const setTargetsOfMafia = () => {
@@ -318,6 +355,11 @@ export const useOpenVidu = () => {
   };
 
   const finishGame = () => {
+    if (state.gamePublisher.isAlive && state.gamePublisher.participant) {
+      state.gamePublisher?.participant?.publishAudio(false);
+      state.gamePublisher.participant?.publishVideo(false);
+      session?.unpublish(state.gamePublisher.participant!);
+    }
     dispatch({ type: 'FINISH_GAME' });
   };
 
@@ -351,6 +393,8 @@ export const useOpenVidu = () => {
               payload: { nickname: data.newOwner, data: { isOwner: true } },
             });
           }
+
+          toast.info(`${data.newOwner} 님이 방장이 되었습니다.`, TOAST_OPTION);
         }
       },
     );
@@ -489,6 +533,7 @@ export const useOpenVidu = () => {
     changePublisherStatus,
     changeSubscriberStatus,
     initializeVotes,
+    initializeCandidates,
     setAllParticipantsAsCandidates,
     setTargetsOfMafia,
     setTargetsOfPolice,

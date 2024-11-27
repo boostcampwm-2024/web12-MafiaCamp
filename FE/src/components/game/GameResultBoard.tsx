@@ -4,7 +4,7 @@ import CloseIcon from '../common/icons/CloseIcon';
 import Image from 'next/image';
 
 interface GameResultBoardProps {
-  gamePublisherRole: Role | null;
+  gamePublisherRole: Role;
   gameResult: 'WIN' | 'LOSE';
   playerInfo: {
     nickname: string;

@@ -7,10 +7,11 @@ import ChattingList from './chatting/ChattingList';
 import { useEffect, useState } from 'react';
 import { useSocketStore } from '@/stores/socketStore';
 import { ROLE, Role } from '@/constants/role';
-import { Slide, toast, ToastContainer } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import { Situation, SITUATION_MESSAGE } from '@/constants/situation';
 import VideoViewer from './video/VideoViewer';
 import GameResultBoard from './GameResultBoard';
+import { TOAST_OPTION } from '@/constants/toastOption';
 
 interface GameViewerProps {
   roomId: string;
@@ -29,6 +30,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     changePublisherStatus,
     changeSubscriberStatus,
     initializeVotes,
+    initializeCandidates,
     setAllParticipantsAsCandidates,
     setTargetsOfMafia,
     setTargetsOfPolice,
@@ -53,17 +55,9 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
 
   const notifyInfo = (message: string) =>
     toast.info(message, {
+      ...TOAST_OPTION,
       toastId: message,
-      position: 'top-center',
       autoClose: 5000,
-      closeButton: false,
-      hideProgressBar: false,
-      closeOnClick: false,
-      pauseOnHover: false,
-      draggable: false,
-      progress: undefined,
-      theme: 'light',
-      transition: Slide,
     });
 
   useEffect(() => {
@@ -81,6 +75,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     socket?.once(
       'player-role',
       (data: { role: Role; another: [string, Role][] | null }) => {
+        setGameResultVisible(false);
         changePublisherStatus({ role: data.role });
         data.another?.forEach((value) => {
           changeSubscriberStatus(value[0], { role: value[1] });
@@ -120,7 +115,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
           if (gamePublisher.role === 'MAFIA') {
             setTargetsOfMafia();
           } else {
-            initializeVotes();
+            initializeCandidates();
           }
           setTarget(null);
           notifyInfo(SITUATION_MESSAGE.MAFIA);
@@ -129,7 +124,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
           if (gamePublisher.role === 'DOCTOR') {
             setAllParticipantsAsCandidates();
           } else {
-            initializeVotes();
+            initializeCandidates();
           }
           setTarget(null);
           notifyInfo(SITUATION_MESSAGE.DOCTOR);
@@ -138,7 +133,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
           if (gamePublisher.role === 'POLICE') {
             setTargetsOfPolice();
           } else {
-            initializeVotes();
+            initializeCandidates();
           }
           setTarget(null);
           notifyInfo(SITUATION_MESSAGE.POLICE);
@@ -178,7 +173,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
 
     // 1차 투표 결과 확인
     socket?.on('primary-vote-result', (candidates: string[]) => {
-      initializeVotes();
+      initializeCandidates();
       setTarget(null);
       setInvalidityCount(0);
 
@@ -258,6 +253,9 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
           status: 'ALIVE' | 'DEAD';
         }[];
       }) => {
+        notifyInfo('게임이 종료되었습니다.');
+        setSituation(null);
+        setTimeLeft(0);
         finishGame();
         setGameResult(data.result);
         setPlayerInfoList(data.playerInfo);
@@ -284,9 +282,9 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     finishGame,
     gamePublisher.nickname,
     gamePublisher.role,
+    initializeCandidates,
     initializeVotes,
     setAllParticipantsAsCandidates,
-    setPlayerInfoList,
     setTargetsOfMafia,
     setTargetsOfPolice,
     situation,
@@ -298,7 +296,11 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       <ToastContainer style={{ width: '40rem' }} />
       {gameResultVisible && (
         <GameResultBoard
-          gamePublisherRole={gamePublisher.role}
+          gamePublisherRole={
+            playerInfoList.find(
+              (playerInfo) => playerInfo.nickname === gamePublisher.nickname,
+            )?.role ?? 'CITIZEN'
+          }
           gameResult={gameResult}
           playerInfo={playerInfoList}
           closeBoard={() => setGameResultVisible(false)}
