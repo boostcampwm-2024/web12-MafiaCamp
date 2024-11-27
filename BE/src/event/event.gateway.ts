@@ -5,6 +5,7 @@ import {
   OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
+  WsException,
   WsResponse,
 } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
@@ -28,6 +29,7 @@ import {
   MAFIA_KILL_USECASE,
   MafiaKillUsecase,
 } from '../game/usecase/role-playing/mafia.kill.usecase';
+import { FIND_USERINFO_USECASE, FindUserInfoUsecase } from 'src/user/usecase/find.user-info.usecase';
 
 // @UseInterceptors(WebsocketLoggerInterceptor)
 @WebSocketGateway({
@@ -49,19 +51,42 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly voteMafiaUsecase: VoteMafiaUsecase,
     @Inject(MAFIA_KILL_USECASE)
     private readonly mafiaKillUseCase: MafiaKillUsecase,
+    @Inject(FIND_USERINFO_USECASE)
+    private readonly findUserInfoUsecase: FindUserInfoUsecase,
   ) {}
 
-  handleConnection(socket: Socket) {
-    this.logger.log(`client connected: ${socket.id}`);
+  async handleConnection(socket: Socket) {
+    this.logger.log(`[${socket.id}] Client connected`);
+    const headers = socket.handshake.headers;
+    const token = this.parseToken(headers);
+    if (!token) {
+      this.logger.log(`[${socket.id}] Unauthorized client`);
+      // todo: socket 연결 강제로 끊기
+      return;
+    }
+    const { nickname, userId } = await this.findUserInfoUsecase.find(token);
     const client = new EventClient(socket, this.eventManager);
+    client.nickname = nickname;
+    client.userId = userId;
     client.subscribe(Event.ROOM_DATA_CHANGED);
     this.connectedClients.set(socket, client);
     this.publishRoomDataChangedEvent();
   }
 
+  private parseToken(headers): string {
+    const cookies = headers.cookie?.split(';').map((keyVal) => keyVal.split('=')).reduce((cookies, [key, val]) => {
+      cookies[key.trim()] = val.trim();
+      return cookies;
+    }, {});
+    return cookies?.access_token;
+  }
+
   handleDisconnect(socket: Socket) {
-    this.logger.log(`client disconnected: ${socket.id}`);
+    this.logger.log(`[${socket.id}] Client disconnected`);
     const client = this.connectedClients.get(socket);
+    if (!client) {
+      return;
+    }
     client.unsubscribeAll();
     this.connectedClients.delete(socket);
   }

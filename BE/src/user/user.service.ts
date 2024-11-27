@@ -130,7 +130,7 @@ export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginU
       throw new NotFoundUserException();
     }
     return {
-      nickname:userEntity.nickname,
+      nickname: userEntity.nickname,
       userId: userId,
     };
   }

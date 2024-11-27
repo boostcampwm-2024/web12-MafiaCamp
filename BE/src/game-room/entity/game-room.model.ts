@@ -154,7 +154,8 @@ export class GameRoom {
   }
 
   private delegateOwner() {
-    const nicknames = this._clients.map((c) => c.nickname);
-    return nicknames.sort(() => Math.random() - 0.5).pop();
+    const length = this._clients.length;
+    const randIdx = Math.floor(Math.random() * length);
+    return this._clients[randIdx].nickname;
   }
 }
