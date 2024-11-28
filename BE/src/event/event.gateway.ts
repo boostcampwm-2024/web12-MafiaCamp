@@ -133,6 +133,17 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.publishRoomDataChangedEvent();
   }
 
+  @SubscribeMessage('get-participants')
+  getParticipants(
+    @MessageBody('roomId') roomId: string,
+  ) {
+    const participants = this.gameRoomService.getParticipants(roomId);
+    return {
+      event: 'participants',
+      data: participants,
+    };
+  }
+
   @SubscribeMessage('send-chat')
   sendChatToRoom(
     @MessageBody() data: { roomId: string; message: string },

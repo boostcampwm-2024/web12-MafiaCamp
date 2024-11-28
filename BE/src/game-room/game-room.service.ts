@@ -53,6 +53,11 @@ export class GameRoomService {
     }
   }
 
+  getParticipants(roomId: string): { nickname: string, isOwner: boolean }[] {
+    const room = this.findRoomById(roomId);
+    return room.getParticipants();
+  }
+
   findRoomById(roomId: string) {
     const room = this.rooms.find((room) => room.roomId === roomId);
     if (!room) {
