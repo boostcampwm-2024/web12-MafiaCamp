@@ -25,6 +25,8 @@ import { WebsocketExceptionFilter } from '../common/filter/websocket.exception.f
 import { FIND_USERINFO_USECASE, FindUserInfoUsecase } from 'src/user/usecase/find.user-info.usecase';
 import { LOGOUT_USECASE, LogoutUsecase } from '../user/usecase/logout.usecase';
 import { LogoutRequest } from '../user/dto/logout.request';
+import { RECONNECT_USER_USECASE, ReconnectUserUsecase } from '../user/usecase/reconnect.user.usecase';
+import { ReconnectUserRequest } from '../user/dto/reconnect.user.request';
 
 
 @UseFilters(WebsocketExceptionFilter)
@@ -53,7 +55,9 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @Inject(FIND_USERINFO_USECASE)
     private readonly findUserInfoUsecase: FindUserInfoUsecase,
     @Inject(LOGOUT_USECASE)
-    private readonly logoutUsecase: LogoutUsecase
+    private readonly logoutUsecase: LogoutUsecase,
+    @Inject(RECONNECT_USER_USECASE)
+    private readonly reconnectUserUsecase: ReconnectUserUsecase,
   ) {
   }
 
@@ -67,6 +71,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
     const { nickname, userId } = await this.findUserInfoUsecase.find(token);
+    this.reconnectUserUsecase.reconnect(new ReconnectUserRequest(userId, nickname));
     const client = new EventClient(socket, this.eventManager);
     client.nickname = nickname;
     client.userId = userId;

@@ -15,6 +15,7 @@ import { REGISTER_ADMIN_USECASE } from './usecase/register.admin.usecase';
 import { LOGIN_ADMIN_USECASE } from './usecase/login.admin.usecase';
 import { FIND_USERINFO_USECASE } from './usecase/find.user-info.usecase';
 import { LOGOUT_USECASE } from './usecase/logout.usecase';
+import { RECONNECT_USER_USECASE } from './usecase/reconnect.user.usecase';
 
 @Module({
   controllers: [AuthController, UserController],
@@ -51,14 +52,18 @@ import { LOGOUT_USECASE } from './usecase/logout.usecase';
     },
     {
       provide: FIND_USERINFO_USECASE,
-      useExisting: UserService
+      useExisting: UserService,
     },
     {
       provide: LOGOUT_USECASE,
-      useExisting: UserService
-    }
+      useExisting: UserService,
+    },
+    {
+      provide: RECONNECT_USER_USECASE,
+      useExisting: UserService,
+    },
   ],
-  exports: [FIND_USER_USECASE, REGISTER_USER_USECASE, FIND_USERINFO_USECASE, LOGOUT_USECASE],
+  exports: [FIND_USER_USECASE, REGISTER_USER_USECASE, FIND_USERINFO_USECASE, LOGOUT_USECASE, RECONNECT_USER_USECASE],
 })
 export class UserModule {
 }
