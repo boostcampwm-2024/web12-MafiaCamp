@@ -23,9 +23,15 @@ import * as bcrypt from 'bcrypt';
 import { FindUserInfoUsecase } from './usecase/find.user-info.usecase';
 import { TOKEN_VERIFY_USECASE, TokenVerifyUsecase } from '../auth/usecase/token.verify.usecase';
 import { NotFoundUserException } from '../common/error/not.found.user.exception';
+import { DuplicateLoginUserException } from '../common/error/duplicate.login-user.exception';
+import { LogoutUsecase } from './usecase/logout.usecase';
+import { LogoutRequest } from './dto/logout.request';
 
 @Injectable()
-export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginUserUsecase, UpdateUserUsecase, LoginAdminUsecase, RegisterAdminUsecase, FindUserInfoUsecase {
+export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginUserUsecase, UpdateUserUsecase, LoginAdminUsecase, RegisterAdminUsecase, FindUserInfoUsecase, LogoutUsecase {
+
+  private readonly loginBox = new Map<number, string>();
+
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository<UserEntity, number>,
@@ -78,20 +84,25 @@ export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginU
     const userEntity = await this.userRepository.findByOAuthId(userInfo.data.id);
     if (!userEntity) {
       const newUserEntity = await this.register(new RegisterUserRequest(userInfo.data.kakao_account.email, nickname, userInfo.data.id));
+      this.loginBox.set(+newUserEntity.userId, newUserEntity.nickname);
       const accessToken = this.tokenProvideUsecase.provide({
-        userId: newUserEntity.userId,
+        userId: +newUserEntity.userId,
       });
       return {
         token: accessToken,
-        response: new RegisterUserResponse(nickname, newUserEntity.userId),
+        response: new RegisterUserResponse(nickname, +newUserEntity.userId),
       };
     }
+    if (this.loginBox.has(+userEntity.userId)) {
+      throw new DuplicateLoginUserException();
+    }
+    this.loginBox.set(+userEntity.userId, userEntity.nickname);
     const accessToken = this.tokenProvideUsecase.provide({
-      userId: userEntity.userId,
+      userId: +userEntity.userId,
     });
     return {
       token: accessToken,
-      response: new RegisterUserResponse(userEntity.nickname, userEntity.userId),
+      response: new RegisterUserResponse(userEntity.nickname, +userEntity.userId),
     };
   }
 
@@ -102,11 +113,16 @@ export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginU
       throw new DuplicateNicknameException();
     }
     await this.userRepository.updateNickname(updateNicknameRequest.nickname, updateNicknameRequest.userId);
+    this.loginBox.set(+userEntity.userId, updateNicknameRequest.nickname);
   }
 
   async loginAdmin(adminLoginRequest: AdminLoginRequest): Promise<Record<string, any>> {
     const userEntity = await this.userRepository.findByEmail(adminLoginRequest.email);
     await userEntity.verifyPassword(adminLoginRequest.password);
+    if (this.loginBox.has(+userEntity.userId)) {
+      throw new DuplicateLoginUserException();
+    }
+    this.loginBox.set(+userEntity.userId, userEntity.nickname);
     const accessToken = this.tokenProvideUsecase.provide({
       userId: userEntity.userId,
     });
@@ -122,7 +138,29 @@ export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginU
     await this.userRepository.save(userEntity);
   }
 
-  async find(token: string): Promise<Record<string, any>> {
+  logout(logoutRequest: LogoutRequest): void {
+    const userId = logoutRequest.userId;
+    this.loginBox.delete(userId);
+  }
+
+  async findHttp(token: string): Promise<Record<string, any>> {
+    const payload = this.tokenVerifyUsecase.verify(token);
+    const userId = +payload.userId;
+    const userEntity = await this.userRepository.findById(userId);
+    if (!userEntity) {
+      throw new NotFoundUserException();
+    }
+    if (this.loginBox.has(+userEntity.userId)) {
+      throw new DuplicateLoginUserException();
+    }
+    this.loginBox.set(+userId, userEntity.nickname);
+    return {
+      nickname: userEntity.nickname,
+      userId: userId,
+    };
+  }
+
+  async findWs(token: string): Promise<Record<string, any>> {
     const payload = this.tokenVerifyUsecase.verify(token);
     const userId = +payload.userId;
     const userEntity = await this.userRepository.findById(userId);

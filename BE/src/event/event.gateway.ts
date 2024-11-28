@@ -23,6 +23,8 @@ import { DOCTOR_CURE_USECASE, DoctorCureUsecase } from '../game/usecase/role-pla
 import { WebsocketLoggerInterceptor } from '../common/logger/websocket.logger.interceptor';
 import { WebsocketExceptionFilter } from '../common/filter/websocket.exception.filter';
 import { FIND_USERINFO_USECASE, FindUserInfoUsecase } from 'src/user/usecase/find.user-info.usecase';
+import { LOGOUT_USECASE, LogoutUsecase } from '../user/usecase/logout.usecase';
+import { LogoutRequest } from '../user/dto/logout.request';
 
 
 @UseFilters(WebsocketExceptionFilter)
@@ -31,6 +33,7 @@ import { FIND_USERINFO_USECASE, FindUserInfoUsecase } from 'src/user/usecase/fin
   namespace: 'ws',
   cors: {
     origin: '*',
+    credentials: true,
   },
 })
 export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -50,6 +53,8 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly doctorCureUsecase: DoctorCureUsecase,
     @Inject(FIND_USERINFO_USECASE)
     private readonly findUserInfoUsecase: FindUserInfoUsecase,
+    @Inject(LOGOUT_USECASE)
+    private readonly logoutUsecase: LogoutUsecase,
   ) {
   }
 
@@ -62,7 +67,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // todo: socket 연결 강제로 끊기
       return;
     }
-    const { nickname, userId } = await this.findUserInfoUsecase.find(token);
+    const { nickname, userId } = await this.findUserInfoUsecase.findWs(token);
     const client = new EventClient(socket, this.eventManager);
     client.nickname = nickname;
     client.userId = userId;
@@ -79,12 +84,20 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return cookies?.access_token;
   }
 
-  handleDisconnect(socket: Socket) {
+  async handleDisconnect(socket: Socket) {
     this.logger.log(`[${socket.id}] Client disconnected`);
     const client = this.connectedClients.get(socket);
     if (!client) {
       return;
     }
+    const headers = socket.handshake.headers;
+    const token = this.parseToken(headers);
+    if (!token) {
+      this.logger.log(`[${socket.id}] Unauthorized client`);
+      // todo: socket 연결 강제로 끊기
+      return;
+    }
+    this.logoutUsecase.logout(new LogoutRequest(client.userId));
     client.unsubscribeAll();
     this.connectedClients.delete(socket);
   }

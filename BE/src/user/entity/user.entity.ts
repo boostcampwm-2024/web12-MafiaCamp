@@ -5,6 +5,7 @@ import { InvalidPasswordException } from '../../common/error/invalid.password.ex
 
 @Entity('user')
 export class UserEntity extends BaseEntity {
+
   @PrimaryGeneratedColumn('increment', {
     type: 'bigint',
     name: 'user_id',
