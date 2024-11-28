@@ -127,6 +127,7 @@ export class UserService
     if (this.loginBox.has(+userEntity.userId)) {
       throw new DuplicateLoginUserException();
     }
+    console.log('loginKakao', this.loginBox, userEntity.userId);
     this.loginBox.set(+userEntity.userId, userEntity.nickname);
     const accessToken = this.tokenProvideUsecase.provide({
       userId: +userEntity.userId,
@@ -146,6 +147,7 @@ export class UserService
       updateNicknameRequest.nickname,
     );
     this.loginBox.set(+userEntity.userId, updateNicknameRequest.nickname);
+    console.log('updateNickname', this.loginBox, userEntity.userId);
     if (userEntity) {
       throw new DuplicateNicknameException();
     }
@@ -179,6 +181,7 @@ export class UserService
     if (this.loginBox.has(+userEntity.userId)) {
       throw new DuplicateLoginUserException();
     }
+    console.log('findHttp', this.loginBox, userEntity.userId);
     this.loginBox.set(+userEntity.userId, userEntity.nickname);
     const accessToken = this.tokenProvideUsecase.provide({
       userId: userEntity.userId,
@@ -208,6 +211,7 @@ export class UserService
   logout(logoutRequest: LogoutRequest): void {
     const userId = logoutRequest.userId;
     this.loginBox.delete(userId);
+    console.log('logout', this.loginBox,userId);
   }
 
   async findHttp(token: string): Promise<Record<string, any>> {
@@ -217,9 +221,10 @@ export class UserService
     if (!userEntity) {
       throw new NotFoundUserException();
     }
-    if (this.loginBox.has(+userEntity.userId)) {
+    if (this.loginBox.has(userId)) {
       throw new DuplicateLoginUserException();
     }
+    console.log('findHttp', this.loginBox,userId);
     this.loginBox.set(+userId, userEntity.nickname);
     return {
       nickname: userEntity.nickname,
