@@ -28,7 +28,7 @@ import { LogoutUsecase } from './usecase/logout.usecase';
 import { LogoutRequest } from './dto/logout.request';
 
 @Injectable()
-export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginUserUsecase, UpdateUserUsecase, LoginAdminUsecase, RegisterAdminUsecase, FindUserInfoUsecase,LogoutUsecase {
+export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginUserUsecase, UpdateUserUsecase, LoginAdminUsecase, RegisterAdminUsecase, FindUserInfoUsecase, LogoutUsecase {
 
   private readonly loginBox = new Map<number, string>();
 
