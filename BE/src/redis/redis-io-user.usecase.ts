@@ -6,7 +6,4 @@ export interface RedisIOUserUseCase {
   delHash(hashName: string, userId: string): Promise<void>;
 
   getAllHash(hashName: string): Promise<Record<string, string>>;
-  // getBitMap(bitmapName: string, index: string): Promise<number>;
-  // updateBitMap(bitmapName: string, index: string, value: number): Promise<void>;
-  // checkBitMap(userId: string): Promise<string>;
 }

@@ -10,8 +10,8 @@ export class RedisService
 
   async onModuleInit() {
     this.client = new Redis({
-      host: 'localhost',
-      port: 6379,
+      host: process.env.REDIS_HOST || 'localhost',
+      port: parseInt(process.env.REDIS_PORT, 10) || 6379,
       password: process.env.REDIS_PASSWORD,
     });
 
@@ -60,22 +60,14 @@ export class RedisService
   async getAllHash(hashName: string): Promise<Record<any, any>> {
     try {
       const allHashContent = await this.client.hgetall(hashName);
-      console.log(Object.entries(allHashContent));
-
-      const parsedHash = Object.entries(allHashContent).reduce(
-        (acc, [key, value]) => {
-          try {
-            acc[key] = JSON.parse(value);
-          } catch (error) {
-            console.error(`Error parsing key "${key}":`, error);
-            acc[key] = null;
-          }
-          return acc;
-        },
-        {} as Record<string, any>,
-      );
-      console.log(parsedHash);
-      return parsedHash;
+      return Object.entries(allHashContent).reduce((acc, [key, value]) => {
+        try {
+          acc[key] = JSON.parse(value);
+        } catch (error) {
+          acc[key] = null;
+        }
+        return acc;
+      }, {} as Record<string, any>);
     } catch (error) {
       console.log(error);
     }
