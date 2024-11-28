@@ -39,7 +39,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     setTargetsOfPolice,
     eliminatePublisher,
     finishGame,
-  } = useOpenVidu();
+  } = useOpenVidu(roomId);
 
   const [situation, setSituation] = useState<Situation | null>(null);
   const [timeLeft, setTimeLeft] = useState(0);

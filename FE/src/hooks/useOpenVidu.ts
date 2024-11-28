@@ -1,7 +1,6 @@
 import { GameStatus } from '@/constants/gameStatus';
 import { TOAST_OPTION } from '@/constants/toastOption';
 import { useAuthStore } from '@/stores/authStore';
-import { useParticipantListStore } from '@/stores/participantListStore';
 import { useSocketStore } from '@/stores/socketStore';
 import { GamePublisher } from '@/types/gamePublisher';
 import { GameSubscriber } from '@/types/gameSubscriber';
@@ -250,9 +249,8 @@ const reducer = (state: State, action: Action): State => {
   }
 };
 
-export const useOpenVidu = () => {
+export const useOpenVidu = (roomId: string) => {
   const { nickname } = useAuthStore();
-  const { participantList } = useParticipantListStore();
   const { socket, session, setSocketState } = useSocketStore();
   const [state, dispatch] = useReducer<Reducer<State, Action>>(reducer, {
     gameStatus: 'READY',
@@ -366,11 +364,6 @@ export const useOpenVidu = () => {
   };
 
   useEffect(() => {
-    dispatch({
-      type: 'PARTICIPATE',
-      payload: { participantList: participantList ?? [] },
-    });
-
     // 게임 참가
     socket?.on(
       'participants',
@@ -405,6 +398,8 @@ export const useOpenVidu = () => {
         }
       },
     );
+
+    socket?.emit('get-participants', { roomId });
 
     (async () => {
       try {
@@ -464,8 +459,7 @@ export const useOpenVidu = () => {
       socket?.off('participants');
       socket?.off('video-info');
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [nickname, roomId, setSocketState, socket, state.gamePublisher.nickname]);
 
   useEffect(() => {
     return () => {
