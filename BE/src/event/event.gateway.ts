@@ -25,7 +25,6 @@ import { WebsocketExceptionFilter } from '../common/filter/websocket.exception.f
 import { FIND_USERINFO_USECASE, FindUserInfoUsecase } from 'src/user/usecase/find.user-info.usecase';
 import { LOGOUT_USECASE, LogoutUsecase } from '../user/usecase/logout.usecase';
 import { LogoutRequest } from '../user/dto/logout.request';
-import { RECONNECT_USER_USECASE, ReconnectUserUsecase } from '../user/usecase/reconnect.user.usecase';
 
 
 @UseFilters(WebsocketExceptionFilter)
@@ -55,8 +54,6 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly findUserInfoUsecase: FindUserInfoUsecase,
     @Inject(LOGOUT_USECASE)
     private readonly logoutUsecase: LogoutUsecase,
-    @Inject(RECONNECT_USER_USECASE)
-    private readonly reconnectUserUsecase: ReconnectUserUsecase,
   ) {
   }
 

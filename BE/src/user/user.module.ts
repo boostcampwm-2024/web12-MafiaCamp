@@ -15,7 +15,6 @@ import { REGISTER_ADMIN_USECASE } from './usecase/register.admin.usecase';
 import { LOGIN_ADMIN_USECASE } from './usecase/login.admin.usecase';
 import { FIND_USERINFO_USECASE } from './usecase/find.user-info.usecase';
 import { LOGOUT_USECASE } from './usecase/logout.usecase';
-import { RECONNECT_USER_USECASE } from './usecase/reconnect.user.usecase';
 
 @Module({
   controllers: [AuthController, UserController],
