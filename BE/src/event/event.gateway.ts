@@ -97,8 +97,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // todo: socket 연결 강제로 끊기
       return;
     }
-    const { _, userId } = await this.findUserInfoUsecase.findWs(token);
-    this.logoutUsecase.logout(new LogoutRequest(userId));
+    this.logoutUsecase.logout(new LogoutRequest(client.userId));
     client.unsubscribeAll();
     this.connectedClients.delete(socket);
   }
