@@ -47,14 +47,12 @@ const ConnectedUserList = () => {
                   className='flex snap-start items-center gap-2 text-nowrap rounded-lg p-2 hover:bg-slate-500'
                 >
                   <p
-                    className={`${connectedUserList.get(Number(userId))?.isInLobby ? 'text-emerald-400' : 'text-sky-400'} min-w-10 text-xs`}
+                    className={`${connectedUserList[userId].isInLobby ? 'text-emerald-400' : 'text-sky-400'} min-w-10 text-xs`}
                   >
-                    {connectedUserList.get(Number(userId))?.isInLobby
-                      ? '로비'
-                      : '게임 중'}
+                    {connectedUserList[userId].isInLobby ? '로비' : '게임 중'}
                   </p>
                   <p className='truncate text-sm'>
-                    {connectedUserList.get(Number(userId))?.nickname}
+                    {connectedUserList[userId].nickname}
                   </p>
                 </div>
               ))}

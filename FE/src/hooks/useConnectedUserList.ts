@@ -19,12 +19,12 @@ export const useConnectedUserList = () => {
 
     socket?.on(
       'upsert-online-user',
-      (data: { userId: number; nickname: string; isInLobby: boolean }) => {
+      (data: { userId: string; nickname: string; isInLobby: boolean }) => {
         updateConnectedUserList(data);
       },
     );
 
-    socket?.on('exit-online-user', (data: { userId: number }) => {
+    socket?.on('exit-online-user', (data: { userId: string }) => {
       deleteUser(data.userId);
     });
   }, [deleteUser, setConnectedUserList, socket, updateConnectedUserList]);

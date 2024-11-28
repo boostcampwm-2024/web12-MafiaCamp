@@ -62,7 +62,7 @@ const AdminPanel = () => {
 
     if (!response.ok) {
       setLoading(false);
-      notifyError('로그인에 실패하였습니다.');
+      notifyError(await response.text());
       throw new Error(response.statusText);
     }
 
@@ -99,7 +99,7 @@ const AdminPanel = () => {
     setLoading(false);
 
     if (!response.ok) {
-      notifyError('회원가입에 실패하였습니다.');
+      notifyError('이미 존재하는 계정입니다.');
       throw new Error(response.statusText);
     }
 

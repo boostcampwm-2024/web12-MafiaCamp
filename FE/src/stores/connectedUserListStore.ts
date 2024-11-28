@@ -2,26 +2,23 @@ import { create, StateCreator } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
 interface ConnectedUserListState {
-  connectedUserList: Map<number, { nickname: string; isInLobby: boolean }>;
+  connectedUserList: Record<string, { nickname: string; isInLobby: boolean }>;
 }
 
 interface ConnectedUserListAction {
   setConnectedUserList: (data: {
-    [userId: number]: { nickname: string; isInLobby: boolean };
+    [userId: string]: { nickname: string; isInLobby: boolean };
   }) => void;
   updateConnectedUserList: (data: {
-    userId: number;
+    userId: string;
     nickname: string;
     isInLobby: boolean;
   }) => void;
-  deleteUser: (userId: number) => void;
+  deleteUser: (userId: string) => void;
 }
 
 const initialState: ConnectedUserListState = {
-  connectedUserList: new Map<
-    number,
-    { nickname: string; isInLobby: boolean }
-  >(),
+  connectedUserList: {},
 };
 
 type ConnectedUserListType = ConnectedUserListState & ConnectedUserListAction;
@@ -32,36 +29,32 @@ const connectedUserListStore: StateCreator<ConnectedUserListType> = (set) => ({
     [userId: number]: { nickname: string; isInLobby: boolean };
   }) =>
     set(() => {
-      const newConnectedUserList = new Map<
-        number,
+      const newConnectedUserList: Record<
+        string,
         { nickname: string; isInLobby: boolean }
-      >();
-
-      Object.keys(data).forEach((userId) => {
-        newConnectedUserList.set(Number(userId), data[Number(userId)]);
+      > = {};
+      Object.entries(data).forEach(([userId, userData]) => {
+        newConnectedUserList[userId] = userData;
       });
-
       return { connectedUserList: newConnectedUserList };
     }),
   updateConnectedUserList: (data: {
-    userId: number;
+    userId: string;
     nickname: string;
     isInLobby: boolean;
   }) =>
     set((state) => {
-      const updatedConnectedUserList = new Map(state.connectedUserList);
-      updatedConnectedUserList.set(data.userId, {
+      const updatedConnectedUserList = { ...state.connectedUserList };
+      updatedConnectedUserList[data.userId] = {
         nickname: data.nickname,
         isInLobby: data.isInLobby,
-      });
-
+      };
       return { connectedUserList: updatedConnectedUserList };
     }),
-  deleteUser: (userId: number) =>
+  deleteUser: (userId: string) =>
     set((state) => {
-      const updatedConnectedUserList = new Map(state.connectedUserList);
-      updatedConnectedUserList.delete(userId);
-
+      const updatedConnectedUserList = { ...state.connectedUserList };
+      delete updatedConnectedUserList[userId];
       return { connectedUserList: updatedConnectedUserList };
     }),
 });
