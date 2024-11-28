@@ -31,6 +31,7 @@ import { FIND_USERINFO_USECASE, FindUserInfoUsecase } from 'src/user/usecase/fin
   namespace: 'ws',
   cors: {
     origin: '*',
+    credentials: true,
   },
 })
 export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
