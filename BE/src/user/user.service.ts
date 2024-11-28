@@ -153,6 +153,7 @@ export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginU
     if (this.loginBox.has(+userEntity.userId)) {
       throw new DuplicateLoginUserException();
     }
+    this.loginBox.set(+userId, userEntity.nickname);
     return {
       nickname: userEntity.nickname,
       userId: userId,
