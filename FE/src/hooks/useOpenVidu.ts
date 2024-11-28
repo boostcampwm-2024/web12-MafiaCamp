@@ -368,7 +368,7 @@ export const useOpenVidu = () => {
   useEffect(() => {
     dispatch({
       type: 'PARTICIPATE',
-      payload: { participantList: participantList! },
+      payload: { participantList: participantList ?? [] },
     });
 
     // 게임 참가

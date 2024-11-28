@@ -21,7 +21,6 @@ interface GameViewerProps {
 
 const GameViewer = ({ roomId }: GameViewerProps) => {
   // TODO: 하단 코드 리팩토링 필요.
-
   const { participantList } = useParticipantListStore();
   const { socket } = useSocketStore();
   const router = useRouter();
@@ -303,6 +302,10 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     situation,
     socket,
   ]);
+
+  if (!participantList) {
+    return null;
+  }
 
   return (
     <div className='absolute left-0 top-0 h-screen w-screen overflow-x-hidden'>
