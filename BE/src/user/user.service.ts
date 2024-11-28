@@ -142,6 +142,7 @@ export class UserService
 
   @Transactional()
   async updateNickname(updateNicknameRequest: UpdateNicknameRequest) {
+    console.log(updateNicknameRequest);
     const userEntity = await this.userRepository.findByNickname(
       updateNicknameRequest.nickname,
     );
