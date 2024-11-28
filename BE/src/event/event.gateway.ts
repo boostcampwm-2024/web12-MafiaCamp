@@ -10,7 +10,7 @@ import {
 import { Socket } from 'socket.io';
 import { CreateRoomRequest } from 'src/game-room/dto/create-room.request';
 import { GameRoomService } from 'src/game-room/game-room.service';
-import { Inject, Logger, UseFilters, UseInterceptors } from '@nestjs/common';
+import { Inject, UseFilters, UseInterceptors } from '@nestjs/common';
 import { EventClient } from './event-client.model';
 import { EventManager } from './event-manager';
 import { Event } from './event.const';
@@ -23,6 +23,9 @@ import { DOCTOR_CURE_USECASE, DoctorCureUsecase } from '../game/usecase/role-pla
 import { WebsocketLoggerInterceptor } from '../common/logger/websocket.logger.interceptor';
 import { WebsocketExceptionFilter } from '../common/filter/websocket.exception.filter';
 import { FIND_USERINFO_USECASE, FindUserInfoUsecase } from 'src/user/usecase/find.user-info.usecase';
+import { LOGOUT_USECASE, LogoutUsecase } from '../user/usecase/logout.usecase';
+import { Logger } from 'winston';
+import { LogoutRequest } from '../user/dto/logout.request';
 
 
 @UseFilters(WebsocketExceptionFilter)
@@ -34,7 +37,7 @@ import { FIND_USERINFO_USECASE, FindUserInfoUsecase } from 'src/user/usecase/fin
   },
 })
 export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  private logger = new Logger(EventGateway.name);
+  private logger = new Logger();
   private connectedClients: Map<Socket, EventClient> = new Map();
 
   constructor(
@@ -50,15 +53,17 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly doctorCureUsecase: DoctorCureUsecase,
     @Inject(FIND_USERINFO_USECASE)
     private readonly findUserInfoUsecase: FindUserInfoUsecase,
+    @Inject(LOGOUT_USECASE)
+    private readonly logoutUsecase: LogoutUsecase
   ) {
   }
 
   async handleConnection(socket: Socket) {
-    this.logger.log(`[${socket.id}] Client connected`);
+    this.logger.info(`[${socket.id}] Client connected`);
     const headers = socket.handshake.headers;
     const token = this.parseToken(headers);
     if (!token) {
-      this.logger.log(`[${socket.id}] Unauthorized client`);
+      this.logger.info(`[${socket.id}] Unauthorized client`);
       // todo: socket 연결 강제로 끊기
       return;
     }
@@ -79,12 +84,21 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return cookies?.access_token;
   }
 
-  handleDisconnect(socket: Socket) {
-    this.logger.log(`[${socket.id}] Client disconnected`);
+  async handleDisconnect(socket: Socket) {
+    this.logger.info(`[${socket.id}] Client disconnected`);
     const client = this.connectedClients.get(socket);
     if (!client) {
       return;
     }
+    const headers = socket.handshake.headers;
+    const token = this.parseToken(headers);
+    if (!token) {
+      this.logger.info(`[${socket.id}] Unauthorized client`);
+      // todo: socket 연결 강제로 끊기
+      return;
+    }
+    const { nickname, userId } = await this.findUserInfoUsecase.find(token);
+    this.logoutUsecase.logout(new LogoutRequest(userId));
     client.unsubscribeAll();
     this.connectedClients.delete(socket);
   }
