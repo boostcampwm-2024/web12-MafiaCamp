@@ -61,6 +61,7 @@ const Header = () => {
         if (localStorage.getItem(result.userId) === null) {
           // 다른 컴퓨터에서 로그인 시도한 경우 쿠키 삭제
           await fetch('/api/cookie', { method: 'POST', cache: 'no-store' });
+          router.refresh();
         } else {
           // 같은 브라우저의 탭을 연 경우
           alert('다른 탭에서 같은 계정으로 로그인한 상태입니다.');
