@@ -36,7 +36,7 @@ import { LogoutRequest } from '../user/dto/logout.request';
   },
 })
 export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  private logger = new Logger();
+  private logger = new Logger(EventGateway.name);
   private connectedClients: Map<Socket, EventClient> = new Map();
 
   constructor(
