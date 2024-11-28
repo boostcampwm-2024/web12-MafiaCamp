@@ -52,6 +52,7 @@ const Header = () => {
       if (!response.ok) {
         setLoading(false);
         initializeAuthState();
+        console.error(await response.json());
         return;
       }
 
@@ -70,6 +71,7 @@ const Header = () => {
     if (userId !== '' && !socket) {
       const newSocket = io(`${process.env.NEXT_PUBLIC_BACKEND_URL}/ws`, {
         transports: ['websocket', 'polling'], // use WebSocket first, if available
+        withCredentials: true,
       });
 
       setSocketState({ socket: newSocket });
