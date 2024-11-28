@@ -33,6 +33,9 @@ import { EventManager } from '../event/event-manager';
 import { CONNECTED_USER_USECASE } from '../online-state/connected-user.usecase';
 import { Event } from '../event/event.const';
 import { ConnectedUserService } from '../online-state/connected-user.service';
+import { DuplicateLoginUserException } from '../common/error/duplicate.login-user.exception';
+import { LogoutUsecase } from './usecase/logout.usecase';
+import { LogoutRequest } from './dto/logout.request';
 
 @Injectable()
 export class UserService
@@ -43,8 +46,11 @@ export class UserService
     UpdateUserUsecase,
     LoginAdminUsecase,
     RegisterAdminUsecase,
-    FindUserInfoUsecase
+    FindUserInfoUsecase,
+    LogoutUsecase
 {
+  private readonly loginBox = new Map<number, string>();
+
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository<UserEntity, number>,
@@ -109,22 +115,27 @@ export class UserService
           userInfo.data.id,
         ),
       );
+      this.loginBox.set(+newUserEntity.userId, newUserEntity.nickname);
       const accessToken = this.tokenProvideUsecase.provide({
-        userId: newUserEntity.userId,
+        userId: +newUserEntity.userId,
       });
       return {
         token: accessToken,
-        response: new RegisterUserResponse(nickname, newUserEntity.userId),
+        response: new RegisterUserResponse(nickname, +newUserEntity.userId),
       };
     }
+    if (this.loginBox.has(+userEntity.userId)) {
+      throw new DuplicateLoginUserException();
+    }
+    this.loginBox.set(+userEntity.userId, userEntity.nickname);
     const accessToken = this.tokenProvideUsecase.provide({
-      userId: userEntity.userId,
+      userId: +userEntity.userId,
     });
     return {
       token: accessToken,
       response: new RegisterUserResponse(
         userEntity.nickname,
-        userEntity.userId,
+        +userEntity.userId,
       ),
     };
   }
@@ -134,11 +145,10 @@ export class UserService
     const userEntity = await this.userRepository.findByNickname(
       updateNicknameRequest.nickname,
     );
-
+    this.loginBox.set(+userEntity.userId, updateNicknameRequest.nickname);
     if (userEntity) {
       throw new DuplicateNicknameException();
     }
-
     await this.userRepository.updateNickname(
       updateNicknameRequest.nickname,
       updateNicknameRequest.userId,
@@ -166,6 +176,10 @@ export class UserService
       adminLoginRequest.email,
     );
     await userEntity.verifyPassword(adminLoginRequest.password);
+    if (this.loginBox.has(+userEntity.userId)) {
+      throw new DuplicateLoginUserException();
+    }
+    this.loginBox.set(+userEntity.userId, userEntity.nickname);
     const accessToken = this.tokenProvideUsecase.provide({
       userId: userEntity.userId,
     });
@@ -191,7 +205,29 @@ export class UserService
     await this.userRepository.save(userEntity);
   }
 
-  async find(token: string): Promise<Record<string, any>> {
+  logout(logoutRequest: LogoutRequest): void {
+    const userId = logoutRequest.userId;
+    this.loginBox.delete(userId);
+  }
+
+  async findHttp(token: string): Promise<Record<string, any>> {
+    const payload = this.tokenVerifyUsecase.verify(token);
+    const userId = +payload.userId;
+    const userEntity = await this.userRepository.findById(userId);
+    if (!userEntity) {
+      throw new NotFoundUserException();
+    }
+    if (this.loginBox.has(+userEntity.userId)) {
+      throw new DuplicateLoginUserException();
+    }
+    this.loginBox.set(+userId, userEntity.nickname);
+    return {
+      nickname: userEntity.nickname,
+      userId: userId,
+    };
+  }
+
+  async findWs(token: string): Promise<Record<string, any>> {
     const payload = this.tokenVerifyUsecase.verify(token);
     const userId = +payload.userId;
     const userEntity = await this.userRepository.findById(userId);

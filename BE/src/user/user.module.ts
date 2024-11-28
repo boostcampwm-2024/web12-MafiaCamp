@@ -16,6 +16,7 @@ import { LOGIN_ADMIN_USECASE } from './usecase/login.admin.usecase';
 import { FIND_USERINFO_USECASE } from './usecase/find.user-info.usecase';
 import { EventModule } from '../event/event.module';
 import { OnlineStateModule } from '../online-state/online-state.module';
+import { LOGOUT_USECASE } from './usecase/logout.usecase';
 
 @Module({
   controllers: [AuthController, UserController],
@@ -26,39 +27,49 @@ import { OnlineStateModule } from '../online-state/online-state.module';
     OnlineStateModule,
   ],
   providers: [
+    UserService,
     {
       provide: USER_REPOSITORY,
       useClass: TypeormUserRepository,
     },
     {
       provide: FIND_USER_USECASE,
-      useClass: UserService,
+      useExisting: UserService,
     },
     {
       provide: REGISTER_USER_USECASE,
-      useClass: UserService,
+      useExisting: UserService,
     },
     {
       provide: LOGIN_USER_USECASE,
-      useClass: UserService,
+      useExisting: UserService,
     },
     {
       provide: UPDATE_USER_USECASE,
-      useClass: UserService,
+      useExisting: UserService,
     },
     {
       provide: REGISTER_ADMIN_USECASE,
-      useClass: UserService,
+      useExisting: UserService,
     },
     {
       provide: LOGIN_ADMIN_USECASE,
-      useClass: UserService,
+      useExisting: UserService,
     },
     {
       provide: FIND_USERINFO_USECASE,
-      useClass: UserService,
+      useExisting: UserService,
+    },
+    {
+      provide: LOGOUT_USECASE,
+      useExisting: UserService,
     },
   ],
-  exports: [FIND_USER_USECASE, REGISTER_USER_USECASE, FIND_USERINFO_USECASE],
+  exports: [
+    FIND_USER_USECASE,
+    REGISTER_USER_USECASE,
+    FIND_USERINFO_USECASE,
+    LOGOUT_USECASE,
+  ],
 })
 export class UserModule {}
