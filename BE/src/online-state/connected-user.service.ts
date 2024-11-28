@@ -1,21 +1,18 @@
 import { ConnectedUserUsecase } from './connected-user.usecase';
 import { UserConnectRequest } from './dto/user.connect.request';
 import { Inject, Injectable } from '@nestjs/common';
-import {
-  REDIS_IO_USER_USECASE,
-  RedisIOUserUseCase,
-} from '../redis/redis-io-user.usecase';
+import { IO_USER_USECASE, IOUserUseCase } from '../redis/io-user.usecase';
 
 @Injectable()
 export class ConnectedUserService implements ConnectedUserUsecase {
   constructor(
-    @Inject(REDIS_IO_USER_USECASE)
-    private readonly redisIOUserUseCase: RedisIOUserUseCase,
+    @Inject(IO_USER_USECASE)
+    private readonly ioUserUseCase: IOUserUseCase,
   ) {}
 
   async enter(userConnectRequest: UserConnectRequest): Promise<void> {
     const { userId, nickname } = userConnectRequest;
-    await this.redisIOUserUseCase.setHash(
+    await this.ioUserUseCase.setHash(
       'onlineUser',
       userId,
       JSON.stringify({
@@ -27,7 +24,7 @@ export class ConnectedUserService implements ConnectedUserUsecase {
 
   async enterRoom(userConnectRequest: UserConnectRequest): Promise<void> {
     const { userId, nickname } = userConnectRequest;
-    await this.redisIOUserUseCase.setHash(
+    await this.ioUserUseCase.setHash(
       'onlineUser',
       userId,
       JSON.stringify({
@@ -38,12 +35,12 @@ export class ConnectedUserService implements ConnectedUserUsecase {
   }
 
   async leave(userId: string): Promise<void> {
-    await this.redisIOUserUseCase.delHash('onlineUser', userId);
+    await this.ioUserUseCase.delHash('onlineUser', userId);
   }
 
   async leaveRoom(userConnectRequest: UserConnectRequest): Promise<void> {
     const { userId, nickname } = userConnectRequest;
-    await this.redisIOUserUseCase.setHash(
+    await this.ioUserUseCase.setHash(
       'onlineUser',
       userId,
       JSON.stringify({
@@ -54,6 +51,6 @@ export class ConnectedUserService implements ConnectedUserUsecase {
   }
 
   async getOnLineUserList(): Promise<Record<string, string>> {
-    return await this.redisIOUserUseCase.getAllHash('onlineUser');
+    return await this.ioUserUseCase.getAllHash('onlineUser');
   }
 }
