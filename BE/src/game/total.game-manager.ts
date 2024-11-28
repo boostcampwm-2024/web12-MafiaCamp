@@ -166,7 +166,7 @@ export class TotalGameManager
     ballotBox.forEach((votedUsers, client) => {
       voteCountMap[client] = votedUsers.length;
     });
-    gameRoom.sendAll('vote-current-online-state', voteCountMap);
+    gameRoom.sendAll('vote-current-state', voteCountMap);
   }
 
   private checkVoteAuthority(gameRoom: GameRoom, from: string): void {
