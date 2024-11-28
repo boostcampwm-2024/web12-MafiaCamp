@@ -19,6 +19,7 @@ export const useSignout = () => {
       throw new Error(response.statusText);
     }
 
+    localStorage.removeItem(userId);
     socket?.disconnect();
     initializeAuthState();
     initializeSocketState();

@@ -68,6 +68,7 @@ const AdminPanel = () => {
 
     const result: User = await response.json();
     setAuthState({ ...result });
+    localStorage.setItem(result.userId, result.nickname);
     router.replace('/');
   };
 
