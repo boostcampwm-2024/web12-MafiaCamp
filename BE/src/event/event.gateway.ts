@@ -10,7 +10,7 @@ import {
 import { Socket } from 'socket.io';
 import { CreateRoomRequest } from 'src/game-room/dto/create-room.request';
 import { GameRoomService } from 'src/game-room/game-room.service';
-import { Inject, UseFilters, UseInterceptors } from '@nestjs/common';
+import { Inject, Logger, UseFilters, UseInterceptors } from '@nestjs/common';
 import { EventClient } from './event-client.model';
 import { EventManager } from './event-manager';
 import { Event } from './event.const';
@@ -24,7 +24,6 @@ import { WebsocketLoggerInterceptor } from '../common/logger/websocket.logger.in
 import { WebsocketExceptionFilter } from '../common/filter/websocket.exception.filter';
 import { FIND_USERINFO_USECASE, FindUserInfoUsecase } from 'src/user/usecase/find.user-info.usecase';
 import { LOGOUT_USECASE, LogoutUsecase } from '../user/usecase/logout.usecase';
-import { Logger } from 'winston';
 import { LogoutRequest } from '../user/dto/logout.request';
 
 
@@ -59,11 +58,11 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   async handleConnection(socket: Socket) {
-    this.logger.info(`[${socket.id}] Client connected`);
+    this.logger.log(`[${socket.id}] Client connected`);
     const headers = socket.handshake.headers;
     const token = this.parseToken(headers);
     if (!token) {
-      this.logger.info(`[${socket.id}] Unauthorized client`);
+      this.logger.log(`[${socket.id}] Unauthorized client`);
       // todo: socket 연결 강제로 끊기
       return;
     }
@@ -85,7 +84,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   async handleDisconnect(socket: Socket) {
-    this.logger.info(`[${socket.id}] Client disconnected`);
+    this.logger.log(`[${socket.id}] Client disconnected`);
     const client = this.connectedClients.get(socket);
     if (!client) {
       return;
@@ -93,7 +92,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const headers = socket.handshake.headers;
     const token = this.parseToken(headers);
     if (!token) {
-      this.logger.info(`[${socket.id}] Unauthorized client`);
+      this.logger.log(`[${socket.id}] Unauthorized client`);
       // todo: socket 연결 강제로 끊기
       return;
     }
