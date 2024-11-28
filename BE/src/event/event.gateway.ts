@@ -33,6 +33,7 @@ import { LogoutRequest } from '../user/dto/logout.request';
   namespace: 'ws',
   cors: {
     origin: '*',
+    credentials: true,
   },
 })
 export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
