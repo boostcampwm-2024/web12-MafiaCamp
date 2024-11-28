@@ -58,6 +58,6 @@ jobs:
           script: |
             docker stop mafiacamp-fe || true
             docker rm mafiacamp-fe || true
-            docker image prune -a || true
+            docker image prune -a --force || true
             docker pull ${{ secrets.NCP_PRIVATE_ENDPOINT }}/mafiacamp-fe
             docker run -p 3000:3000 -d --restart unless-stopped --name mafiacamp-fe ${{ secrets.NCP_PRIVATE_ENDPOINT }}/mafiacamp-fe

@@ -8,6 +8,7 @@ import { MdGroups, MdLogin, MdLogout, MdSettings } from 'react-icons/md';
 import { useSignout } from '@/hooks/useSignout';
 import { useState } from 'react';
 import NicknameModal from './NicknameModal';
+import { useAuthStore } from '@/stores/authStore';
 
 interface HeaderSidebarProps {
   visible: boolean;
@@ -15,7 +16,8 @@ interface HeaderSidebarProps {
 }
 
 const HeaderSidebar = ({ visible, closeHeaderSidebar }: HeaderSidebarProps) => {
-  const { nickname, handleSignout } = useSignout();
+  const { nickname } = useAuthStore();
+  const { handleSignout } = useSignout();
   const [nicknameModalVisible, setNicknameModalVisible] = useState(false);
 
   return (

@@ -12,7 +12,7 @@ const ConnectedUserList = ({ userList }: ConnectedUserListProps) => {
 
   return (
     <div
-      className='fixed left-0 top-0 z-50 h-full w-10'
+      className='fixed left-0 top-0 z-30 h-full w-10'
       onMouseOver={() => setVisible(true)}
       onMouseOut={() => setVisible(false)}
     >

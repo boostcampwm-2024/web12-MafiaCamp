@@ -23,7 +23,7 @@ const VideoFilter = ({
       (situation === 'POLICE' && gamePublisher.role === 'POLICE'))
   ) {
     return (
-      <div className='pointer-events-none absolute bottom-0 left-0 z-10 h-full w-full bg-slate-800/75' />
+      <div className='pointer-events-none absolute bottom-0 left-0 z-10 h-full w-full min-w-[67.5rem] bg-slate-800/75' />
     );
   }
 

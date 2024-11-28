@@ -5,7 +5,7 @@ import Lottie from 'lottie-react';
 import * as motion from 'framer-motion/client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { MdOutlineMenu } from 'react-icons/md';
 import HeaderSidebar from './HeaderSidebar';
@@ -14,37 +14,47 @@ import { User } from '@/types/user';
 import ProfileModal from './ProfileModal';
 import { useAuthStore } from '@/stores/authStore';
 import { FaChevronDown } from 'react-icons/fa';
+import { io } from 'socket.io-client';
+import { useSocketStore } from '@/stores/socketStore';
 
 const Header = () => {
-  const { userId, initializeAuthState, setAuthState } = useAuthStore();
-  const { nickname, handleSignout } = useSignout();
-  const [isScrolled, setIsScrolled] = useState(false);
+  const { userId, nickname, initializeAuthState, setAuthState } =
+    useAuthStore();
+  const { socket, setSocketState } = useSocketStore();
+  const { handleSignout } = useSignout();
+  const [scrolled, setScrolled] = useState(false);
   const [headerSidebarVisible, setHeaderSidebarVisible] = useState(false);
   const [profileModalVisible, setProfileModalVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
   const pathname = usePathname();
+  const router = useRouter();
 
   const handleScroll = () => {
     if (window.scrollY >= 300) {
-      setIsScrolled(true);
+      setScrolled(true);
     } else {
-      setIsScrolled(false);
+      setScrolled(false);
     }
   };
 
   useEffect(() => {
     (async () => {
+      setLoading(true);
+
       const response = await fetch('/api/user/info', {
         method: 'GET',
         cache: 'no-store',
       });
 
       if (!response.ok) {
+        setLoading(false);
         initializeAuthState();
         return;
       }
 
       const result: User = await response.json();
       setAuthState({ ...result });
+      setLoading(false);
     })();
 
     window.addEventListener('scroll', handleScroll);
@@ -52,6 +62,24 @@ const Header = () => {
       window.removeEventListener('scroll', handleScroll);
     };
   }, [initializeAuthState, setAuthState]);
+
+  useEffect(() => {
+    if (userId !== '' && !socket) {
+      const newSocket = io(`${process.env.NEXT_PUBLIC_BACKEND_URL}/ws`, {
+        transports: ['websocket', 'polling'], // use WebSocket first, if available
+      });
+
+      setSocketState({ socket: newSocket });
+
+      newSocket.on('connect_error', (error) => {
+        console.error(`연결 실패: ${error}`);
+        alert('서버와의 연결에 실패하였습니다. 잠시 후에 다시 시도해 주세요.');
+        newSocket.disconnect();
+        setSocketState({ socket: null });
+        router.replace('/');
+      });
+    }
+  }, [router, setSocketState, socket, userId]);
 
   if (
     pathname.startsWith('/game') ||
@@ -62,14 +90,21 @@ const Header = () => {
 
   return (
     <header
-      className={`${pathname === '/' && !isScrolled ? 'bg-slate-600/50' : 'bg-transparent'} ${pathname === '/' ? 'h-[37.5rem] max-[1080px]:h-[45rem]' : 'h-20'} flex w-[80rem] flex-col rounded-b-[11.25rem] px-24 pb-6 transition-all duration-500 max-[1280px]:w-full max-[1024px]:px-6`}
+      className={[
+        `${pathname === '/' && !scrolled ? 'bg-slate-600/50' : 'bg-transparent'}`,
+        `${pathname === '/' ? 'h-[37.5rem] max-[1080px]:h-[45rem]' : 'h-20'}`,
+        'flex w-[80rem] flex-col rounded-b-[11.25rem] px-24 pb-6 transition-all duration-500 max-[1280px]:w-full max-[1024px]:px-6',
+      ].join(' ')}
     >
       <HeaderSidebar
         visible={headerSidebarVisible}
         closeHeaderSidebar={() => setHeaderSidebarVisible(false)}
       />
       <motion.div
-        className={`${pathname === '/' && !isScrolled ? 'bg-transparent' : 'bg-slate-600/50'} fixed top-0 z-10 flex h-20 w-[80rem] flex-row items-center justify-between self-center rounded-b-3xl px-24 max-[1280px]:w-full max-[1280px]:px-12 max-[768px]:px-6`}
+        className={[
+          `${pathname === '/' && !scrolled ? 'bg-transparent' : 'bg-slate-600/50'}`,
+          'fixed top-0 z-10 flex h-20 w-[80rem] flex-row items-center justify-between self-center rounded-b-3xl px-24 max-[1280px]:w-full max-[1280px]:px-12 max-[768px]:px-6',
+        ].join(' ')}
         initial={{ y: '-0.5rem', opacity: 0 }}
         animate={{ y: '0rem', opacity: 1 }}
         transition={{ delay: 0.5, duration: 0.5 }}
@@ -101,7 +136,7 @@ const Header = () => {
               </Link>
             </li>
             <li>
-              {userId === '' ? (
+              {loading ? (
                 <div className='h-6 w-12 animate-pulse rounded-lg bg-slate-400' />
               ) : nickname === '' ? (
                 <Link
@@ -138,7 +173,7 @@ const Header = () => {
           onClick={() => setHeaderSidebarVisible(true)}
         />
       </motion.div>
-      {pathname === '/' && !isScrolled && (
+      {pathname === '/' && !scrolled && (
         <div className='mt-20 flex flex-row items-center justify-between max-[1080px]:flex-col max-[1080px]:gap-6 max-[768px]:h-[40rem]'>
           <div className='flex flex-col gap-24 pt-20 max-[1080px]:flex-row max-[1080px]:gap-6 max-[768px]:flex-col max-[768px]:items-center'>
             <motion.h1
