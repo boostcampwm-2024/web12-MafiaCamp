@@ -19,7 +19,6 @@ import { VOTE_MAFIA_USECASE, VoteMafiaUsecase } from '../game/usecase/vote-manag
 import { VoteCandidateRequest } from '../game/dto/vote.candidate.request';
 import { SelectMafiaTargetRequest } from '../game/dto/select.mafia.target.request';
 import { MAFIA_KILL_USECASE, MafiaKillUsecase } from '../game/usecase/role-playing/mafia.kill.usecase';
-import { DOCTOR_CURE_USECASE, DoctorCureUsecase } from '../game/usecase/role-playing/doctor.cure.usecase';
 import { WebsocketLoggerInterceptor } from '../common/logger/websocket.logger.interceptor';
 import { WebsocketExceptionFilter } from '../common/filter/websocket.exception.filter';
 import { FIND_USERINFO_USECASE, FindUserInfoUsecase } from 'src/user/usecase/find.user-info.usecase';
@@ -47,8 +46,6 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly voteMafiaUsecase: VoteMafiaUsecase,
     @Inject(MAFIA_KILL_USECASE)
     private readonly mafiaKillUseCase: MafiaKillUsecase,
-    @Inject(DOCTOR_CURE_USECASE)
-    private readonly doctorCureUsecase: DoctorCureUsecase,
     @Inject(FIND_USERINFO_USECASE)
     private readonly findUserInfoUsecase: FindUserInfoUsecase,
   ) {
