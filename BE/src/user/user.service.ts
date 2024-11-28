@@ -14,22 +14,41 @@ import { UpdateUserUsecase } from './usecase/update.user.usecase';
 import { UpdateNicknameRequest } from './dto/update-nickname.request';
 import { DuplicateNicknameException } from '../common/error/duplicate.nickname.exception';
 import { RegisterUserResponse } from './dto/register-user.response';
-import { TOKEN_PROVIDE_USECASE, TokenProvideUsecase } from '../auth/usecase/token.provide.usecase';
+import {
+  TOKEN_PROVIDE_USECASE,
+  TokenProvideUsecase,
+} from '../auth/usecase/token.provide.usecase';
 import { LoginAdminUsecase } from './usecase/login.admin.usecase';
 import { AdminLoginRequest } from './dto/admin-login.request';
 import { RegisterAdminUsecase } from './usecase/register.admin.usecase';
 import { RegisterAdminRequest } from './dto/register-admin.request';
 import * as bcrypt from 'bcrypt';
 import { FindUserInfoUsecase } from './usecase/find.user-info.usecase';
-import { TOKEN_VERIFY_USECASE, TokenVerifyUsecase } from '../auth/usecase/token.verify.usecase';
+import {
+  TOKEN_VERIFY_USECASE,
+  TokenVerifyUsecase,
+} from '../auth/usecase/token.verify.usecase';
 import { NotFoundUserException } from '../common/error/not.found.user.exception';
+import { EventManager } from '../event/event-manager';
+import { CONNECTED_USER_USECASE } from '../online-state/connected-user.usecase';
+import { Event } from '../event/event.const';
+import { ConnectedUserService } from '../online-state/connected-user.service';
 import { DuplicateLoginUserException } from '../common/error/duplicate.login-user.exception';
 import { LogoutUsecase } from './usecase/logout.usecase';
 import { LogoutRequest } from './dto/logout.request';
 
 @Injectable()
-export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginUserUsecase, UpdateUserUsecase, LoginAdminUsecase, RegisterAdminUsecase, FindUserInfoUsecase, LogoutUsecase {
-
+export class UserService
+  implements
+    FindUserUsecase,
+    RegisterUserUsecase,
+    LoginUserUsecase,
+    UpdateUserUsecase,
+    LoginAdminUsecase,
+    RegisterAdminUsecase,
+    FindUserInfoUsecase,
+    LogoutUsecase
+{
   private readonly loginBox = new Map<number, string>();
 
   constructor(
@@ -40,8 +59,10 @@ export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginU
     @Inject(TOKEN_VERIFY_USECASE)
     private readonly tokenVerifyUsecase: TokenVerifyUsecase,
     private readonly configService: ConfigService,
-  ) {
-  }
+    private readonly eventManager: EventManager,
+    @Inject(CONNECTED_USER_USECASE)
+    private readonly connectedUserService: ConnectedUserService,
+  ) {}
 
   async findById(findUserRequest: FindUserRequest): Promise<UserEntity> {
     return await this.userRepository.findById(findUserRequest.userId);
@@ -63,7 +84,9 @@ export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginU
   async login(code: string): Promise<Record<string, any>> {
     const clientId = this.configService.get<string>('CLIENT_ID');
     const redirectUrl = this.configService.get<string>('REDIRECT_URL');
-    const response = await axios.post('https://kauth.kakao.com/oauth/token', new URLSearchParams({
+    const response = await axios.post(
+      'https://kauth.kakao.com/oauth/token',
+      new URLSearchParams({
         grant_type: 'authorization_code',
         client_id: clientId,
         redirect_uri: redirectUrl,
@@ -81,9 +104,17 @@ export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginU
       },
     });
     const nickname = uuid();
-    const userEntity = await this.userRepository.findByOAuthId(userInfo.data.id);
+    const userEntity = await this.userRepository.findByOAuthId(
+      userInfo.data.id,
+    );
     if (!userEntity) {
-      const newUserEntity = await this.register(new RegisterUserRequest(userInfo.data.kakao_account.email, nickname, userInfo.data.id));
+      const newUserEntity = await this.register(
+        new RegisterUserRequest(
+          userInfo.data.kakao_account.email,
+          nickname,
+          userInfo.data.id,
+        ),
+      );
       this.loginBox.set(+newUserEntity.userId, newUserEntity.nickname);
       const accessToken = this.tokenProvideUsecase.provide({
         userId: +newUserEntity.userId,
@@ -102,22 +133,48 @@ export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginU
     });
     return {
       token: accessToken,
-      response: new RegisterUserResponse(userEntity.nickname, +userEntity.userId),
+      response: new RegisterUserResponse(
+        userEntity.nickname,
+        +userEntity.userId,
+      ),
     };
   }
 
   @Transactional()
   async updateNickname(updateNicknameRequest: UpdateNicknameRequest) {
-    const userEntity = await this.userRepository.findByNickname(updateNicknameRequest.nickname);
+    const userEntity = await this.userRepository.findByNickname(
+      updateNicknameRequest.nickname,
+    );
+    this.loginBox.set(+userEntity.userId, updateNicknameRequest.nickname);
     if (userEntity) {
       throw new DuplicateNicknameException();
     }
-    await this.userRepository.updateNickname(updateNicknameRequest.nickname, updateNicknameRequest.userId);
-    this.loginBox.set(+userEntity.userId, updateNicknameRequest.nickname);
+    await this.userRepository.updateNickname(
+      updateNicknameRequest.nickname,
+      updateNicknameRequest.userId,
+    );
+
+    await this.connectedUserService.enter({
+      userId: String(updateNicknameRequest.userId),
+      nickname: updateNicknameRequest.nickname,
+    });
+
+    this.eventManager.publish(Event.USER_DATA_CHANGED, {
+      event: 'upsert-online-user',
+      data: {
+        userId: String(updateNicknameRequest.userId),
+        nickname: updateNicknameRequest.nickname,
+        isInLobby: true,
+      },
+    });
   }
 
-  async loginAdmin(adminLoginRequest: AdminLoginRequest): Promise<Record<string, any>> {
-    const userEntity = await this.userRepository.findByEmail(adminLoginRequest.email);
+  async loginAdmin(
+    adminLoginRequest: AdminLoginRequest,
+  ): Promise<Record<string, any>> {
+    const userEntity = await this.userRepository.findByEmail(
+      adminLoginRequest.email,
+    );
     await userEntity.verifyPassword(adminLoginRequest.password);
     if (this.loginBox.has(+userEntity.userId)) {
       throw new DuplicateLoginUserException();
@@ -128,13 +185,23 @@ export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginU
     });
     return {
       token: accessToken,
-      response: new RegisterUserResponse(userEntity.nickname, userEntity.userId),
+      response: new RegisterUserResponse(
+        userEntity.nickname,
+        userEntity.userId,
+      ),
     };
   }
 
-  async registerAdmin(registerAdminRequest: RegisterAdminRequest): Promise<void> {
+  async registerAdmin(
+    registerAdminRequest: RegisterAdminRequest,
+  ): Promise<void> {
     const hashPassword = await bcrypt.hash(registerAdminRequest.password, 10);
-    const userEntity = UserEntity.createAdmin(registerAdminRequest.email, hashPassword, registerAdminRequest.nickname, registerAdminRequest.oAuthId);
+    const userEntity = UserEntity.createAdmin(
+      registerAdminRequest.email,
+      hashPassword,
+      registerAdminRequest.nickname,
+      registerAdminRequest.oAuthId,
+    );
     await this.userRepository.save(userEntity);
   }
 

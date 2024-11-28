@@ -20,11 +20,4 @@ export class DoctorCureService implements DoctorCureUsecase {
   ): Promise<void> {
     await this.doctorManager.selectDoctorTarget(gameRoom, from, saveTarget);
   }
-
-  async decisionSurvivorByDoctor(
-    gameRoom: GameRoom,
-    saveTarget: string,
-  ): Promise<void> {
-    await this.doctorManager.decisionSurvivorByDoctor(gameRoom, saveTarget);
-  }
 }

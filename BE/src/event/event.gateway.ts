@@ -14,18 +14,32 @@ import { Inject, Logger, UseFilters, UseInterceptors } from '@nestjs/common';
 import { EventClient } from './event-client.model';
 import { EventManager } from './event-manager';
 import { Event } from './event.const';
-import { START_GAME_USECASE, StartGameUsecase } from 'src/game/usecase/start-game/start-game.usecase';
-import { VOTE_MAFIA_USECASE, VoteMafiaUsecase } from '../game/usecase/vote-manager/vote.mafia.usecase';
+import {
+  START_GAME_USECASE,
+  StartGameUsecase,
+} from 'src/game/usecase/start-game/start-game.usecase';
+import {
+  VOTE_MAFIA_USECASE,
+  VoteMafiaUsecase,
+} from '../game/usecase/vote-manager/vote.mafia.usecase';
 import { VoteCandidateRequest } from '../game/dto/vote.candidate.request';
 import { SelectMafiaTargetRequest } from '../game/dto/select.mafia.target.request';
-import { MAFIA_KILL_USECASE, MafiaKillUsecase } from '../game/usecase/role-playing/mafia.kill.usecase';
-import { DOCTOR_CURE_USECASE, DoctorCureUsecase } from '../game/usecase/role-playing/doctor.cure.usecase';
+import {
+  CONNECTED_USER_USECASE,
+  ConnectedUserUsecase,
+} from '../online-state/connected-user.usecase';
+import {
+  MAFIA_KILL_USECASE,
+  MafiaKillUsecase,
+} from '../game/usecase/role-playing/mafia.kill.usecase';
 import { WebsocketLoggerInterceptor } from '../common/logger/websocket.logger.interceptor';
 import { WebsocketExceptionFilter } from '../common/filter/websocket.exception.filter';
-import { FIND_USERINFO_USECASE, FindUserInfoUsecase } from 'src/user/usecase/find.user-info.usecase';
+import {
+  FIND_USERINFO_USECASE,
+  FindUserInfoUsecase,
+} from 'src/user/usecase/find.user-info.usecase';
 import { LOGOUT_USECASE, LogoutUsecase } from '../user/usecase/logout.usecase';
 import { LogoutRequest } from '../user/dto/logout.request';
-
 
 @UseFilters(WebsocketExceptionFilter)
 @UseInterceptors(WebsocketLoggerInterceptor)
@@ -49,14 +63,13 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly voteMafiaUsecase: VoteMafiaUsecase,
     @Inject(MAFIA_KILL_USECASE)
     private readonly mafiaKillUseCase: MafiaKillUsecase,
-    @Inject(DOCTOR_CURE_USECASE)
-    private readonly doctorCureUsecase: DoctorCureUsecase,
     @Inject(FIND_USERINFO_USECASE)
     private readonly findUserInfoUsecase: FindUserInfoUsecase,
+    @Inject(CONNECTED_USER_USECASE)
+    private readonly connectUserUseCase: ConnectedUserUsecase,
     @Inject(LOGOUT_USECASE)
     private readonly logoutUsecase: LogoutUsecase,
-  ) {
-  }
+  ) {}
 
   async handleConnection(socket: Socket) {
     this.logger.log(`[${socket.id}] Client connected`);
@@ -71,16 +84,32 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const client = new EventClient(socket, this.eventManager);
     client.nickname = nickname;
     client.userId = userId;
+
+    await this.connectUserUseCase.enter({
+      userId: String(userId),
+      nickname: nickname,
+    });
+
+    this.publishOnlineUserUpsertEvent(String(userId), nickname);
+
+    // 유저 접속 시 현재 online userList를 전송
+    const onLineUserList = await this.connectUserUseCase.getOnLineUserList();
+    client.emit('online-user-list', onLineUserList);
+
     client.subscribe(Event.ROOM_DATA_CHANGED);
+    client.subscribe(Event.USER_DATA_CHANGED);
     this.connectedClients.set(socket, client);
     this.publishRoomDataChangedEvent();
   }
 
   private parseToken(headers): string {
-    const cookies = headers.cookie?.split(';').map((keyVal) => keyVal.split('=')).reduce((cookies, [key, val]) => {
-      cookies[key.trim()] = val.trim();
-      return cookies;
-    }, {});
+    const cookies = headers.cookie
+      ?.split(';')
+      .map((keyVal) => keyVal.split('='))
+      .reduce((cookies, [key, val]) => {
+        cookies[key.trim()] = val.trim();
+        return cookies;
+      }, {});
     return cookies?.access_token;
   }
 
@@ -99,17 +128,27 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
     this.logoutUsecase.logout(new LogoutRequest(client.userId));
     client.unsubscribeAll();
+    await this.connectUserUseCase.leave(String(client.userId));
+    this.publishOnlineUserExitEvent(String(client.userId));
     this.connectedClients.delete(socket);
   }
 
   @SubscribeMessage('set-nickname')
-  setNickname(
+  async setNickname(
     @MessageBody() data: { nickname: string },
     @ConnectedSocket() socket: Socket,
   ) {
     const { nickname } = data;
     const client = this.connectedClients.get(socket);
     client.nickname = nickname;
+
+    //닉네임 설정과 로비 입장 업데이트 로직이 똑같아 임시로 같은 함수를 사용하였습니다.
+    await this.connectUserUseCase.enter({
+      userId: String(client.userId),
+      nickname: client.nickname,
+    });
+
+    this.publishOnlineUserUpsertEvent(String(client.userId), client.nickname);
   }
 
   @SubscribeMessage('room-list')
@@ -139,23 +178,45 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('enter-room')
-  enterRoom(
+  async enterRoom(
     @MessageBody('roomId') roomId: string,
     @ConnectedSocket() socket: Socket,
   ) {
     const client = this.connectedClients.get(socket);
     this.gameRoomService.enterRoom(client, roomId);
+
+    await this.connectUserUseCase.enterRoom({
+      userId: String(client.userId),
+      nickname: client.nickname,
+    });
+
     this.publishRoomDataChangedEvent();
+    this.publishOnlineUserUpsertEvent(
+      String(client.userId),
+      client.nickname,
+      false,
+    );
   }
 
   @SubscribeMessage('leave-room')
-  leaveRoom(
+  async leaveRoom(
     @MessageBody('roomId') roomId: string,
     @ConnectedSocket() socket: Socket,
   ) {
     const client = this.connectedClients.get(socket);
     this.gameRoomService.leaveRoom(client.nickname, roomId);
+
+    await this.connectUserUseCase.leaveRoom({
+      userId: String(client.userId),
+      nickname: client.nickname,
+    });
+
     this.publishRoomDataChangedEvent();
+    this.publishOnlineUserUpsertEvent(
+      String(client.userId),
+      client.nickname,
+      true,
+    );
   }
 
   @SubscribeMessage('send-chat')
@@ -226,7 +287,6 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
   }
 
-
   @SubscribeMessage('select-mafia-target')
   async selectMafiaTarget(
     @MessageBody() selectMafiaTargetRequest: SelectMafiaTargetRequest,
@@ -245,6 +305,24 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.eventManager.publish(Event.ROOM_DATA_CHANGED, {
       event: 'room-list',
       data: this.gameRoomService.getRooms(),
+    });
+  }
+
+  private publishOnlineUserUpsertEvent(
+    userId: string,
+    nickname: string,
+    isInLobby = true,
+  ) {
+    this.eventManager.publish(Event.USER_DATA_CHANGED, {
+      event: 'upsert-online-user',
+      data: { userId, nickname, isInLobby },
+    });
+  }
+
+  private publishOnlineUserExitEvent(userId: string) {
+    this.eventManager.publish(Event.USER_DATA_CHANGED, {
+      event: 'exit-online-user',
+      data: { userId },
     });
   }
 }

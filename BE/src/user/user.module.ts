@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { USER_REPOSITORY } from './repository/user.repository';
 import { TypeormUserRepository } from './repository/typeorm.user.repository';
 import { FIND_USER_USECASE } from './usecase/find.user.usecase';
@@ -14,11 +14,18 @@ import { AuthModule } from '../auth/auth.module';
 import { REGISTER_ADMIN_USECASE } from './usecase/register.admin.usecase';
 import { LOGIN_ADMIN_USECASE } from './usecase/login.admin.usecase';
 import { FIND_USERINFO_USECASE } from './usecase/find.user-info.usecase';
+import { EventModule } from '../event/event.module';
+import { OnlineStateModule } from '../online-state/online-state.module';
 import { LOGOUT_USECASE } from './usecase/logout.usecase';
 
 @Module({
   controllers: [AuthController, UserController],
-  imports: [TypeOrmModule.forFeature([UserEntity]), AuthModule],
+  imports: [
+    TypeOrmModule.forFeature([UserEntity]),
+    AuthModule,
+    forwardRef(() => EventModule),
+    OnlineStateModule,
+  ],
   providers: [
     UserService,
     {
@@ -58,7 +65,11 @@ import { LOGOUT_USECASE } from './usecase/logout.usecase';
       useExisting: UserService,
     },
   ],
-  exports: [FIND_USER_USECASE, REGISTER_USER_USECASE, FIND_USERINFO_USECASE, LOGOUT_USECASE],
+  exports: [
+    FIND_USER_USECASE,
+    REGISTER_USER_USECASE,
+    FIND_USERINFO_USECASE,
+    LOGOUT_USECASE,
+  ],
 })
-export class UserModule {
-}
+export class UserModule {}
