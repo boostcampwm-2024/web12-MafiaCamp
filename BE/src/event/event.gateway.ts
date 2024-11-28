@@ -87,16 +87,6 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.connectedClients.delete(socket);
   }
 
-  @SubscribeMessage('set-nickname')
-  setNickname(
-    @MessageBody() data: { nickname: string },
-    @ConnectedSocket() socket: Socket,
-  ) {
-    const { nickname } = data;
-    const client = this.connectedClients.get(socket);
-    client.nickname = nickname;
-  }
-
   @SubscribeMessage('room-list')
   getRooms(): WsResponse<any> {
     return {
