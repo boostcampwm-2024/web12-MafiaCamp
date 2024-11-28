@@ -148,7 +148,7 @@ export class UserService
     if (userEntity) {
       throw new DuplicateNicknameException();
     }
-    this.loginBox.set(+userEntity.userId, updateNicknameRequest.nickname);
+    this.loginBox.set(+updateNicknameRequest.userId, updateNicknameRequest.nickname);
     await this.userRepository.updateNickname(
       updateNicknameRequest.nickname,
       updateNicknameRequest.userId,
