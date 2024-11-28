@@ -15,7 +15,6 @@ import { useAuthStore } from '@/stores/authStore';
 import { FaChevronDown } from 'react-icons/fa';
 import { io } from 'socket.io-client';
 import { useSocketStore } from '@/stores/socketStore';
-import { User } from '@/types/user';
 import { useConnectedUserList } from '@/hooks/useConnectedUserList';
 
 const Header = () => {
@@ -52,12 +51,26 @@ const Header = () => {
       if (!response.ok) {
         setLoading(false);
         initializeAuthState();
-        console.error(await response.json());
         return;
       }
 
-      const result: User = await response.json();
-      setAuthState({ ...result });
+      const result: { userId: string; nickname: string | null } =
+        await response.json();
+
+      if (result.nickname === null) {
+        if (localStorage.getItem(result.userId) === null) {
+          // 다른 컴퓨터에서 로그인 시도한 경우 쿠키 삭제
+          await fetch('/api/cookie', { method: 'POST', cache: 'no-store' });
+        } else {
+          // 같은 브라우저의 탭을 연 경우
+          alert('다른 탭에서 같은 계정으로 로그인한 상태입니다.');
+          window.history.back();
+          return;
+        }
+        return;
+      }
+
+      setAuthState({ userId: result.userId, nickname: result.nickname });
       setLoading(false);
     })();
 

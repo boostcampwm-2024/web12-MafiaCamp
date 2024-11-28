@@ -11,10 +11,8 @@ export async function GET(request: NextRequest) {
   });
 
   if (!response.ok) {
-    return new NextResponse(await response.json(), { status: 400 });
+    return new NextResponse((await response.json()).message, { status: 400 });
   }
 
-  return new NextResponse(JSON.stringify(await response.json()), {
-    status: 200,
-  });
+  return new NextResponse(JSON.stringify(await response.json()));
 }

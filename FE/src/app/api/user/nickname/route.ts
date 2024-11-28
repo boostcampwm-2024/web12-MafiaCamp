@@ -13,8 +13,7 @@ export async function PATCH(request: NextRequest) {
   });
 
   if (!response.ok) {
-    const message: string = (await response.json()).message;
-    return new NextResponse(message, { status: 400 });
+    return new NextResponse((await response.json()).message, { status: 400 });
   }
 
   return new NextResponse('Updated nickname successfully.', { status: 200 });
