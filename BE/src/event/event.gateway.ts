@@ -39,7 +39,7 @@ import {
   FindUserInfoUsecase,
 } from 'src/user/usecase/find.user-info.usecase';
 
-@UseFilters(WebsocketExceptionFilter)
+//@UseFilters(WebsocketExceptionFilter)
 @UseInterceptors(WebsocketLoggerInterceptor)
 @WebSocketGateway({
   namespace: 'ws',
@@ -70,31 +70,36 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleConnection(socket: Socket) {
     this.logger.log(`[${socket.id}] Client connected`);
     const headers = socket.handshake.headers;
-    const token = this.parseToken(headers);
-    if (!token) {
-      this.logger.log(`[${socket.id}] Unauthorized client`);
-      // todo: socket 연결 강제로 끊기
-      return;
-    }
-    const { nickname, userId } = await this.findUserInfoUsecase.find(token);
+    //const token = this.parseToken(headers);
+    // if (!token) {
+    //   this.logger.log(`[${socket.id}] Unauthorized client`);
+    //   // todo: socket 연결 강제로 끊기
+    //   return;
+    // }
+    //const { nickname, userId } = await this.findUserInfoUsecase.find(token);
     const client = new EventClient(socket, this.eventManager);
-    client.nickname = nickname;
-    client.userId = userId;
+    //client.nickname = nickname;
+    client.nickname = socket.id;
+    client.userId = this.tmpUserId;
 
     await this.connectUserUseCase.enter({
       userId: String(this.tmpUserId++),
-      userNickName: nickname,
+      nickname: client.nickname,
     });
 
+    await this.publishOnlineUserAddEvent(
+      String(client.userId),
+      client.nickname,
+    );
+
+    //처음 접속 유저에게 현재 online userList 전송
     const onLineUserList = await this.connectUserUseCase.getOnLineUserList();
-    //todo : 처음 접속 유저에게 online userList 보내주기
-    //client.e
+    client.emit('online-user-list', onLineUserList);
 
     client.subscribe(Event.ROOM_DATA_CHANGED);
     client.subscribe(Event.USER_DATA_CHANGED);
     this.connectedClients.set(socket, client);
     this.publishRoomDataChangedEvent();
-    await this.publishUserDataChangedEvent();
   }
 
   private parseToken(headers): string {
@@ -114,9 +119,11 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (!client) {
       return;
     }
+
     client.unsubscribeAll();
+    await this.connectUserUseCase.leave(String(client.userId));
+    await this.publishOnlineUserExitEvent(String(client.userId));
     this.connectedClients.delete(socket);
-    await this.publishUserDataChangedEvent();
   }
 
   @SubscribeMessage('set-nickname')
@@ -165,11 +172,11 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     await this.connectUserUseCase.enterRoom({
       userId: String(client.userId),
-      userNickName: client.nickname,
+      nickname: client.nickname,
     });
 
     this.publishRoomDataChangedEvent();
-    await this.publishUserDataChangedEvent();
+    await this.publishOnlineUserDataChangedEvent(String(client.userId), false);
   }
 
   @SubscribeMessage('leave-room')
@@ -182,11 +189,11 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     await this.connectUserUseCase.leaveRoom({
       userId: String(client.userId),
-      userNickName: client.nickname,
+      nickname: client.nickname,
     });
 
     this.publishRoomDataChangedEvent();
-    await this.publishUserDataChangedEvent();
+    await this.publishOnlineUserDataChangedEvent(String(client.userId), true);
   }
 
   @SubscribeMessage('send-chat')
@@ -278,11 +285,28 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
   }
 
-  private async publishUserDataChangedEvent() {
-    const onLineUserList = await this.connectUserUseCase.getOnLineUserList();
+  private publishOnlineUserDataChangedEvent(userId: string, isLobby: boolean) {
     this.eventManager.publish(Event.USER_DATA_CHANGED, {
-      event: 'online-user-list',
-      data: onLineUserList,
+      event: 'update-online-user',
+      data: { userId, isLobby },
+    });
+  }
+
+  private publishOnlineUserExitEvent(userId: string) {
+    this.eventManager.publish(Event.USER_DATA_CHANGED, {
+      event: 'exit-online-user',
+      data: { userId },
+    });
+  }
+
+  private publishOnlineUserAddEvent(
+    userId: string,
+    nickname: string,
+    isLobby = true,
+  ) {
+    this.eventManager.publish(Event.USER_DATA_CHANGED, {
+      event: 'add-online-user',
+      data: { userId, nickname, isLobby },
     });
   }
 }

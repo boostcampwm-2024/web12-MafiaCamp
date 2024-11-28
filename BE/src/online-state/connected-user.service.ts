@@ -14,52 +14,41 @@ export class ConnectedUserService implements ConnectedUserUsecase {
   ) {}
 
   async enter(userConnectRequest: UserConnectRequest): Promise<void> {
-    const { userId, userNickName } = userConnectRequest;
-    await this.redisIOUserUseCase.setHash('userInfo', userId, userNickName);
-    await this.redisIOUserUseCase.updateBitMap('inLobby', userId, 1);
-
-    const where = await this.redisIOUserUseCase.checkBitMap(userId);
+    const { userId, nickname } = userConnectRequest;
     await this.redisIOUserUseCase.setHash(
       'onlineUser',
       userId,
       JSON.stringify({
-        userNickName,
-        where,
+        nickname,
+        isInLobby: true,
       }),
     );
   }
 
   async enterRoom(userConnectRequest: UserConnectRequest): Promise<void> {
-    const { userId, userNickName } = userConnectRequest;
-    await this.redisIOUserUseCase.updateBitMap('inRoom', userId, 1);
-    const where = await this.redisIOUserUseCase.checkBitMap(userId);
-
+    const { userId, nickname } = userConnectRequest;
     await this.redisIOUserUseCase.setHash(
       'onlineUser',
       userId,
       JSON.stringify({
-        userNickName,
-        where,
+        nickname,
+        isInLobby: false,
       }),
     );
   }
 
   async leave(userId: string): Promise<void> {
-    await this.redisIOUserUseCase.updateBitMap('inLobby', userId, 0);
     await this.redisIOUserUseCase.delHash('onlineUser', userId);
   }
 
   async leaveRoom(userConnectRequest: UserConnectRequest): Promise<void> {
-    const { userId, userNickName } = userConnectRequest;
-    await this.redisIOUserUseCase.updateBitMap('inRoom', userId, 0);
-    const where = await this.redisIOUserUseCase.checkBitMap(userId);
-
+    const { userId, nickname } = userConnectRequest;
     await this.redisIOUserUseCase.setHash(
       'onlineUser',
       userId,
       JSON.stringify({
-        userNickName,
-        where,
+        nickname,
+        isInLobby: true,
       }),
     );
   }

@@ -14,7 +14,10 @@ import { MafiaManager } from './usecase/role-playing/mafia-manager';
 import { NotFoundUserException } from '../common/error/not.found.user.exception';
 import { FinishGameManager } from './usecase/finish-game/finish-game.manager';
 import { GAME_USER_RESULT } from 'src/game-user/entity/game-user.result';
-import { GAME_HISTORY_REPOSITORY, GameHistoryRepository } from './repository/game-history.repository';
+import {
+  GAME_HISTORY_REPOSITORY,
+  GameHistoryRepository,
+} from './repository/game-history.repository';
 import { GameHistoryEntity } from './entity/game-history.entity';
 import { GAME_STATUS } from './entity/game-status';
 import { CanNotSelectUserException } from '../common/error/can-not.select.exception';
@@ -37,26 +40,27 @@ interface MafiaSelectLogEntry {
 
 @Injectable()
 export class TotalGameManager
-  implements VoteManager,
+  implements
+    VoteManager,
     PoliceManager,
     MafiaManager,
     DoctorManager,
     KillDecisionManager,
-    FinishGameManager {
+    FinishGameManager
+{
   private readonly lockManager = new LockManager<string>();
   private readonly games = new Map<string, Map<string, PlayerInfo>>();
   private readonly ballotBoxs = new Map<string, Map<string, string[]>>();
   private readonly mafiaCurrentTarget = new Map<string, string>();
-  private readonly mafiaSelectLogs = new Map<
-    string,
-    MafiaSelectLogEntry[]
-  >();
+  private readonly mafiaSelectLogs = new Map<string, MafiaSelectLogEntry[]>();
 
   constructor(
     @Inject(GAME_HISTORY_REPOSITORY)
-    private readonly gameHistoryRepository: GameHistoryRepository<GameHistoryEntity, number>,
-  ) {
-  }
+    private readonly gameHistoryRepository: GameHistoryRepository<
+      GameHistoryEntity,
+      number
+    >,
+  ) {}
 
   async register(
     gameRoom: GameRoom,
@@ -165,10 +169,7 @@ export class TotalGameManager
     gameRoom.sendAll('vote-current-online-state', voteCountMap);
   }
 
-  private checkVoteAuthority(
-    gameRoom: GameRoom,
-    from: string,
-  ): void {
+  private checkVoteAuthority(gameRoom: GameRoom, from: string): void {
     const game = this.games.get(gameRoom.roomId);
     if (!game) {
       throw new NotFoundBallotBoxException();
@@ -374,10 +375,7 @@ export class TotalGameManager
     });
   }
 
-  private sendCurrentMafiaTarget(
-    killTarget: string,
-    gameRoom: GameRoom,
-  ): void {
+  private sendCurrentMafiaTarget(killTarget: string, gameRoom: GameRoom): void {
     gameRoom.sendToRole(MAFIA_ROLE.MAFIA, 'mafia-current-target', killTarget);
   }
 
@@ -478,24 +476,17 @@ export class TotalGameManager
   async determineKillTarget(gameRoom: GameRoom): Promise<void> {
     return await this.lockManager.withKeyLock(gameRoom.roomId, async () => {
       const mafiaSelectLog = this.mafiaSelectLogs.get(gameRoom.roomId);
-      if (
-        !mafiaSelectLog ||
-        mafiaSelectLog.length === 0
-      ) {
+      if (!mafiaSelectLog || mafiaSelectLog.length === 0) {
         throw new NotFoundMafiaSelectLogException();
       }
 
       const lastLog = mafiaSelectLog[mafiaSelectLog.length - 1];
-      if (
-        !lastLog ||
-        !lastLog.target
-      ) {
+      if (!lastLog || !lastLog.target) {
         throw new NotFoundMafiaSelectLogException();
       }
 
       if (!lastLog.shouldBeKilled || lastLog.target === 'NO_SELECTION') {
         return gameRoom.sendAll('mafia-kill-result', null);
-
       }
 
       this.killUser(gameRoom, lastLog.target, KILL_OPTION.MAFIA_KILL);
@@ -549,15 +540,18 @@ export class TotalGameManager
     if (!gameInfo) {
       throw new NotFoundGameRoomException();
     }
-    const playerInfo = [ ...gameInfo.entries() ].map(([nickname, data]) => ({
+    const playerInfo = [...gameInfo.entries()].map(([nickname, data]) => ({
       nickname,
-      ...data
-    }))
+      ...data,
+    }));
 
     const result = gameRoom.result;
     const clients = gameRoom.clients;
-    clients.forEach(c => {
-      const winOrLose = result === GAME_HISTORY_RESULT.MAFIA ? c.job === MAFIA_ROLE.MAFIA : c.job !== MAFIA_ROLE.MAFIA;
+    clients.forEach((c) => {
+      const winOrLose =
+        result === GAME_HISTORY_RESULT.MAFIA
+          ? c.job === MAFIA_ROLE.MAFIA
+          : c.job !== MAFIA_ROLE.MAFIA;
       c.send('game-result', {
         result: winOrLose ? GAME_USER_RESULT.WIN : GAME_USER_RESULT.LOSE,
         playerInfo,
@@ -570,6 +564,10 @@ export class TotalGameManager
     const endTime = new Date();
     const gameHistoryResult = gameRoom.result;
     const gameStatus = GAME_STATUS.END;
-    await this.gameHistoryRepository.saveGameResult(gameId, { endTime, gameHistoryResult, gameStatus }); // 게임 상태 업데이트
+    await this.gameHistoryRepository.saveGameResult(gameId, {
+      endTime,
+      gameHistoryResult,
+      gameStatus,
+    }); // 게임 상태 업데이트
   }
 }
