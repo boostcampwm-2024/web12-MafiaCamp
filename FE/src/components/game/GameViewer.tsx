@@ -3,13 +3,17 @@
 import 'react-toastify/dist/ReactToastify.css';
 import { useOpenVidu } from '@/hooks/useOpenVidu';
 import Bottombar from './Bottombar';
-import ChattingList from './ChattingList';
-import VideoViewer from './VideoViewer';
+import ChattingList from './chatting/ChattingList';
 import { useEffect, useState } from 'react';
 import { useSocketStore } from '@/stores/socketStore';
 import { ROLE, Role } from '@/constants/role';
-import { Slide, toast, ToastContainer } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import { Situation, SITUATION_MESSAGE } from '@/constants/situation';
+import VideoViewer from './video/VideoViewer';
+import GameResultBoard from './GameResultBoard';
+import { TOAST_OPTION } from '@/constants/toastOption';
+import { useRouter } from 'next/navigation';
+import { useParticipantListStore } from '@/stores/participantListStore';
 
 interface GameViewerProps {
   roomId: string;
@@ -17,10 +21,11 @@ interface GameViewerProps {
 
 const GameViewer = ({ roomId }: GameViewerProps) => {
   // TODO: 하단 코드 리팩토링 필요.
-
+  const { participantList } = useParticipantListStore();
   const { socket } = useSocketStore();
+  const router = useRouter();
   const {
-    isGameStarted,
+    gameStatus,
     gamePublisher,
     gameSubscribers,
     toggleAudio,
@@ -28,125 +33,133 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     changePublisherStatus,
     changeSubscriberStatus,
     initializeVotes,
+    initializeCandidates,
     setAllParticipantsAsCandidates,
     setTargetsOfMafia,
     setTargetsOfPolice,
     eliminatePublisher,
-  } = useOpenVidu();
+    finishGame,
+  } = useOpenVidu(roomId);
 
   const [situation, setSituation] = useState<Situation | null>(null);
   const [timeLeft, setTimeLeft] = useState(0);
   const [target, setTarget] = useState<string | null>(null);
   const [invalidityCount, setInvalidityCount] = useState(0);
 
+  const [gameResultVisible, setGameResultVisible] = useState(false);
+  const [gameResult, setGameResult] = useState<'WIN' | 'LOSE'>('WIN');
+  const [playerInfoList, setPlayerInfoList] = useState<
+    {
+      nickname: string;
+      role: Role;
+      status: 'ALIVE' | 'DEAD';
+    }[]
+  >([]);
+
   const notifyInfo = (message: string) =>
     toast.info(message, {
+      ...TOAST_OPTION,
       toastId: message,
-      position: 'top-center',
       autoClose: 5000,
-      closeButton: false,
-      hideProgressBar: false,
-      closeOnClick: false,
-      pauseOnHover: false,
-      draggable: false,
-      progress: undefined,
-      theme: 'light',
-      transition: Slide,
     });
 
   useEffect(() => {
-    // 방 입장
-    socket?.emit('enter-room', { roomId });
+    // 웹 사이트를 새로고침하거나 주소창 입력으로 게임 방에 접속하려는 경우 로비 페이지로 강제 이동
+    if (!participantList) {
+      router.replace('/lobby');
+      return;
+    }
 
-    return () => {
-      // 방 나가기
+    const handleBeforeUnload = () => {
       socket?.emit('leave-room', { roomId });
     };
-  }, [roomId, socket]);
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      socket?.emit('leave-room', { roomId });
+    };
+  }, [participantList, roomId, router, socket]);
 
   useEffect(() => {
+    // 직업 확인
+    socket?.once(
+      'player-role',
+      (data: { role: Role; another: [string, Role][] | null }) => {
+        setGameResultVisible(false);
+        changePublisherStatus({ role: data.role });
+        data.another?.forEach((value) => {
+          changeSubscriberStatus(value[0], { role: value[1] });
+        });
+      },
+    );
+
     // 카운트 다운
     socket?.on(
       'countdown',
       (data: { situation: Situation; timeLeft: number }) => {
-        if (data.situation === 'DISCUSSION' && data.timeLeft === 150) {
+        setSituation(data.situation);
+        setTimeLeft(data.timeLeft);
+      },
+    );
+
+    // 각 단계 시작
+    socket?.on('countdown-start', (newSituation: Situation) => {
+      switch (newSituation) {
+        case 'INTERMISSION':
+          notifyInfo(SITUATION_MESSAGE.INTERMISSION);
+          break;
+        case 'DISCUSSION':
           notifyInfo(SITUATION_MESSAGE.DISCUSSION);
-        }
-
-        if (data.situation === 'ARGUMENT' && data.timeLeft === 90) {
-          setTarget(null);
-          setInvalidityCount(0);
+          break;
+        case 'ARGUMENT':
           notifyInfo(SITUATION_MESSAGE.ARGUMENT);
-        }
-
-        if (data.situation === 'VOTE' && data.timeLeft === 15) {
+          break;
+        case 'VOTE':
           if (situation === 'DISCUSSION') {
             notifyInfo(SITUATION_MESSAGE.PRIMARY_VOTE);
           } else if (situation === 'ARGUMENT') {
             notifyInfo(SITUATION_MESSAGE.FINAL_VOTE);
           }
-        }
-
-        if (data.situation === 'MAFIA' && data.timeLeft === 30) {
+          break;
+        case 'MAFIA':
           if (gamePublisher.role === 'MAFIA') {
             setTargetsOfMafia();
           } else {
-            initializeVotes();
+            initializeCandidates();
           }
           setTarget(null);
           notifyInfo(SITUATION_MESSAGE.MAFIA);
-        }
-
-        if (data.situation === 'DOCTOR' && data.timeLeft === 20) {
+          break;
+        case 'DOCTOR':
           if (gamePublisher.role === 'DOCTOR') {
             setAllParticipantsAsCandidates();
           } else {
-            initializeVotes();
+            initializeCandidates();
           }
           setTarget(null);
           notifyInfo(SITUATION_MESSAGE.DOCTOR);
-        }
-
-        if (data.situation === 'POLICE' && data.timeLeft === 20) {
+          break;
+        case 'POLICE':
           if (gamePublisher.role === 'POLICE') {
             setTargetsOfPolice();
           } else {
-            initializeVotes();
+            initializeCandidates();
           }
           setTarget(null);
           notifyInfo(SITUATION_MESSAGE.POLICE);
-        }
-
-        setSituation(data.situation);
-        setTimeLeft(data.timeLeft);
-      },
-    );
-
-    // 특정 단계 카운트 다운 종료
-    socket?.on(
-      'countdown-exit',
-      (data: { situation: Situation; timeLeft: number }) => {
-        setSituation(data.situation);
-        setTimeLeft(data.timeLeft);
-      },
-    );
-
-    // 직업 확인
-    socket?.once(
-      'player-role',
-      (data: { role: Role; another: [string, Role][] | null }) => {
-        changePublisherStatus({ role: data.role });
-        data.another?.forEach((value) => {
-          changeSubscriberStatus(value[0], { role: value[1] });
-        });
-
-        notifyInfo(SITUATION_MESSAGE.INTERMISSION);
-      },
-    );
+          break;
+        default:
+          break;
+      }
+    });
 
     // 투표 시작 시 투표 대상 후보자 설정
     socket?.on('send-vote-candidates', (candidates: string[]) => {
       initializeVotes();
+      setTarget(null);
+      setInvalidityCount(0);
 
       for (const nickname of candidates) {
         if (nickname === gamePublisher.nickname) {
@@ -172,7 +185,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
 
     // 1차 투표 결과 확인
     socket?.on('primary-vote-result', (candidates: string[]) => {
-      initializeVotes();
+      initializeCandidates();
       setTarget(null);
       setInvalidityCount(0);
 
@@ -222,6 +235,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       );
     }
 
+    // 밤 중 사망한 플레이어 확인
     socket?.on(
       'mafia-kill-result',
       (data: { player: string; job: Role } | null) => {
@@ -240,6 +254,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       },
     );
 
+    // 게임 결과 확인
     socket?.on(
       'game-result',
       (data: {
@@ -250,18 +265,19 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
           status: 'ALIVE' | 'DEAD';
         }[];
       }) => {
-        // TODO: 수정 필요
-        if (data.result === 'WIN') {
-          notifyInfo('게임에서 승리하였습니다.');
-        } else {
-          notifyInfo('게임에서 패배하였습니다.');
-        }
+        notifyInfo('게임이 종료되었습니다.');
+        setSituation(null);
+        setTimeLeft(0);
+        finishGame();
+        setGameResult(data.result);
+        setPlayerInfoList(data.playerInfo);
+        setGameResultVisible(true);
       },
     );
 
     return () => {
       socket?.off('countdown');
-      socket?.off('countdown-exit');
+      socket?.off('countdown-start');
       socket?.off('player-role');
       socket?.off('vote-current-state');
       socket?.off('primary-vote-result');
@@ -269,13 +285,16 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
       socket?.off('mafia-current-target');
       socket?.off('police-investigation-result');
       socket?.off('mafia-kill-result');
+      socket?.off('game-result');
     };
   }, [
     changePublisherStatus,
     changeSubscriberStatus,
     eliminatePublisher,
+    finishGame,
     gamePublisher.nickname,
     gamePublisher.role,
+    initializeCandidates,
     initializeVotes,
     setAllParticipantsAsCandidates,
     setTargetsOfMafia,
@@ -284,37 +303,49 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     socket,
   ]);
 
+  if (!participantList) {
+    return null;
+  }
+
   return (
     <div className='absolute left-0 top-0 h-screen w-screen overflow-x-hidden'>
       <ToastContainer style={{ width: '40rem' }} />
+      {gameResultVisible && (
+        <GameResultBoard
+          gamePublisherRole={
+            playerInfoList.find(
+              (playerInfo) => playerInfo.nickname === gamePublisher.nickname,
+            )?.role ?? 'CITIZEN'
+          }
+          gameResult={gameResult}
+          playerInfo={playerInfoList}
+          closeBoard={() => setGameResultVisible(false)}
+        />
+      )}
       <VideoViewer
         roomId={roomId}
-        isGameStarted={isGameStarted}
-        situation={situation}
+        gameStatus={gameStatus}
         gamePublisher={gamePublisher}
         gameSubscribers={gameSubscribers}
+        situation={situation}
         target={target}
         invalidityCount={invalidityCount}
         setTarget={(nickname: string | null) => setTarget(nickname)}
       />
       <Bottombar
         roomId={roomId}
-        isGameStarted={isGameStarted}
-        isPublisherAlive={gamePublisher.participant ? true : false}
+        gameStatus={gameStatus}
+        gamePublisher={gamePublisher}
         totalParticipants={gameSubscribers.length + 1}
         situation={situation}
         timeLeft={timeLeft}
-        audioEnabled={gamePublisher.audioEnabled}
-        videoEnabled={gamePublisher.videoEnabled}
         toggleAudio={toggleAudio}
         toggleVideo={toggleVideo}
       />
       <ChattingList
         roomId={roomId}
         isMafia={gamePublisher.role === 'MAFIA'}
-        chatEnabled={
-          !isGameStarted || (gamePublisher.participant ? true : false)
-        }
+        chatEnabled={gameStatus !== 'RUNNING' || gamePublisher.isAlive}
         totalParticipants={gameSubscribers.length + 1}
       />
     </div>

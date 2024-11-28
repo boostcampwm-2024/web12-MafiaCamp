@@ -8,14 +8,14 @@ import { useForm } from 'react-hook-form';
 import { toast, ToastContainer } from 'react-toastify';
 import { TOAST_OPTION } from '@/constants/toastOption';
 import { useRouter } from 'next/navigation';
-import { useSocketStore } from '@/stores/socketStore';
 import AdminInput from './AdminInput';
 import { AuthAdmin } from '@/types/authAdmin';
 import { User } from '@/types/user';
+import { useAuthStore } from '@/stores/authStore';
 
 const AdminPanel = () => {
   const router = useRouter();
-  const { setState } = useSocketStore();
+  const { setAuthState } = useAuthStore();
   const [isSignIn, setIsSignIn] = useState(true);
   const [loading, setLoading] = useState(false);
 
@@ -57,18 +57,19 @@ const AdminPanel = () => {
         email: methods.getValues('email'),
         password: methods.getValues('password'),
       }),
+      cache: 'no-store',
     });
 
     if (!response.ok) {
       setLoading(false);
-      notifyError('로그인에 실패하였습니다.');
+      notifyError(await response.text());
       throw new Error(response.statusText);
     }
 
     const result: User = await response.json();
-    setState({ nickname: result.nickname });
+    setAuthState({ ...result });
+    localStorage.setItem(result.userId, result.nickname);
     router.replace('/');
-    router.refresh();
   };
 
   const handleSignUp = async (e: FormEvent<HTMLFormElement>) => {
@@ -91,13 +92,14 @@ const AdminPanel = () => {
         body: JSON.stringify({
           ...methods.getValues(),
         }),
+        cache: 'no-store',
       },
     );
 
     setLoading(false);
 
     if (!response.ok) {
-      notifyError('회원가입에 실패하였습니다.');
+      notifyError('이미 존재하는 계정입니다.');
       throw new Error(response.statusText);
     }
 

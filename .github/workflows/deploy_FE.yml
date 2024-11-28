@@ -19,40 +19,29 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Node.js 설치하기
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      # Docker 이미지 빌더 설정
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # NCP Container Registry에 접속
+      - name: Login to NCP Container Registry
+        uses: docker/login-action@v3
         with:
-          # Node.js 버전 설정
-          node-version: 20
+          registry: ${{ secrets.NCP_CONTAINER_REGISTRY }}
+          username: ${{ secrets.NCP_ACCESS_KEY }}
+          password: ${{ secrets.NCP_SECRET_KEY }}
 
-      # 의존성 설치하기
-      - name: Install dependencies
-        run: npm install --force
-        working-directory: FE
-
-      # 애플리케이션 빌드하기
-      - name: Build application
-        run: npm run build
-        working-directory: FE
-        env:
-          NEXT_PUBLIC_BACKEND_URL: ${{ secrets.BACKEND_URL }}
-
-      # 빌드된 파일을 scp로 전송하기
-      - name: Copy files via ssh using key
-        uses: appleboy/scp-action@v0.1.7
+      # Docker 이미지 빌드 및 NCP Container Registry에 등록
+      - name: Build and push
+        uses: docker/build-push-action@v6
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          port: ${{ secrets.PORT }}
-          key: ${{ secrets.KEY }}
-          proxy_host: ${{ secrets.PROXY_HOST }}
-          proxy_username: ${{ secrets.PROXY_USERNAME }}
-          proxy_port: ${{ secrets.PROXY_PORT }}
-          proxy_key: ${{ secrets.PROXY_KEY }}
-          source: "./FE/.next, ./FE/package.json, ./FE/package-lock.json, ./FE/public"
-          target: "~/mafiacamp/mafiacamp-fe"
-          overwrite: true
+          push: true
+          tags: ${{ secrets.NCP_CONTAINER_REGISTRY }}/mafiacamp-fe
+          context: ./FE
+          build-args: |
+            ARG_NEXT_PUBLIC_BACKEND_URL=${{ secrets.BACKEND_URL }}
+            ARG_BACKEND_API_URL=${{ secrets.BACKEND_API_URL }}
+            ARG_NEXT_PUBLIC_BACKEND_API_URL=${{ secrets.NEXT_PUBLIC_BACKEND_API_URL }}
 
       # ssh 원격 접속을 통해 빌드 파일 실행하기
       - name: Executing remote ssh commands using key
@@ -67,6 +56,8 @@ jobs:
           proxy_port: ${{ secrets.PROXY_PORT }}
           proxy_key: ${{ secrets.PROXY_KEY }}
           script: |
-            cd mafiacamp/mafiacamp-fe/FE
-            npm install --force
-            pm2 reload FE || pm2 start --name FE npm -- run start
+            docker stop mafiacamp-fe || true
+            docker rm mafiacamp-fe || true
+            docker image prune -a --force || true
+            docker pull ${{ secrets.NCP_PRIVATE_ENDPOINT }}/mafiacamp-fe
+            docker run -p 3000:3000 -d --restart unless-stopped --name mafiacamp-fe ${{ secrets.NCP_PRIVATE_ENDPOINT }}/mafiacamp-fe

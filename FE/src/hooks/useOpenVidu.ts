@@ -1,3 +1,6 @@
+import { GameStatus } from '@/constants/gameStatus';
+import { TOAST_OPTION } from '@/constants/toastOption';
+import { useAuthStore } from '@/stores/authStore';
 import { useSocketStore } from '@/stores/socketStore';
 import { GamePublisher } from '@/types/gamePublisher';
 import { GameSubscriber } from '@/types/gameSubscriber';
@@ -8,15 +11,19 @@ import {
   VideoInsertMode,
 } from 'openvidu-browser';
 import { Reducer, useEffect, useReducer } from 'react';
+import { toast } from 'react-toastify';
 
 type State = {
-  isGameStarted: boolean;
+  gameStatus: GameStatus;
   gamePublisher: GamePublisher;
   gameSubscribers: GameSubscriber[];
 };
 
 type Action =
-  | { type: 'PARTICIPATE'; payload: { participantList: string[] } }
+  | {
+      type: 'PARTICIPATE';
+      payload: { participantList: { nickname: string; isOwner: boolean }[] };
+    }
   | { type: 'LEAVE'; payload: { nickname: string } }
   | { type: 'START_GAME'; payload: { publisher: Publisher } }
   | { type: 'SUBSCRIBE'; payload: { subscriber: Subscriber } }
@@ -27,24 +34,41 @@ type Action =
       payload: { nickname: string; data: Partial<GameSubscriber> };
     }
   | { type: 'INITIALIZE_VOTES' }
-  | { type: 'SET_All_PARTICIPANTS_AS_CANDIDATES' }
+  | { type: 'INITIALIZE_CANDIDATES' }
+  | { type: 'SET_ALL_PARTICIPANTS_AS_CANDIDATES' }
   | { type: 'SET_TARGETS_OF_MAFIA' }
-  | { type: 'SET_TARGETS_OF_POLICE' };
+  | { type: 'SET_TARGETS_OF_POLICE' }
+  | { type: 'FINISH_GAME' };
 
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case 'PARTICIPATE':
       return {
         ...state,
-        gameSubscribers: action.payload.participantList.map((participant) => ({
-          participant: null,
-          nickname: participant,
-          role: null,
-          audioEnabled: false,
-          videoEnabled: false,
-          votes: 0,
-          isCandidate: false,
-        })),
+        gamePublisher: {
+          ...state.gamePublisher,
+          isOwner:
+            action.payload.participantList.find(
+              (participant) =>
+                participant.nickname === state.gamePublisher.nickname,
+            )?.isOwner ?? false,
+        },
+        gameSubscribers: action.payload.participantList
+          .filter(
+            (participant) =>
+              participant.nickname !== state.gamePublisher.nickname,
+          )
+          .map((participant) => ({
+            isOwner: participant.isOwner,
+            participant: null,
+            nickname: participant.nickname,
+            role: null,
+            audioEnabled: false,
+            videoEnabled: false,
+            votes: 0,
+            isCandidate: false,
+            isAlive: true,
+          })),
       };
 
     case 'LEAVE':
@@ -59,7 +83,7 @@ const reducer = (state: State, action: Action): State => {
     case 'START_GAME':
       return {
         ...state,
-        isGameStarted: true,
+        gameStatus: 'RUNNING',
         gamePublisher: {
           ...state.gamePublisher,
           participant: action.payload.publisher,
@@ -105,6 +129,7 @@ const reducer = (state: State, action: Action): State => {
                 participant: null,
                 audioEnabled: false,
                 videoEnabled: false,
+                isAlive: false,
               }
             : gameSubscriber,
         ),
@@ -147,7 +172,17 @@ const reducer = (state: State, action: Action): State => {
         })),
       };
 
-    case 'SET_All_PARTICIPANTS_AS_CANDIDATES':
+    case 'INITIALIZE_CANDIDATES':
+      return {
+        ...state,
+        gamePublisher: { ...state.gamePublisher, isCandidate: false },
+        gameSubscribers: state.gameSubscribers.map((gameSubscriber) => ({
+          ...gameSubscriber,
+          isCandidate: false,
+        })),
+      };
+
+    case 'SET_ALL_PARTICIPANTS_AS_CANDIDATES':
       return {
         ...state,
         gamePublisher: { ...state.gamePublisher, isCandidate: true },
@@ -183,16 +218,44 @@ const reducer = (state: State, action: Action): State => {
         })),
       };
 
+    case 'FINISH_GAME':
+      return {
+        ...state,
+        gameStatus: 'READY',
+        gamePublisher: {
+          ...state.gamePublisher,
+          participant: null,
+          role: null,
+          audioEnabled: false,
+          videoEnabled: false,
+          votes: 0,
+          isCandidate: false,
+          isAlive: true,
+        },
+        gameSubscribers: state.gameSubscribers.map((gameSubscriber) => ({
+          ...gameSubscriber,
+          participant: null,
+          role: null,
+          audioEnabled: false,
+          videoEnabled: false,
+          votes: 0,
+          isCandidate: false,
+          isAlive: true,
+        })),
+      };
+
     default:
       throw new Error('Unknown action type');
   }
 };
 
-export const useOpenVidu = () => {
-  const { nickname, socket, session, setState } = useSocketStore();
+export const useOpenVidu = (roomId: string) => {
+  const { nickname } = useAuthStore();
+  const { socket, session, setSocketState } = useSocketStore();
   const [state, dispatch] = useReducer<Reducer<State, Action>>(reducer, {
-    isGameStarted: false,
+    gameStatus: 'READY',
     gamePublisher: {
+      isOwner: false,
       participant: null,
       nickname: nickname,
       role: null,
@@ -200,6 +263,7 @@ export const useOpenVidu = () => {
       videoEnabled: false,
       votes: 0,
       isCandidate: false,
+      isAlive: true,
     },
     gameSubscribers: [],
   });
@@ -259,8 +323,12 @@ export const useOpenVidu = () => {
     dispatch({ type: 'INITIALIZE_VOTES' });
   };
 
+  const initializeCandidates = () => {
+    dispatch({ type: 'INITIALIZE_CANDIDATES' });
+  };
+
   const setAllParticipantsAsCandidates = () => {
-    dispatch({ type: 'SET_All_PARTICIPANTS_AS_CANDIDATES' });
+    dispatch({ type: 'SET_ALL_PARTICIPANTS_AS_CANDIDATES' });
   };
 
   const setTargetsOfMafia = () => {
@@ -272,32 +340,66 @@ export const useOpenVidu = () => {
   };
 
   const eliminatePublisher = () => {
-    state.gamePublisher?.participant?.publishAudio(false);
-    state.gamePublisher?.participant?.publishVideo(false);
+    state.gamePublisher.participant?.publishAudio(false);
+    state.gamePublisher.participant?.publishVideo(false);
     session?.unpublish(state.gamePublisher.participant!);
     dispatch({
       type: 'CHANGE_PUBLISHER_STATUS',
-      payload: { participant: null, audioEnabled: false, videoEnabled: false },
+      payload: {
+        participant: null,
+        audioEnabled: false,
+        videoEnabled: false,
+        isAlive: false,
+      },
     });
+  };
+
+  const finishGame = () => {
+    if (state.gamePublisher.isAlive && state.gamePublisher.participant) {
+      state.gamePublisher.participant.publishAudio(false);
+      state.gamePublisher.participant.publishVideo(false);
+      session?.unpublish(state.gamePublisher.participant!);
+    }
+    dispatch({ type: 'FINISH_GAME' });
   };
 
   useEffect(() => {
     // 게임 참가
-    socket?.on('participants', (participants: string[]) => {
-      dispatch({
-        type: 'PARTICIPATE',
-        payload: {
-          participantList: participants.filter(
-            (participant) => participant !== nickname,
-          ),
-        },
-      });
-    });
+    socket?.on(
+      'participants',
+      (data: { nickname: string; isOwner: boolean }[]) => {
+        dispatch({
+          type: 'PARTICIPATE',
+          payload: { participantList: data },
+        });
+      },
+    );
 
     // 다른 플레이어가 방을 나간 경우
-    socket?.on('leave-user-nickname', (nickname: string) => {
-      dispatch({ type: 'LEAVE', payload: { nickname } });
-    });
+    socket?.on(
+      'leave-user-nickname',
+      (data: { nickname: string; newOwner: string | null }) => {
+        dispatch({ type: 'LEAVE', payload: { nickname: data.nickname } });
+
+        if (data.newOwner !== null) {
+          if (state.gamePublisher.nickname === data.newOwner) {
+            dispatch({
+              type: 'CHANGE_PUBLISHER_STATUS',
+              payload: { isOwner: true },
+            });
+          } else {
+            dispatch({
+              type: 'CHANGE_SUBSCRIBER_STATUS',
+              payload: { nickname: data.newOwner, data: { isOwner: true } },
+            });
+          }
+
+          toast.info(`${data.newOwner} 님이 방장이 되었습니다.`, TOAST_OPTION);
+        }
+      },
+    );
+
+    socket?.emit('get-participants', { roomId });
 
     (async () => {
       try {
@@ -316,7 +418,7 @@ export const useOpenVidu = () => {
           console.warn(exception);
         });
 
-        setState({ session });
+        setSocketState({ session });
 
         socket?.on(
           'video-info',
@@ -357,16 +459,16 @@ export const useOpenVidu = () => {
       socket?.off('participants');
       socket?.off('video-info');
     };
-  }, [nickname, setState, socket]);
+  }, [nickname, roomId, setSocketState, socket, state.gamePublisher.nickname]);
 
   useEffect(() => {
     return () => {
       if (session) {
         session.disconnect();
-        setState({ session: null });
+        setSocketState({ session: null });
       }
     };
-  }, [session, setState]);
+  }, [session, setSocketState]);
 
   useEffect(() => {
     if (session) {
@@ -425,7 +527,7 @@ export const useOpenVidu = () => {
   }, [session, state.gameSubscribers]);
 
   return {
-    isGameStarted: state.isGameStarted,
+    gameStatus: state.gameStatus,
     gamePublisher: state.gamePublisher,
     gameSubscribers: state.gameSubscribers,
     toggleAudio,
@@ -433,9 +535,11 @@ export const useOpenVidu = () => {
     changePublisherStatus,
     changeSubscriberStatus,
     initializeVotes,
+    initializeCandidates,
     setAllParticipantsAsCandidates,
     setTargetsOfMafia,
     setTargetsOfPolice,
     eliminatePublisher,
+    finishGame,
   };
 };

@@ -1,15 +1,17 @@
 'use client';
 
+import { useAuthStore } from '@/stores/authStore';
 import { useSidebarStore } from '@/stores/sidebarStore';
 import { useSocketStore } from '@/stores/socketStore';
-import { Chat } from '@/types/chat';
+import { Chat, ChatResponse } from '@/types/chat';
 import { useSearchParams } from 'next/navigation';
 import { FormEvent, useEffect, useRef, useState } from 'react';
 
 export const useChatting = (roomId: string, isMafia: boolean) => {
   // TODO: reducer로 변경하기
-  const { isOpen, initialize, closeSidebar } = useSidebarStore();
-  const { nickname, socket } = useSocketStore();
+  const { isOpen, initializeSidebarState, closeSidebar } = useSidebarStore();
+  const { nickname } = useAuthStore();
+  const { socket } = useSocketStore();
   const [chatList, setChatList] = useState<Chat[]>([]);
   const [message, setMessage] = useState('');
   const [isMafiaOnly, setIsMafiaOnly] = useState(false);
@@ -43,22 +45,22 @@ export const useChatting = (roomId: string, isMafia: boolean) => {
   }, [chatList]);
 
   useEffect(() => {
-    socket?.on('chat', (chat: Chat) => {
-      setChatList([...chatList, chat]);
+    socket?.on('chat', (chat: ChatResponse) => {
+      setChatList([...chatList, { ...chat, isMafiaOnly: false }]);
     });
 
     if (isMafia) {
-      socket?.on('chat-mafia', (chat: Chat) => {
-        setChatList([...chatList, chat]);
+      socket?.on('chat-mafia', (chat: ChatResponse) => {
+        setChatList([...chatList, { ...chat, isMafiaOnly: true }]);
       });
     }
 
     return () => {
       socket?.off('chat');
       socket?.off('chat-mafia');
-      initialize();
+      initializeSidebarState();
     };
-  }, [chatList, initialize, isMafia, socket]);
+  }, [chatList, initializeSidebarState, isMafia, socket]);
 
   return {
     isOpen,

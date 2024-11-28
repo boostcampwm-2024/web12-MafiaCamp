@@ -3,8 +3,16 @@
 import LottieFile from '@/../public/lottie/video.json';
 import Lottie from 'lottie-react';
 import * as motion from 'framer-motion/client';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 const Introduction = () => {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.refresh();
+  }, [router]);
+
   return (
     <div className='flex w-full flex-col items-center gap-8 text-nowrap pt-[25rem]'>
       <motion.h2
@@ -33,7 +41,7 @@ const Introduction = () => {
           transition={{ duration: 0.5 }}
           viewport={{ once: true, amount: 0.5 }}
         >
-          <Lottie animationData={LottieFile} className='bg-transparent' />
+          <Lottie animationData={LottieFile} loop={3} />
         </motion.div>
         <motion.div
           className='text-xl text-white max-[768px]:text-lg max-[540px]:text-base max-[440px]:text-sm'

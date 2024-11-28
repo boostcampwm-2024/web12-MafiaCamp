@@ -7,14 +7,19 @@ import { RoomCreateFormSchema } from '@/libs/zod/roomCreateFormSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSocketStore } from '@/stores/socketStore';
 import { useRouter } from 'next/navigation';
+import useScrollLock from '@/hooks/useScrollLock';
+import { useParticipantListStore } from '@/stores/participantListStore';
+import { useAuthStore } from '@/stores/authStore';
 
 interface CreateRoomModalProps {
   close: () => void;
 }
 
 const CreateRoomModal = ({ close }: CreateRoomModalProps) => {
-  const router = useRouter();
+  const { nickname } = useAuthStore();
+  const { setParticipantList } = useParticipantListStore();
   const { socket } = useSocketStore();
+  const router = useRouter();
   const methods = useForm<{ title: string; capacity: string }>({
     resolver: zodResolver(RoomCreateFormSchema),
     defaultValues: {
@@ -36,11 +41,16 @@ const CreateRoomModal = ({ close }: CreateRoomModalProps) => {
     socket?.emit('create-room', { title, capacity: Number(capacity) });
   };
 
+  useScrollLock();
+
   useEffect(() => {
     socket?.on('create-room', (data: { success: boolean; roomId: string }) => {
       if (data.success) {
+        socket?.emit('enter-room', { roomId: data.roomId });
+        setParticipantList([{ nickname, isOwner: true }]);
+        const { title, capacity } = methods.getValues();
         router.push(
-          `/game/${data.roomId}?roomName=${methods.getValues('title')}&capacity=${methods.getValues('capacity')}`,
+          `/game/${data.roomId}?roomName=${title}&capacity=${capacity}`,
         );
       }
     });
@@ -48,7 +58,7 @@ const CreateRoomModal = ({ close }: CreateRoomModalProps) => {
     return () => {
       socket?.off('create-room');
     };
-  }, [methods, router, socket]);
+  }, [methods, nickname, router, setParticipantList, socket]);
 
   return (
     <form

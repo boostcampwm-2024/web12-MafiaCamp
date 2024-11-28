@@ -7,13 +7,12 @@ export async function GET(request: NextRequest) {
     headers: {
       Authorization: `Bearer ${accessToken?.value}`,
     },
+    cache: 'no-store',
   });
 
   if (!response.ok) {
-    return new NextResponse('Failed to sign in.', { status: 400 });
+    return new NextResponse((await response.json()).message, { status: 400 });
   }
 
-  return new NextResponse(JSON.stringify(await response.json()), {
-    status: 200,
-  });
+  return new NextResponse(JSON.stringify(await response.json()));
 }

@@ -74,6 +74,7 @@ const ChattingList = ({
                 <ChattingItem
                   key={index}
                   isSelf={chat.from === nickname}
+                  isMafiaOnly={chat.isMafiaOnly}
                   nickname={chat.from}
                   content={chat.message}
                 />

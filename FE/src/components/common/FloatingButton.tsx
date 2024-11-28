@@ -6,7 +6,10 @@ import ChevronUpIcon from './icons/ChevronUpIcon';
 const FloatingButton = () => {
   const pathname = usePathname();
 
-  if (pathname.startsWith('/game')) {
+  if (
+    pathname.startsWith('/game') ||
+    pathname.startsWith('/login/kakao/callback')
+  ) {
     return null;
   }
 

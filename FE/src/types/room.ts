@@ -4,6 +4,6 @@ export interface Room {
   title: string;
   capacity: number;
   participants: number;
-  status: 'READY' | 'RUNNING' | 'DONE';
+  status: 'READY' | 'RUNNING';
   createdAt: number;
 }

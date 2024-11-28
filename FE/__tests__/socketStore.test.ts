@@ -22,7 +22,7 @@ describe('socketStore Test', () => {
     const { result } = renderHook(() => useSocketStore());
 
     act(() => {
-      result.current.setState({
+      result.current.setSocketState({
         nickname: 'Test',
         socket: {} as Socket,
         session: {} as Session,

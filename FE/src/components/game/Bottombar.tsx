@@ -5,36 +5,34 @@ import CloseIcon from '@/components/common/icons/CloseIcon';
 import PlayIcon from '@/components/common/icons/PlayIcon';
 import VideoCameraIcon from '@/components/common/icons/VideoCameraIcon';
 import VideoCameraSlashIcon from '@/components/common/icons/VideoCameraSlashIcon';
-import { Situation } from '@/constants/situation';
+import { GameStatus } from '@/constants/gameStatus';
+import { SITUATION, Situation } from '@/constants/situation';
 import { useDragScroll } from '@/hooks/useDragScroll';
 import { useSidebarStore } from '@/stores/sidebarStore';
 import { useSocketStore } from '@/stores/socketStore';
+import { GamePublisher } from '@/types/gamePublisher';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { FaMicrophone, FaMicrophoneSlash } from 'react-icons/fa';
 
 interface BottombarProps {
   roomId: string;
-  isGameStarted: boolean;
-  isPublisherAlive: boolean;
+  gameStatus: GameStatus;
+  gamePublisher: GamePublisher;
   totalParticipants: number;
   situation: Situation | null;
   timeLeft: number;
-  audioEnabled: boolean;
-  videoEnabled: boolean;
   toggleAudio: () => void;
   toggleVideo: () => void;
 }
 
 const Bottombar = ({
   roomId,
-  isGameStarted,
-  isPublisherAlive,
+  gameStatus,
+  gamePublisher,
   totalParticipants,
   situation,
   timeLeft,
-  audioEnabled,
-  videoEnabled,
   toggleAudio,
   toggleVideo,
 }: BottombarProps) => {
@@ -54,11 +52,18 @@ const Bottombar = ({
 
   return (
     <div
-      className={`${isOpen ? 'right-80' : 'right-0'} absolute bottom-0 left-0 flex h-16 flex-row items-center gap-4 text-nowrap bg-slate-600/50 pl-6 text-sm text-slate-200 transition-all duration-500 ease-out`}
+      className={[
+        `${isOpen ? 'right-80' : 'right-0'}`,
+        'absolute bottom-0 left-0 flex h-16 flex-row items-center gap-4 text-nowrap bg-slate-600/50 pl-6 text-sm text-slate-200 transition-all duration-500 ease-out',
+      ].join(' ')}
     >
       {situation !== null && (
-        <h1 className='text-lg text-white'>
-          {situation} / 남은 시간 / {timeLeft}
+        <h1 className='flex items-center gap-4 rounded-full border border-slate-300 bg-slate-800 px-4 py-2 text-lg text-white'>
+          <span>{SITUATION[situation]}</span>
+          <span>|</span>
+          <span>남은 시간</span>
+          <span>|</span>
+          <span>{timeLeft}</span>
         </h1>
       )}
       <div
@@ -73,7 +78,7 @@ const Bottombar = ({
         onTouchEnd={onTouchEnd}
       >
         <div className='flex flex-row items-center gap-4'>
-          {!isGameStarted && (
+          {gamePublisher.isOwner && gameStatus === 'READY' && (
             <button
               className={[
                 `${totalParticipants !== Number(capacity) ? 'cursor-not-allowed opacity-50' : 'hover:scale-105'}`,
@@ -86,12 +91,12 @@ const Bottombar = ({
               게임 시작
             </button>
           )}
-          {isPublisherAlive && (
+          {gameStatus === 'RUNNING' && gamePublisher.isAlive && (
             <button
               className='flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105'
               onClick={() => toggleAudio()}
             >
-              {audioEnabled ? (
+              {gamePublisher.audioEnabled ? (
                 <FaMicrophone className='scale-125 cursor-pointer text-slate-200 hover:text-white' />
               ) : (
                 <FaMicrophoneSlash className='scale-150 cursor-pointer text-slate-200 hover:text-white' />
@@ -99,12 +104,12 @@ const Bottombar = ({
               오디오
             </button>
           )}
-          {isPublisherAlive && (
+          {gameStatus === 'RUNNING' && gamePublisher.isAlive && (
             <button
               className='flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4 hover:scale-105'
               onClick={() => toggleVideo()}
             >
-              {videoEnabled ? (
+              {gamePublisher.videoEnabled ? (
                 <VideoCameraIcon className='scale-90 cursor-pointer fill-slate-200 hover:fill-white' />
               ) : (
                 <VideoCameraSlashIcon className='scale-90 cursor-pointer fill-slate-200 hover:fill-white' />
