@@ -145,10 +145,10 @@ export class UserService
     const userEntity = await this.userRepository.findByNickname(
       updateNicknameRequest.nickname,
     );
-    this.loginBox.set(+userEntity.userId, updateNicknameRequest.nickname);
     if (userEntity) {
       throw new DuplicateNicknameException();
     }
+    this.loginBox.set(+userEntity.userId, updateNicknameRequest.nickname);
     await this.userRepository.updateNickname(
       updateNicknameRequest.nickname,
       updateNicknameRequest.userId,
@@ -217,8 +217,11 @@ export class UserService
     if (!userEntity) {
       throw new NotFoundUserException();
     }
-    if (this.loginBox.has(+userEntity.userId)) {
-      throw new DuplicateLoginUserException();
+    if (this.loginBox.has(userId)) {
+      return {
+        nickname: null,
+        userId: userId,
+      };
     }
     this.loginBox.set(+userId, userEntity.nickname);
     return {
