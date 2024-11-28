@@ -10,6 +10,8 @@ export async function GET(request: NextRequest) {
     cache: 'no-store',
   });
 
+  // TODO: 수정 필요
+
   if (!response.ok) {
     return new NextResponse('Failed to sign in.', { status: 400 });
   }

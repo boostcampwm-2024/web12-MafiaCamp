@@ -15,6 +15,8 @@ import { useAuthStore } from '@/stores/authStore';
 import { FaChevronDown } from 'react-icons/fa';
 import { io } from 'socket.io-client';
 import { useSocketStore } from '@/stores/socketStore';
+import { User } from '@/types/user';
+import { useConnectedUserList } from '@/hooks/useConnectedUserList';
 
 const Header = () => {
   const { userId, nickname, initializeAuthState, setAuthState } =
@@ -35,6 +37,8 @@ const Header = () => {
       setScrolled(false);
     }
   };
+
+  useConnectedUserList();
 
   useEffect(() => {
     (async () => {
