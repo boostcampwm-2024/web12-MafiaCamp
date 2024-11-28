@@ -24,6 +24,7 @@ const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const [headerSidebarVisible, setHeaderSidebarVisible] = useState(false);
   const [profileModalVisible, setProfileModalVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -36,6 +37,25 @@ const Header = () => {
   };
 
   useEffect(() => {
+    (async () => {
+      setLoading(true);
+
+      const response = await fetch('/api/user/info', {
+        method: 'GET',
+        cache: 'no-store',
+      });
+
+      if (!response.ok) {
+        setLoading(false);
+        initializeAuthState();
+        return;
+      }
+
+      const result: User = await response.json();
+      setAuthState({ ...result });
+      setLoading(false);
+    })();
+
     window.addEventListener('scroll', handleScroll);
     return () => {
       window.removeEventListener('scroll', handleScroll);
@@ -115,7 +135,9 @@ const Header = () => {
               </Link>
             </li>
             <li>
-              {nickname === '' ? (
+              {loading ? (
+                <div className='h-6 w-12 animate-pulse rounded-lg bg-slate-400' />
+              ) : nickname === '' ? (
                 <Link
                   className={`${pathname === '/signin' ? 'font-semibold text-white' : 'hover:text-white'}`}
                   href='/signin'
