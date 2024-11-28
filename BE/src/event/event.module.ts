@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { EventGateway } from './event.gateway';
 import { GameRoomModule } from 'src/game-room/game-room.module';
 import { EventManager } from './event-manager';
@@ -9,7 +9,12 @@ import { WebsocketExceptionFilter } from '../common/filter/websocket.exception.f
 import { UserModule } from 'src/user/user.module';
 
 @Module({
-  imports: [GameRoomModule, GameModule, UserModule, OnlineStateModule],
+  imports: [
+    GameRoomModule,
+    GameModule,
+    forwardRef(() => UserModule),
+    OnlineStateModule,
+  ],
   providers: [
     EventGateway,
     EventManager,
@@ -18,5 +23,6 @@ import { UserModule } from 'src/user/user.module';
       useClass: WebsocketExceptionFilter,
     },
   ],
+  exports: [EventManager],
 })
 export class EventModule {}
