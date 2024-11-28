@@ -6,8 +6,8 @@ export class GameContext {
 
   constructor(readonly room: GameRoom) {}
 
-  run() {
-    this.state.run(this);
+  async run(): Promise<void> {
+    await this.state.run(this);
   }
 
   setState(state: GameState) {

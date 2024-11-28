@@ -13,16 +13,17 @@ export class GameRoom {
   private _gameId: number = null;
   private participants = 0;
   private _status: GameRoomStatus = GameRoomStatus.READY;
-  private createdAt: number = Date.now();
+  private _createdAt: number = Date.now();
   private _result: GAME_HISTORY_RESULT = null;
   private _clients: GameClient[] = [];
   private readonly _mafias: GameClient[] = [];
 
   constructor(
     private owner: string,
-    private title: string,
-    private capacity: number,
-  ) {}
+    private _title: string,
+    private _capacity: number,
+  ) {
+  }
 
   get roomId() {
     return this._roomId;
@@ -43,12 +44,28 @@ export class GameRoom {
     return this._clients;
   }
 
+  get createdAt(): number {
+    return this._createdAt;
+  }
+
+  get capacity(): number {
+    return this._capacity;
+  }
+
+  get title(): string {
+    return this._title;
+  }
+
   get result(): GAME_HISTORY_RESULT {
     return this._result;
   }
 
   set result(result: GAME_HISTORY_RESULT) {
     this._result = result;
+  }
+
+  get status() {
+    return this._status;
   }
 
   set status(status: GameRoomStatus) {
@@ -59,8 +76,14 @@ export class GameRoom {
     return new GameRoom(owner, title, capacity);
   }
 
+  reset() {
+    this._gameId = null;
+    this._status = GameRoomStatus.READY;
+    this._result = null;
+  }
+
   enter(client: GameClient) {
-    if (this.participants >= this.capacity) {
+    if (this.participants >= this._capacity) {
       throw new BadRequestException(); // todo: 적절한 예외 클래스 사용
     }
     this.participants++;
@@ -69,9 +92,21 @@ export class GameRoom {
   }
 
   leave(nickname: string) {
-    this._clients = this.clients.filter((c) => c.nickname !== nickname);
     this.participants--;
-    this.sendAll('leave-user-nickname', nickname);
+    if (this.participants === 0) {
+      this._status = GameRoomStatus.DONE;
+      return;
+    }
+    this._clients = this.clients.filter((c) => c.nickname !== nickname);
+    let newOwner = null;
+    if (nickname === this.owner) {
+      newOwner = this.delegateOwner();
+      this.owner = newOwner;
+    }
+    this.sendAll('leave-user-nickname', {
+      nickname,
+      newOwner
+    });
   }
 
   sendAll(event: string, ...args) {
@@ -95,23 +130,35 @@ export class GameRoom {
   }
 
   isFull() {
-    return this.participants === this.capacity;
+    return this.participants === this._capacity;
   }
 
   toResponse() {
     return {
       roomId: this._roomId,
       owner: this.owner,
-      title: this.title,
-      capacity: this.capacity,
+      title: this._title,
+      capacity: this._capacity,
       participants: this.participants,
       status: this._status,
-      createdAt: this.createdAt,
+      createdAt: this._createdAt,
     };
   }
 
+  getParticipants() {
+    return this._clients.map((c) => ({
+      nickname: c.nickname,
+      isOwner: this.owner === c.nickname,
+    }));
+  }
+
   private sendParticipantInfo() {
-    const participants = this._clients.map((c) => c.nickname);
-    this.sendAll('participants', participants);
+    this.sendAll('participants', this.getParticipants());
+  }
+
+  private delegateOwner() {
+    const length = this._clients.length;
+    const randIdx = Math.floor(Math.random() * length);
+    return this._clients[randIdx].nickname;
   }
 }

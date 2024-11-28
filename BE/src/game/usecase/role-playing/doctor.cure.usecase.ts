@@ -10,9 +10,4 @@ export interface DoctorCureUsecase {
     from: string,
     saveTarget: string,
   ): Promise<void>;
-
-  decisionSurvivorByDoctor(
-    gameRoom: GameRoom,
-    saveTarget: string,
-  ): Promise<void>;
 }

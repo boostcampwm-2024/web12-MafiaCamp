@@ -13,10 +13,6 @@ import { GameRoom } from 'src/game-room/entity/game-room.model';
 import { MAFIA_ROLE } from 'src/game/mafia-role';
 import { PoliceInvestigationRequest } from 'src/game/dto/police.investigation.request';
 import {
-  POLICE_MANAGER,
-  PoliceManager,
-} from '../../usecase/role-playing/police-manager';
-import {
   KILL_DECISION_MANAGER,
   KillDecisionManager,
 } from '../../usecase/role-playing/killDecision-manager';
@@ -35,8 +31,6 @@ export class PoliceState extends GameState {
     private readonly mafiaWinState: MafiaWinState,
     @Inject(POLICE_INVESTIGATE_USECASE)
     private readonly policeInvestigateUsecase: PoliceInvestigateUsecase,
-    @Inject(POLICE_MANAGER)
-    private readonly policeManager: PoliceManager,
     @Inject(KILL_DECISION_MANAGER)
     private readonly killDecisionManager: KillDecisionManager,
     @Inject(FINISH_GAME_USECASE)
@@ -50,6 +44,7 @@ export class PoliceState extends GameState {
     const room = context.room;
 
     const done = async () => {
+      await this.killDecisionManager.determineKillTarget(room);
       const result = await this.finishGameUsecase.checkFinishCondition(room);
       if (result === GAME_HISTORY_RESULT.MAFIA) {
         return next(this.mafiaWinState);
@@ -57,14 +52,12 @@ export class PoliceState extends GameState {
       return next(this.discussionState);
     };
 
-    if (!await this.policeManager.isPoliceAlive(room)) {
-      await this.killDecisionManager.determineKillTarget(room);
+    if (!await this.policeInvestigateUsecase.isPoliceAlive(room)) {
       return done();
     }
 
     await Promise.race([this.timeout(room, cleanups), this.investigate(room, cleanups)]);
     this.cleanup(cleanups);
-    await this.killDecisionManager.determineKillTarget(room);
     done();
   }
 
@@ -80,7 +73,7 @@ export class PoliceState extends GameState {
   }
 
   private investigate(room: GameRoom, cleanups): Promise<void> {
-    const polices = room.clients.filter(c => c.job === MAFIA_ROLE.POLICE);
+    const police = room.clients.find(c => c.job === MAFIA_ROLE.POLICE);
 
     return new Promise((resolve) => {
       const listener = async (data: PoliceInvestigationRequest) => {
@@ -89,9 +82,9 @@ export class PoliceState extends GameState {
       };
   
       cleanups.push(() => {
-        polices.forEach(police => police.removeListener('police-investigate', listener));
+        police.removeListener('police-investigate', listener);
       });
-      polices.forEach(police => police.once('police-investigate', listener));
+      police.once('police-investigate', listener);
     });
   }
 

@@ -8,7 +8,6 @@ import { GameRoom } from '../../../game-room/entity/game-room.model';
 
 @Injectable()
 export class MafiaCountdownTimer implements CountdownTimer {
-
   private readonly stopSignals = new Map<GameRoom, Subject<any>>();
   private readonly pauses = new Map<GameRoom, boolean>();
 
@@ -16,35 +15,34 @@ export class MafiaCountdownTimer implements CountdownTimer {
     if (this.stopSignals.has(room)) {
       throw new DuplicateTimerException();
     }
-
     this.stopSignals.set(room, new Subject());
     this.pauses.set(room, false);
-
     let timeLeft: number = TIMEOUT_SITUATION[situation];
+
+    room.sendAll('countdown-start', situation);
+
     const currentSignal = this.stopSignals.get(room);
     let paused = this.pauses.get(room);
     return new Promise<void>((resolve) => {
-      interval(1000).pipe(
-        takeUntil(currentSignal),
-        takeWhile(() => timeLeft > 0 && !paused),
-      ).subscribe({
-        next: () => {
-          paused = this.pauses.get(room);
-          room.sendAll('countdown', {
-            situation: situation,
-            timeLeft: timeLeft,
-          });
-          timeLeft--;
-        },
-        complete: () => {
-          room.sendAll('countdown-exit', {
-            situation: situation,
-            timeLeft: timeLeft,
-          });
-          this.stop(room);
-          resolve();
-        },
-      });
+      interval(1000)
+        .pipe(
+          takeUntil(currentSignal),
+          takeWhile(() => timeLeft > 0 && !paused),
+        )
+        .subscribe({
+          next: () => {
+            paused = this.pauses.get(room);
+            room.sendAll('countdown', {
+              situation: situation,
+              timeLeft: timeLeft,
+            });
+            timeLeft--;
+          },
+          complete: () => {
+            this.stop(room);
+            resolve();
+          },
+        });
     });
   }
 
@@ -70,5 +68,4 @@ export class MafiaCountdownTimer implements CountdownTimer {
     this.pause(room);
     this.cleanup(room);
   }
-
 }

@@ -2,10 +2,21 @@ import { Mutex } from 'async-mutex';
 
 export class MutexMap<K, V> {
   private _map = new Map<K, V>();
-  private mutex: Mutex = new Mutex();
+  private _locks = new Map<K, Mutex>();
+  private globalMutex = new Mutex();
 
-  private async withLock<T>(callback: (map: Map<K, V>) => T | Promise<T>): Promise<T> {
-    const release = await this.mutex.acquire();
+  private getLock(key: K): Mutex {
+    let lock = this._locks.get(key);
+    if (!lock) {
+      lock = new Mutex();
+      this._locks.set(key, lock);
+    }
+    return lock;
+  }
+
+  async withKeyLock<T>(key: K, callback: (map: Map<K, V>) => Promise<T>): Promise<T> {
+    const lock = this.getLock(key);
+    const release = await lock.acquire();
     try {
       return await callback(this._map);
     } finally {
@@ -14,44 +25,82 @@ export class MutexMap<K, V> {
   }
 
   async set(key: K, value: V): Promise<this> {
-    await this.withLock(map => {
-      map.set(key, value);
-    });
-    return this;
+    const lock = this.getLock(key);
+    const release = await lock.acquire();
+    try {
+      this._map.set(key, value);
+      return this;
+    } finally {
+      release();
+    }
   }
 
   async get(key: K): Promise<V> {
-    return this.withLock(map => map.get(key));
+    const lock = this.getLock(key);
+    const release = await lock.acquire();
+    try {
+      return this._map.get(key);
+    } finally {
+      release();
+    }
   }
 
   async delete(key: K): Promise<boolean> {
-    return this.withLock(map => map.delete(key));
+    const lock = this.getLock(key);
+    const release = await lock.acquire();
+    try {
+      const result = this._map.delete(key);
+      this._locks.delete(key);
+      return result;
+    } finally {
+      release();
+    }
   }
 
   async has(key: K): Promise<boolean> {
-    return this.withLock(map => map.has(key));
+    const lock = this.getLock(key);
+    const release = await lock.acquire();
+    try {
+      return this._map.has(key);
+    } finally {
+      release();
+    }
+  }
+
+  private async withGlobalLock<T>(callback: () => Promise<T> | T): Promise<T> {
+    const release = await this.globalMutex.acquire();
+    try {
+      return await callback();
+    } finally {
+      release();
+    }
   }
 
   async clear(): Promise<void> {
-    return this.withLock(map => map.clear());
+    return this.withGlobalLock(async () => {
+      this._locks.clear();
+      this._map.clear();
+    });
   }
 
   async size(): Promise<number> {
-    return this.withLock(map => map.size);
+    return this.withGlobalLock(() => this._map.size);
   }
 
   async forEach(callbackFn: (value: V, key: K, map: Map<K, V>) => void | Promise<void>): Promise<void> {
-    await this.withLock(async map => {
-      for (const [key, value] of map.entries()) {
-        await callbackFn(value, key, map);
+    await this.withGlobalLock(async () => {
+      const entries = Array.from(this._map.entries());
+      for (const [key, value] of entries) {
+        await callbackFn(value, key, this._map);
       }
     });
   }
 
   async map<T>(callbackFn: (value: V, key: K) => T | Promise<T>): Promise<T[]> {
-    return this.withLock(async map => {
+    return this.withGlobalLock(async () => {
       const results: T[] = [];
-      for (const [key, value] of map.entries()) {
+      const entries = Array.from(this._map.entries());
+      for (const [key, value] of entries) {
         results.push(await callbackFn(value, key));
       }
       return results;
@@ -61,9 +110,10 @@ export class MutexMap<K, V> {
   async filter(
     predicate: (value: V, key: K) => boolean | Promise<boolean>,
   ): Promise<[K, V][]> {
-    return this.withLock(async map => {
+    return this.withGlobalLock(async () => {
       const results: [K, V][] = [];
-      for (const [key, value] of map.entries()) {
+      const entries = Array.from(this._map.entries());
+      for (const [key, value] of entries) {
         if (await predicate(value, key)) {
           results.push([key, value]);
         }
@@ -76,9 +126,10 @@ export class MutexMap<K, V> {
     callbackFn: (accumulator: T, value: V, key: K) => T | Promise<T>,
     initialValue: T,
   ): Promise<T> {
-    return this.withLock(async map => {
+    return this.withGlobalLock(async () => {
       let accumulator = initialValue;
-      for (const [key, value] of map.entries()) {
+      const entries = Array.from(this._map.entries());
+      for (const [key, value] of entries) {
         accumulator = await callbackFn(accumulator, value, key);
       }
       return accumulator;
@@ -86,28 +137,28 @@ export class MutexMap<K, V> {
   }
 
   async entries(): Promise<[K, V][]> {
-    return this.withLock(map => Array.from(map.entries()));
+    return this.withGlobalLock(() => Array.from(this._map.entries()));
   }
 
   async values(): Promise<V[]> {
-    return this.withLock(map => Array.from(map.values()));
+    return this.withGlobalLock(() => Array.from(this._map.values()));
   }
 
   async keys(): Promise<K[]> {
-    return this.withLock(map => Array.from(map.keys()));
+    return this.withGlobalLock(() => Array.from(this._map.keys()));
   }
 
   async setMany(entries) {
-    return this.withLock(map => {
+    return this.withGlobalLock(async () => {
       for (const [key, value] of entries) {
-        map.set(key, value);
+        await this.set(key, value);
       }
     });
   }
 
   async getMany(keys) {
-    return this.withLock(map => {
-      return keys.map(key => map.get(key));
+    return this.withGlobalLock(async () => {
+      return keys.map(key => this._map.get(key));
     });
   }
 }
