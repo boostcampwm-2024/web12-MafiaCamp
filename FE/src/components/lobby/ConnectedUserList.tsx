@@ -1,13 +1,11 @@
 'use client';
 
+import { useConnectedUserListStore } from '@/stores/connectedUserListStore';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 
-interface ConnectedUserListProps {
-  userList: { nickname: string; isInLobby: boolean }[];
-}
-
-const ConnectedUserList = ({ userList }: ConnectedUserListProps) => {
+const ConnectedUserList = () => {
+  const { connectedUserList } = useConnectedUserListStore();
   const [visible, setVisible] = useState(false);
 
   return (
@@ -25,7 +23,7 @@ const ConnectedUserList = ({ userList }: ConnectedUserListProps) => {
           >
             <div className='flex items-center gap-2'>
               <div className='h-2 w-2 animate-pulse rounded-full bg-emerald-400' />
-              <p>온라인 {userList.length}</p>
+              <p>온라인 {Object.keys(connectedUserList).length}</p>
             </div>
           </motion.div>
         )}
@@ -40,20 +38,22 @@ const ConnectedUserList = ({ userList }: ConnectedUserListProps) => {
           >
             <div className='flex items-center gap-2'>
               <div className='h-2 w-2 animate-pulse rounded-full bg-emerald-400' />
-              <p>온라인 {userList.length}</p>
+              <p>온라인 {Object.keys(connectedUserList).length}</p>
             </div>
             <div className='flex w-full snap-y flex-col overflow-y-auto border-t border-white pr-1 pt-2'>
-              {userList.map((user, index) => (
+              {Object.keys(connectedUserList).map((userId) => (
                 <div
-                  key={index}
+                  key={userId}
                   className='flex snap-start items-center gap-2 text-nowrap rounded-lg p-2 hover:bg-slate-500'
                 >
                   <p
-                    className={`${user.isInLobby ? 'text-emerald-400' : 'text-sky-400'} min-w-10 text-xs`}
+                    className={`${connectedUserList[userId].isInLobby ? 'text-emerald-400' : 'text-sky-400'} min-w-10 text-xs`}
                   >
-                    {user.isInLobby ? '로비' : '게임 중'}
+                    {connectedUserList[userId].isInLobby ? '로비' : '게임 중'}
                   </p>
-                  <p className='truncate text-sm'>{user.nickname}</p>
+                  <p className='truncate text-sm'>
+                    {connectedUserList[userId].nickname}
+                  </p>
                 </div>
               ))}
             </div>

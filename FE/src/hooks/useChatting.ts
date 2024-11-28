@@ -3,7 +3,7 @@
 import { useAuthStore } from '@/stores/authStore';
 import { useSidebarStore } from '@/stores/sidebarStore';
 import { useSocketStore } from '@/stores/socketStore';
-import { Chat } from '@/types/chat';
+import { Chat, ChatResponse } from '@/types/chat';
 import { useSearchParams } from 'next/navigation';
 import { FormEvent, useEffect, useRef, useState } from 'react';
 
@@ -45,13 +45,13 @@ export const useChatting = (roomId: string, isMafia: boolean) => {
   }, [chatList]);
 
   useEffect(() => {
-    socket?.on('chat', (chat: Chat) => {
-      setChatList([...chatList, chat]);
+    socket?.on('chat', (chat: ChatResponse) => {
+      setChatList([...chatList, { ...chat, isMafiaOnly: false }]);
     });
 
     if (isMafia) {
-      socket?.on('chat-mafia', (chat: Chat) => {
-        setChatList([...chatList, chat]);
+      socket?.on('chat-mafia', (chat: ChatResponse) => {
+        setChatList([...chatList, { ...chat, isMafiaOnly: true }]);
       });
     }
 

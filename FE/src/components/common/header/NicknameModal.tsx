@@ -44,7 +44,7 @@ const NicknameModal = ({ closeModal }: NicknameModalProps) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        userId: userId.toString(), // TODO: 수정 필요
+        userId,
         nickname: methods.getValues('newNickname'),
       }),
       cache: 'no-store',
