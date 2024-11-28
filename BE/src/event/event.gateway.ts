@@ -119,36 +119,11 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (!client) {
       return;
     }
-    const headers = socket.handshake.headers;
-    const token = this.parseToken(headers);
-    if (!token) {
-      this.logger.log(`[${socket.id}] Unauthorized client`);
-      // todo: socket 연결 강제로 끊기
-      return;
-    }
     this.logoutUsecase.logout(new LogoutRequest(client.userId));
     client.unsubscribeAll();
     await this.connectUserUseCase.leave(String(client.userId));
     this.publishOnlineUserExitEvent(String(client.userId));
     this.connectedClients.delete(socket);
-  }
-
-  @SubscribeMessage('set-nickname')
-  async setNickname(
-    @MessageBody() data: { nickname: string },
-    @ConnectedSocket() socket: Socket,
-  ) {
-    const { nickname } = data;
-    const client = this.connectedClients.get(socket);
-    client.nickname = nickname;
-
-    //닉네임 설정과 로비 입장 업데이트 로직이 똑같아 임시로 같은 함수를 사용하였습니다.
-    await this.connectUserUseCase.enter({
-      userId: String(client.userId),
-      nickname: client.nickname,
-    });
-
-    this.publishOnlineUserUpsertEvent(String(client.userId), client.nickname);
   }
 
   @SubscribeMessage('room-list')
@@ -217,6 +192,17 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.nickname,
       true,
     );
+  }
+
+  @SubscribeMessage('get-participants')
+  getParticipants(
+    @MessageBody('roomId') roomId: string,
+  ) {
+    const participants = this.gameRoomService.getParticipants(roomId);
+    return {
+      event: 'participants',
+      data: participants,
+    };
   }
 
   @SubscribeMessage('send-chat')

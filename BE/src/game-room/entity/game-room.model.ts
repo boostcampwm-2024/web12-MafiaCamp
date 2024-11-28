@@ -145,12 +145,15 @@ export class GameRoom {
     };
   }
 
-  private sendParticipantInfo() {
-    const participants = this._clients.map((c) => ({
+  getParticipants() {
+    return this._clients.map((c) => ({
       nickname: c.nickname,
       isOwner: this.owner === c.nickname,
     }));
-    this.sendAll('participants', participants);
+  }
+
+  private sendParticipantInfo() {
+    this.sendAll('participants', this.getParticipants());
   }
 
   private delegateOwner() {
