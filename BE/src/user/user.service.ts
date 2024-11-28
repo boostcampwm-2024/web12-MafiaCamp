@@ -26,11 +26,9 @@ import { NotFoundUserException } from '../common/error/not.found.user.exception'
 import { DuplicateLoginUserException } from '../common/error/duplicate.login-user.exception';
 import { LogoutUsecase } from './usecase/logout.usecase';
 import { LogoutRequest } from './dto/logout.request';
-import { ReconnectUserUsecase } from './usecase/reconnect.user.usecase';
-import { ReconnectUserRequest } from './dto/reconnect.user.request';
 
 @Injectable()
-export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginUserUsecase, UpdateUserUsecase, LoginAdminUsecase, RegisterAdminUsecase, FindUserInfoUsecase, LogoutUsecase, ReconnectUserUsecase {
+export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginUserUsecase, UpdateUserUsecase, LoginAdminUsecase, RegisterAdminUsecase, FindUserInfoUsecase, LogoutUsecase {
 
   private readonly loginBox = new Map<number, string>();
 
@@ -140,7 +138,28 @@ export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginU
     await this.userRepository.save(userEntity);
   }
 
-  async find(token: string): Promise<Record<string, any>> {
+  logout(logoutRequest: LogoutRequest): void {
+    const userId = logoutRequest.userId;
+    this.loginBox.delete(userId);
+  }
+
+  async findHttp(token: string): Promise<Record<string, any>> {
+    const payload = this.tokenVerifyUsecase.verify(token);
+    const userId = +payload.userId;
+    const userEntity = await this.userRepository.findById(userId);
+    if (!userEntity) {
+      throw new NotFoundUserException();
+    }
+    if (this.loginBox.has(+userEntity.userId)) {
+      throw new DuplicateLoginUserException();
+    }
+    return {
+      nickname: userEntity.nickname,
+      userId: userId,
+    };
+  }
+
+  async findWs(token: string): Promise<Record<string, any>> {
     const payload = this.tokenVerifyUsecase.verify(token);
     const userId = +payload.userId;
     const userEntity = await this.userRepository.findById(userId);
@@ -151,17 +170,5 @@ export class UserService implements FindUserUsecase, RegisterUserUsecase, LoginU
       nickname: userEntity.nickname,
       userId: userId,
     };
-  }
-
-  logout(logoutRequest: LogoutRequest): void {
-    const userId = logoutRequest.userId;
-    this.loginBox.delete(userId);
-  }
-
-  reconnect(reconnectUserRequest: ReconnectUserRequest) {
-    if (this.loginBox.has(reconnectUserRequest.userId)) {
-      throw new DuplicateLoginUserException();
-    }
-    this.loginBox.set(reconnectUserRequest.userId, reconnectUserRequest.nickname);
   }
 }

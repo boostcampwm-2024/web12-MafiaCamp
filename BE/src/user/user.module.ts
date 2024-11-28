@@ -58,12 +58,8 @@ import { RECONNECT_USER_USECASE } from './usecase/reconnect.user.usecase';
       provide: LOGOUT_USECASE,
       useExisting: UserService,
     },
-    {
-      provide: RECONNECT_USER_USECASE,
-      useExisting: UserService,
-    },
   ],
-  exports: [FIND_USER_USECASE, REGISTER_USER_USECASE, FIND_USERINFO_USECASE, LOGOUT_USECASE, RECONNECT_USER_USECASE],
+  exports: [FIND_USER_USECASE, REGISTER_USER_USECASE, FIND_USERINFO_USECASE, LOGOUT_USECASE],
 })
 export class UserModule {
 }

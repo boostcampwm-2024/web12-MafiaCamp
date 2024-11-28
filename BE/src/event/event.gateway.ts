@@ -26,7 +26,6 @@ import { FIND_USERINFO_USECASE, FindUserInfoUsecase } from 'src/user/usecase/fin
 import { LOGOUT_USECASE, LogoutUsecase } from '../user/usecase/logout.usecase';
 import { LogoutRequest } from '../user/dto/logout.request';
 import { RECONNECT_USER_USECASE, ReconnectUserUsecase } from '../user/usecase/reconnect.user.usecase';
-import { ReconnectUserRequest } from '../user/dto/reconnect.user.request';
 
 
 @UseFilters(WebsocketExceptionFilter)
@@ -70,8 +69,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // todo: socket 연결 강제로 끊기
       return;
     }
-    const { nickname, userId } = await this.findUserInfoUsecase.find(token);
-    this.reconnectUserUsecase.reconnect(new ReconnectUserRequest(userId, nickname));
+    const { nickname, userId } = await this.findUserInfoUsecase.findWs(token);
     const client = new EventClient(socket, this.eventManager);
     client.nickname = nickname;
     client.userId = userId;
@@ -101,7 +99,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // todo: socket 연결 강제로 끊기
       return;
     }
-    const { _, userId } = await this.findUserInfoUsecase.find(token);
+    const { _, userId } = await this.findUserInfoUsecase.findWs(token);
     this.logoutUsecase.logout(new LogoutRequest(userId));
     client.unsubscribeAll();
     this.connectedClients.delete(socket);
