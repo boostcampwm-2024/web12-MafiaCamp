@@ -4,11 +4,11 @@ import { ROLE, Role } from '@/constants/role';
 import { Situation, SITUATION_MESSAGE } from '@/constants/situation';
 import { useParticipantListStore } from '@/stores/participantListStore';
 import { useSocketStore } from '@/stores/socketStore';
-import { useRouter } from 'next/router';
 import { useOpenVidu } from './useOpenVidu';
 import { Reducer, useEffect, useReducer } from 'react';
 import { toast } from 'react-toastify';
 import { TOAST_OPTION } from '@/constants/toastOption';
+import { useRouter } from 'next/navigation';
 
 type State = {
   situation: Situation | null;
