@@ -57,6 +57,7 @@ const NicknameModal = ({ closeModal }: NicknameModalProps) => {
       return;
     }
 
+    localStorage.setItem(userId, methods.getValues('newNickname'));
     setAuthState({ nickname: methods.getValues('newNickname') });
     closeModal();
   };
