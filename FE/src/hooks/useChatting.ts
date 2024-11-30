@@ -8,7 +8,6 @@ import { useSearchParams } from 'next/navigation';
 import { FormEvent, useEffect, useRef, useState } from 'react';
 
 export const useChatting = (roomId: string, isMafia: boolean) => {
-  // TODO: reducer로 변경하기
   const { isOpen, initializeSidebarState, closeSidebar } = useSidebarStore();
   const { nickname } = useAuthStore();
   const { socket } = useSocketStore();

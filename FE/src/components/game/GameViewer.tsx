@@ -4,7 +4,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useOpenVidu } from '@/hooks/useOpenVidu';
 import Bottombar from './Bottombar';
 import ChattingList from './chatting/ChattingList';
-import { useEffect, useState } from 'react';
+import { Reducer, useEffect, useReducer } from 'react';
 import { useSocketStore } from '@/stores/socketStore';
 import { ROLE, Role } from '@/constants/role';
 import { toast, ToastContainer } from 'react-toastify';
@@ -19,8 +19,70 @@ interface GameViewerProps {
   roomId: string;
 }
 
+type State = {
+  situation: Situation | null;
+  timeLeft: number;
+  target: string | null;
+  invalidityCount: number;
+  gameResultVisible: boolean;
+  gameResult: 'WIN' | 'LOSE';
+  playerInfoList: {
+    nickname: string;
+    role: Role;
+    status: 'ALIVE' | 'DEAD';
+  }[];
+};
+
+type Action =
+  | {
+      type: 'SET_GAME_RESULT_VISIBLE';
+      payload: { visible: boolean };
+    }
+  | {
+      type: 'FINISH_GAME';
+      payload: {
+        gameResult: 'WIN' | 'LOSE';
+        playerInfoList: {
+          nickname: string;
+          role: Role;
+          status: 'ALIVE' | 'DEAD';
+        }[];
+      };
+    }
+  | {
+      type: 'SET_TIME';
+      payload: { situation: Situation | null; timeLeft: number };
+    }
+  | { type: 'SET_TARGET'; payload: { target: string | null } }
+  | { type: 'SET_INVALIDITY_COUNT'; payload: { invalidityCount: number } };
+
+const reducer = (state: State, action: Action): State => {
+  switch (action.type) {
+    case 'SET_GAME_RESULT_VISIBLE':
+      return { ...state, gameResultVisible: action.payload.visible };
+    case 'FINISH_GAME':
+      return {
+        ...state,
+        gameResultVisible: true,
+        gameResult: action.payload.gameResult,
+        playerInfoList: action.payload.playerInfoList,
+      };
+    case 'SET_TIME':
+      return {
+        ...state,
+        situation: action.payload.situation,
+        timeLeft: action.payload.timeLeft,
+      };
+    case 'SET_TARGET':
+      return { ...state, target: action.payload.target };
+    case 'SET_INVALIDITY_COUNT':
+      return { ...state, invalidityCount: action.payload.invalidityCount };
+    default:
+      throw new Error('Unknown action type');
+  }
+};
+
 const GameViewer = ({ roomId }: GameViewerProps) => {
-  // TODO: 하단 코드 리팩토링 필요.
   const { participantList } = useParticipantListStore();
   const { socket } = useSocketStore();
   const router = useRouter();
@@ -41,20 +103,15 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     finishGame,
   } = useOpenVidu(roomId);
 
-  const [situation, setSituation] = useState<Situation | null>(null);
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [target, setTarget] = useState<string | null>(null);
-  const [invalidityCount, setInvalidityCount] = useState(0);
-
-  const [gameResultVisible, setGameResultVisible] = useState(false);
-  const [gameResult, setGameResult] = useState<'WIN' | 'LOSE'>('WIN');
-  const [playerInfoList, setPlayerInfoList] = useState<
-    {
-      nickname: string;
-      role: Role;
-      status: 'ALIVE' | 'DEAD';
-    }[]
-  >([]);
+  const [state, dispatch] = useReducer<Reducer<State, Action>>(reducer, {
+    situation: null,
+    timeLeft: 0,
+    target: null,
+    invalidityCount: 0,
+    gameResultVisible: false,
+    gameResult: 'WIN',
+    playerInfoList: [],
+  });
 
   const notifyInfo = (message: string) =>
     toast.info(message, {
@@ -87,7 +144,10 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     socket?.once(
       'player-role',
       (data: { role: Role; another: [string, Role][] | null }) => {
-        setGameResultVisible(false);
+        dispatch({
+          type: 'SET_GAME_RESULT_VISIBLE',
+          payload: { visible: false },
+        });
         changePublisherStatus({ role: data.role });
         data.another?.forEach((value) => {
           changeSubscriberStatus(value[0], { role: value[1] });
@@ -99,8 +159,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     socket?.on(
       'countdown',
       (data: { situation: Situation; timeLeft: number }) => {
-        setSituation(data.situation);
-        setTimeLeft(data.timeLeft);
+        dispatch({ type: 'SET_TIME', payload: { ...data } });
       },
     );
 
@@ -117,9 +176,9 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
           notifyInfo(SITUATION_MESSAGE.ARGUMENT);
           break;
         case 'VOTE':
-          if (situation === 'DISCUSSION') {
+          if (state.situation === 'DISCUSSION') {
             notifyInfo(SITUATION_MESSAGE.PRIMARY_VOTE);
-          } else if (situation === 'ARGUMENT') {
+          } else if (state.situation === 'ARGUMENT') {
             notifyInfo(SITUATION_MESSAGE.FINAL_VOTE);
           }
           break;
@@ -129,7 +188,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
           } else {
             initializeCandidates();
           }
-          setTarget(null);
+          dispatch({ type: 'SET_TARGET', payload: { target: null } });
           notifyInfo(SITUATION_MESSAGE.MAFIA);
           break;
         case 'DOCTOR':
@@ -138,7 +197,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
           } else {
             initializeCandidates();
           }
-          setTarget(null);
+          dispatch({ type: 'SET_TARGET', payload: { target: null } });
           notifyInfo(SITUATION_MESSAGE.DOCTOR);
           break;
         case 'POLICE':
@@ -147,7 +206,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
           } else {
             initializeCandidates();
           }
-          setTarget(null);
+          dispatch({ type: 'SET_TARGET', payload: { target: null } });
           notifyInfo(SITUATION_MESSAGE.POLICE);
           break;
         default:
@@ -158,8 +217,11 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     // 투표 시작 시 투표 대상 후보자 설정
     socket?.on('send-vote-candidates', (candidates: string[]) => {
       initializeVotes();
-      setTarget(null);
-      setInvalidityCount(0);
+      dispatch({ type: 'SET_TARGET', payload: { target: null } });
+      dispatch({
+        type: 'SET_INVALIDITY_COUNT',
+        payload: { invalidityCount: 0 },
+      });
 
       for (const nickname of candidates) {
         if (nickname === gamePublisher.nickname) {
@@ -174,7 +236,10 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     socket?.on('vote-current-state', (data: { [nickname: string]: number }) => {
       for (const [nickname, votes] of Object.entries(data)) {
         if (nickname === 'INVALIDITY') {
-          setInvalidityCount(votes);
+          dispatch({
+            type: 'SET_INVALIDITY_COUNT',
+            payload: { invalidityCount: votes },
+          });
         } else if (nickname === gamePublisher.nickname) {
           changePublisherStatus({ votes });
         } else {
@@ -186,8 +251,11 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     // 1차 투표 결과 확인
     socket?.on('primary-vote-result', (candidates: string[]) => {
       initializeCandidates();
-      setTarget(null);
-      setInvalidityCount(0);
+      dispatch({ type: 'SET_TARGET', payload: { target: null } });
+      dispatch({
+        type: 'SET_INVALIDITY_COUNT',
+        payload: { invalidityCount: 0 },
+      });
 
       for (const nickname of candidates) {
         if (nickname === gamePublisher.nickname) {
@@ -220,7 +288,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     // 실시간 마피아 타겟 확인
     if (gamePublisher.role === 'MAFIA') {
       socket?.on('mafia-current-target', (target: string) => {
-        setTarget(target);
+        dispatch({ type: 'SET_TARGET', payload: { target } });
       });
     }
 
@@ -266,12 +334,15 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
         }[];
       }) => {
         notifyInfo('게임이 종료되었습니다.');
-        setSituation(null);
-        setTimeLeft(0);
+        dispatch({
+          type: 'SET_TIME',
+          payload: { situation: null, timeLeft: 0 },
+        });
         finishGame();
-        setGameResult(data.result);
-        setPlayerInfoList(data.playerInfo);
-        setGameResultVisible(true);
+        dispatch({
+          type: 'FINISH_GAME',
+          payload: { gameResult: data.result, playerInfoList: data.playerInfo },
+        });
       },
     );
 
@@ -299,8 +370,8 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
     setAllParticipantsAsCandidates,
     setTargetsOfMafia,
     setTargetsOfPolice,
-    situation,
     socket,
+    state.situation,
   ]);
 
   if (!participantList) {
@@ -310,16 +381,21 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
   return (
     <div className='absolute left-0 top-0 h-screen w-screen overflow-x-hidden'>
       <ToastContainer style={{ width: '40rem' }} />
-      {gameResultVisible && (
+      {state.gameResultVisible && (
         <GameResultBoard
           gamePublisherRole={
-            playerInfoList.find(
+            state.playerInfoList.find(
               (playerInfo) => playerInfo.nickname === gamePublisher.nickname,
             )?.role ?? 'CITIZEN'
           }
-          gameResult={gameResult}
-          playerInfo={playerInfoList}
-          closeBoard={() => setGameResultVisible(false)}
+          gameResult={state.gameResult}
+          playerInfo={state.playerInfoList}
+          closeBoard={() =>
+            dispatch({
+              type: 'SET_GAME_RESULT_VISIBLE',
+              payload: { visible: false },
+            })
+          }
         />
       )}
       <VideoViewer
@@ -327,18 +403,20 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
         gameStatus={gameStatus}
         gamePublisher={gamePublisher}
         gameSubscribers={gameSubscribers}
-        situation={situation}
-        target={target}
-        invalidityCount={invalidityCount}
-        setTarget={(nickname: string | null) => setTarget(nickname)}
+        situation={state.situation}
+        target={state.target}
+        invalidityCount={state.invalidityCount}
+        setTarget={(nickname: string | null) =>
+          dispatch({ type: 'SET_TARGET', payload: { target: nickname } })
+        }
       />
       <Bottombar
         roomId={roomId}
         gameStatus={gameStatus}
         gamePublisher={gamePublisher}
         totalParticipants={gameSubscribers.length + 1}
-        situation={situation}
-        timeLeft={timeLeft}
+        situation={state.situation}
+        timeLeft={state.timeLeft}
         toggleAudio={toggleAudio}
         toggleVideo={toggleVideo}
       />
