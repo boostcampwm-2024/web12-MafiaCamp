@@ -66,20 +66,20 @@ const Header = () => {
           // 같은 브라우저의 탭을 연 경우
           alert('다른 탭에서 같은 계정으로 로그인한 상태입니다.');
           window.history.back();
-          return;
         }
         return;
       }
 
       setAuthState({ userId: result.userId, nickname: result.nickname });
       setLoading(false);
+      router.refresh();
     })();
 
     window.addEventListener('scroll', handleScroll);
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [initializeAuthState, setAuthState]);
+  }, [initializeAuthState, router, setAuthState]);
 
   useEffect(() => {
     if (userId !== '' && !socket) {
