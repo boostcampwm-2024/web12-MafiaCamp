@@ -2,7 +2,7 @@
 
 <img src="https://github.com/user-attachments/assets/af23f745-caa8-4c12-a4da-00e25571b105" />
 
-> 배포 링크 <br/> > **https://mafiacamp.p-e.kr/**
+> 배포 링크 <br/> **https://mafiacamp.p-e.kr/**
 
 <br/>
 
