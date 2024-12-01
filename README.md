@@ -1,9 +1,8 @@
 <h1> MafiaCamp 🕵🏻‍♂️</h1>
 
-<figure>
 <img src="https://github.com/user-attachments/assets/af23f745-caa8-4c12-a4da-00e25571b105" />
-<figcaption align="center"><a href="https://mafiacamp.p-e.kr/" target="_blank">https://mafiacamp.p-e.kr/</a></figcaption>
-</figure>
+
+> 배포 링크 <br/> > **https://mafiacamp.p-e.kr/**
 
 <br/>
 
