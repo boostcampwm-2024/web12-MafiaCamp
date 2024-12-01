@@ -1,64 +1,19 @@
 'use client';
 
-import React, { FormEvent, useEffect } from 'react';
+import React from 'react';
 import CloseIcon from '../common/icons/CloseIcon';
-import { useForm } from 'react-hook-form';
-import { RoomCreateFormSchema } from '@/libs/zod/roomCreateFormSchema';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useSocketStore } from '@/stores/socketStore';
-import { useRouter } from 'next/navigation';
+
 import { useScrollLock } from '@/hooks/utils/useScrollLock';
-import { useParticipantListStore } from '@/stores/participantListStore';
-import { useAuthStore } from '@/stores/authStore';
+import { useRoomManager } from '@/hooks/lobby/useRoomManager';
 
 interface CreateRoomModalProps {
-  close: () => void;
+  closeModal: () => void;
 }
 
-const CreateRoomModal = ({ close }: CreateRoomModalProps) => {
-  const { nickname } = useAuthStore();
-  const { setParticipantList } = useParticipantListStore();
-  const { socket } = useSocketStore();
-  const router = useRouter();
-  const methods = useForm<{ title: string; capacity: string }>({
-    resolver: zodResolver(RoomCreateFormSchema),
-    defaultValues: {
-      title: '',
-      capacity: '',
-    },
-    mode: 'onChange',
-  });
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    await methods.trigger();
-    if (!methods.formState.isValid) {
-      return;
-    }
-
-    const { title, capacity } = methods.getValues();
-    socket?.emit('create-room', { title, capacity: Number(capacity) });
-  };
+const CreateRoomModal = ({ closeModal }: CreateRoomModalProps) => {
+  const { methods, handleSubmit } = useRoomManager();
 
   useScrollLock();
-
-  useEffect(() => {
-    socket?.on('create-room', (data: { success: boolean; roomId: string }) => {
-      if (data.success) {
-        socket?.emit('enter-room', { roomId: data.roomId });
-        setParticipantList([{ nickname, isOwner: true }]);
-        const { title, capacity } = methods.getValues();
-        router.push(
-          `/game/${data.roomId}?roomName=${title}&capacity=${capacity}`,
-        );
-      }
-    });
-
-    return () => {
-      socket?.off('create-room');
-    };
-  }, [methods, nickname, router, setParticipantList, socket]);
 
   return (
     <form
@@ -70,7 +25,7 @@ const CreateRoomModal = ({ close }: CreateRoomModalProps) => {
           <h2 className='text-2xl text-slate-800'>방 만들기</h2>
           <CloseIcon
             className='scale-150 cursor-pointer rounded-lg fill-slate-600 hover:bg-slate-100'
-            onClick={() => close()}
+            onClick={() => closeModal()}
           />
         </div>
         <div className='flex flex-col gap-12 rounded-2xl bg-slate-100 p-6 text-slate-800'>
@@ -79,7 +34,10 @@ const CreateRoomModal = ({ close }: CreateRoomModalProps) => {
               방 이름
             </label>
             <input
-              className={`${methods.formState.errors.title ? 'ring-red-500' : 'ring-slate-200 hover:ring-slate-400 focus:ring-slate-400'} rounded-2xl px-4 py-3.5 text-sm outline-none ring-1`}
+              className={[
+                `${methods.formState.errors.title ? 'ring-red-500' : 'ring-slate-200 hover:ring-slate-400 focus:ring-slate-400'}`,
+                'rounded-2xl px-4 py-3.5 text-sm outline-none ring-1',
+              ].join(' ')}
               id='title'
               type='text'
               placeholder='방 이름을 입력해 주세요. (최대 30자)'
@@ -102,7 +60,10 @@ const CreateRoomModal = ({ close }: CreateRoomModalProps) => {
               인원 수
             </label>
             <select
-              className={`${methods.formState.errors.capacity ? 'ring-red-500' : 'ring-slate-200 hover:ring-slate-400 focus:ring-slate-400'} rounded-2xl px-4 py-3.5 text-sm outline-none ring-1`}
+              className={[
+                `${methods.formState.errors.capacity ? 'ring-red-500' : 'ring-slate-200 hover:ring-slate-400 focus:ring-slate-400'}`,
+                'rounded-2xl px-4 py-3.5 text-sm outline-none ring-1',
+              ].join(' ')}
               id='capacity'
               {...methods.register('capacity')}
             >
@@ -124,7 +85,7 @@ const CreateRoomModal = ({ close }: CreateRoomModalProps) => {
           <button
             className='h-[2.75rem] w-[7.75rem] rounded-3xl border border-slate-200 text-sm font-semibold text-slate-800 drop-shadow-sm hover:scale-105'
             type='button'
-            onClick={() => close()}
+            onClick={() => closeModal()}
           >
             취소
           </button>

@@ -22,7 +22,10 @@ const AdminInput = ({
   return (
     <div className='relative w-full'>
       <input
-        className={`${fieldError ? 'ring-red-500' : 'ring-slate-200 hover:ring-slate-400 focus:ring-slate-400'} w-full rounded-2xl bg-slate-100 px-4 py-3.5 text-sm outline-none ring-1`}
+        className={[
+          `${fieldError ? 'ring-red-500' : 'ring-slate-200 hover:ring-slate-400 focus:ring-slate-400'}`,
+          'w-full rounded-2xl bg-slate-100 px-4 py-3.5 text-sm outline-none ring-1',
+        ].join(' ')}
         id={inputId}
         type={inputType}
         placeholder={placeholder}

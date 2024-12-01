@@ -38,6 +38,7 @@ const Bottombar = ({
 }: BottombarProps) => {
   const { isOpen, openSidebar, closeSidebar } = useSidebarStore();
   const { socket } = useSocketStore();
+  const capacity = useSearchParams().get('capacity');
   const {
     listRef,
     onDragStart,
@@ -47,8 +48,6 @@ const Bottombar = ({
     onTouchMove,
     onTouchEnd,
   } = useDragScroll();
-
-  const capacity = useSearchParams().get('capacity');
 
   return (
     <div

@@ -26,9 +26,9 @@ const ChattingPanel = ({
       {isOpen && (
         <motion.div
           className='absolute right-0 top-0 flex h-screen w-80 flex-col justify-between bg-slate-600/50'
-          initial={{ x: '100%' }}
-          animate={{ x: '0%' }}
-          exit={{ x: '100%' }}
+          initial={{ x: '80rem' }}
+          animate={{ x: '0rem' }}
+          exit={{ x: '80rem' }}
           transition={{ bounce: false }}
         >
           <ChattingHeader

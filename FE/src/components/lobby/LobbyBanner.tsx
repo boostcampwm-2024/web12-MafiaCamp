@@ -16,7 +16,7 @@ const LobbyBanner = () => {
     <div className='h-[26.25rem] max-[1080px]:h-[41.75rem]'>
       {modalVisible && (
         <CreateRoomModal
-          close={() => {
+          closeModal={() => {
             window.history.back();
             setModalVisible(false);
           }}

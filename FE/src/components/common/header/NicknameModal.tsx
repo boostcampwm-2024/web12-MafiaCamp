@@ -4,14 +4,14 @@ import 'react-toastify/dist/ReactToastify.css';
 import CloseIcon from '../icons/CloseIcon';
 import { ToastContainer } from 'react-toastify';
 import { useScrollLock } from '@/hooks/utils/useScrollLock';
-import { useNicknameUpdater } from '@/hooks/common/useNicknameUpdater';
+import { useNicknameManager } from '@/hooks/common/useNicknameManager';
 
 interface NicknameModalProps {
   closeModal: () => void;
 }
 
 const NicknameModal = ({ closeModal }: NicknameModalProps) => {
-  const { methods, loading, handleSubmit } = useNicknameUpdater(closeModal);
+  const { methods, loading, handleSubmit } = useNicknameManager(closeModal);
 
   useScrollLock();
 

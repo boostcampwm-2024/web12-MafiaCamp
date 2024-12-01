@@ -8,7 +8,7 @@ import { FormEvent, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 
-export const useNicknameUpdater = (closeModal: () => void) => {
+export const useNicknameManager = (closeModal: () => void) => {
   const { userId, nickname, setAuthState } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const methods = useForm<{ newNickname: string }>({
