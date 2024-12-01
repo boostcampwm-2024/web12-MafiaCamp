@@ -20,14 +20,18 @@
 <br/>
 
 # 주요 기능
+## 관리자 회원가입 및 로그인
+![관리자-회원가입](https://github.com/user-attachments/assets/acccfaa3-f055-44a2-90b5-1245f85cc59e)
+- 관리자 회원가입 및 로그인을 할 수 있습니다.
+- ctrl + .을 누르면 로그인페이지에서 관리자 페이지로 갈 수 있습니다.
 
 ## 게임방 개설 및 참가
-![방](https://github.com/user-attachments/assets/a2d1f6df-707f-459c-9dac-e5d3d8f6d2a5)
+![방만들기](https://github.com/user-attachments/assets/ada66d15-ed44-405e-8676-c645a4a3e6be)
 - 사용자는 게임 방을 개설할 수 있습니다.
 - 로비에서는 실시간으로 개설된 방 목록을 조회할 수 있고 참가하기 버튼을 눌러서 방에 입장할 수 있습니다.
 
 ## 채팅 기능
-![채팅](https://github.com/user-attachments/assets/3db8ef4a-65f6-442e-bcdc-117433dea9ad)
+![채팅모습](https://github.com/user-attachments/assets/04df6c23-e81a-4e8e-8bcc-d2888dedf9cd)
 - 사용자들은 게임이 시작하기 전과 게임이 진행되는 동안 방에 있는 사람들과 채팅으로 대화를 나눌 수 있습니다.
 
 ## 직업 별 임무 수행
@@ -36,12 +40,12 @@
 - 게임 참여자는 자신에게 부여된 직업에 따라 정해진 임무를 수행하며 승리를 위해 투쟁합니다.
 
 ## 온라인 상태 표시
-![온라인 상태 표시](https://github.com/user-attachments/assets/c9a27faa-a3d6-4d53-b4e3-64beeab73ec6)
+![유저상태](https://github.com/user-attachments/assets/2bddcb64-4210-4753-a7ff-4ab5abb21621)
 - 사용자들은 현재 온라인 상태인 유저의 수와 명단을 확인할 수 있습니다.
 - 현재 게임에 참여중인 사용자와 그렇지 않은 사용자를 구분해 표시합니다.
 
 ## 소셜 로그인
-![로그인](https://github.com/user-attachments/assets/b9e72e68-af23-4ff6-9dfd-7853bbe7c67b)
+![카카오톡-로그인](https://github.com/user-attachments/assets/1ca88933-5749-4758-961a-99143dbd0d30)
 - 사용자는 서비스를 이용하기 위해 로그인을 할 수 있습니다.
 
 <br/>
