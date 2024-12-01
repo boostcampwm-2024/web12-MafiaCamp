@@ -5,7 +5,7 @@ import Lottie from 'lottie-react';
 import * as motion from 'framer-motion/client';
 import { useState } from 'react';
 import CreateRoomModal from './CreateRoomModal';
-import useModalBackHandler from '@/hooks/useModalBackHandler';
+import { useModalBackHandler } from '@/hooks/useModalBackHandler';
 
 const LobbyBanner = () => {
   const [modalVisible, setModalVisible] = useState(false);

@@ -25,6 +25,7 @@ export const useSignout = () => {
     initializeAuthState();
     initializeSocketState();
     router.replace('/');
+    router.refresh();
   };
 
   return { handleSignout };

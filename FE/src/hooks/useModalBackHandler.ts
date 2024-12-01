@@ -6,7 +6,10 @@ import { useEffect } from 'react';
  * @param isOpen 모달창이 열린 상태인지 여부
  * @param closeModal 모달창을 닫는 메서드
  */
-const useModalBackHandler = (isOpen: boolean, closeModal: () => void) => {
+export const useModalBackHandler = (
+  isOpen: boolean,
+  closeModal: () => void,
+) => {
   useEffect(() => {
     if (isOpen) {
       // 모달창이 열릴 때 history에 새로운 상태 추가
@@ -28,5 +31,3 @@ const useModalBackHandler = (isOpen: boolean, closeModal: () => void) => {
     };
   }, [closeModal, isOpen]);
 };
-
-export default useModalBackHandler;

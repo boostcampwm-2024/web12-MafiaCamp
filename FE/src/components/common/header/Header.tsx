@@ -203,7 +203,7 @@ const Header = () => {
             >
               <p>누구나 즐길 수 있는</p>
               <p>마피아 게임,</p>
-              <p className='font-sans text-5xl font-bold max-[768px]:text-4xl'>
+              <p className='text-5xl font-bold tracking-wide max-[768px]:text-4xl'>
                 MafiaCamp
               </p>
             </motion.h1>

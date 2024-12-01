@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 /**
  * 모달 창을 열었을 때 부모 요소의 세로 스크롤을 방지하는 커스텀 훅
  */
-const useScrollLock = () => {
+export const useScrollLock = () => {
   useEffect(() => {
     const currentY = window.scrollY;
     document.body.style.position = 'fixed';
@@ -21,5 +21,3 @@ const useScrollLock = () => {
     };
   }, []);
 };
-
-export default useScrollLock;
