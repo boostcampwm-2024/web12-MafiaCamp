@@ -49,7 +49,6 @@ const HeaderSidebar = ({ visible, closeHeaderSidebar }: HeaderSidebarProps) => {
                 onClick={() => closeHeaderSidebar()}
               />
             </div>
-
             <motion.div
               className='w-full'
               initial={{ y: '1rem', opacity: 0 }}

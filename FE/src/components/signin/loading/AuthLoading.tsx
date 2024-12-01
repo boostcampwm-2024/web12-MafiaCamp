@@ -20,8 +20,8 @@ const AuthLoading = () => {
 
         if (!response.ok) {
           alert('로그인에 실패하였습니다.');
-          console.error(response.statusText);
-          return router.replace('/signin');
+          router.replace('/signin');
+          return;
         }
 
         const result: User = await response.json();

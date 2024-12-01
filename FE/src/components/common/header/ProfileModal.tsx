@@ -5,14 +5,15 @@ import { useState } from 'react';
 import { MdLogout, MdSettings } from 'react-icons/md';
 import NicknameModal from './NicknameModal';
 import { useModalBackHandler } from '@/hooks/utils/useModalBackHandler';
+import { useSignout } from '@/hooks/common/useSignout';
 
 interface ProfileModalProps {
   closeModal: () => void;
-  handleSignout: () => void;
 }
 
-const ProfileModal = ({ closeModal, handleSignout }: ProfileModalProps) => {
+const ProfileModal = ({ closeModal }: ProfileModalProps) => {
   const [nicknameModalVisible, setNicknameModalVisible] = useState(false);
+  const { handleSignout } = useSignout();
 
   useModalBackHandler(nicknameModalVisible, () =>
     setNicknameModalVisible(false),
@@ -42,7 +43,10 @@ const ProfileModal = ({ closeModal, handleSignout }: ProfileModalProps) => {
       </button>
       <button
         className='flex w-full flex-row items-center gap-2 rounded-xl p-3 hover:bg-slate-400'
-        onClick={() => handleSignout()}
+        onClick={() => {
+          closeModal();
+          handleSignout();
+        }}
       >
         <MdLogout />
         <span>로그아웃</span>

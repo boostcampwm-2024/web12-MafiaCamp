@@ -2,7 +2,7 @@
 
 import 'react-toastify/dist/ReactToastify.css';
 import Bottombar from './Bottombar';
-import ChattingList from './chatting/ChattingList';
+import ChattingPanel from './chatting/ChattingPanel';
 import { ToastContainer } from 'react-toastify';
 import VideoViewer from './video/VideoViewer';
 import GameResultBoard from './GameResultBoard';
@@ -70,7 +70,7 @@ const GameViewer = ({ roomId }: GameViewerProps) => {
         toggleAudio={toggleAudio}
         toggleVideo={toggleVideo}
       />
-      <ChattingList
+      <ChattingPanel
         roomId={roomId}
         isMafia={gamePublisher.role === 'MAFIA'}
         chatEnabled={gameStatus !== 'RUNNING' || gamePublisher.isAlive}

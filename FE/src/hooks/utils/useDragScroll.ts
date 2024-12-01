@@ -1,3 +1,5 @@
+'use client';
+
 import { MouseEvent, RefObject, TouchEvent, useRef, useState } from 'react';
 
 export type useDragScrollType = {

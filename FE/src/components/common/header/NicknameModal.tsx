@@ -2,65 +2,16 @@
 
 import 'react-toastify/dist/ReactToastify.css';
 import CloseIcon from '../icons/CloseIcon';
-import { FormEvent, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { NicknameChangeFormSchema } from '@/libs/zod/nicknameChangeFormSchema';
-import { useAuthStore } from '@/stores/authStore';
-import { toast, ToastContainer } from 'react-toastify';
-import { TOAST_OPTION } from '@/constants/toastOption';
+import { ToastContainer } from 'react-toastify';
 import { useScrollLock } from '@/hooks/utils/useScrollLock';
+import { useNicknameUpdater } from '@/hooks/common/useNicknameUpdater';
 
 interface NicknameModalProps {
   closeModal: () => void;
 }
 
 const NicknameModal = ({ closeModal }: NicknameModalProps) => {
-  const { userId, nickname, setAuthState } = useAuthStore();
-  const [loading, setLoading] = useState(false);
-  const methods = useForm<{ newNickname: string }>({
-    resolver: zodResolver(NicknameChangeFormSchema),
-    defaultValues: {
-      newNickname: nickname,
-    },
-    mode: 'onChange',
-  });
-
-  const notifyError = (message: string) => toast.error(message, TOAST_OPTION);
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    await methods.trigger();
-    if (!methods.formState.isValid) {
-      return;
-    }
-
-    setLoading(true);
-
-    const response = await fetch('/api/user/nickname', {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        userId,
-        nickname: methods.getValues('newNickname'),
-      }),
-      cache: 'no-store',
-    });
-
-    setLoading(false);
-
-    if (!response.ok) {
-      notifyError(await response.text());
-      return;
-    }
-
-    localStorage.setItem(userId, methods.getValues('newNickname'));
-    setAuthState({ nickname: methods.getValues('newNickname') });
-    closeModal();
-  };
+  const { methods, loading, handleSubmit } = useNicknameUpdater(closeModal);
 
   useScrollLock();
 
