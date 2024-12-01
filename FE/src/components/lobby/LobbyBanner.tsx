@@ -1,11 +1,10 @@
 'use client';
 
-import LottieFile from '@/../public/lottie/global.json';
-import Lottie from 'lottie-react';
 import * as motion from 'framer-motion/client';
 import { useState } from 'react';
 import CreateRoomModal from './CreateRoomModal';
 import { useModalBackHandler } from '@/hooks/utils/useModalBackHandler';
+import Image from 'next/image';
 
 const LobbyBanner = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -46,7 +45,19 @@ const LobbyBanner = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.5 }}
           >
-            <Lottie animationData={LottieFile} className='h-[22.5rem]' />
+            <motion.div
+              className='relative h-80 w-80'
+              initial={{ rotate: 0 }}
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 30, ease: 'linear' }}
+            >
+              <Image
+                className='object-cover'
+                src='/common/globe.png'
+                alt='globe'
+                fill={true}
+              />
+            </motion.div>
           </motion.div>
         </div>
       </div>

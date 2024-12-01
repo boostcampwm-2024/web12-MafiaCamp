@@ -1,7 +1,5 @@
 'use client';
 
-import LottieFile from '@/../public/lottie/global.json';
-import Lottie from 'lottie-react';
 import * as motion from 'framer-motion/client';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -139,14 +137,24 @@ const Header = () => {
             </Link>
           </div>
           <motion.div
+            className='flex h-full flex-col justify-end'
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1, duration: 0.5 }}
           >
-            <Lottie
-              className='h-[22.5rem] max-[768px]:h-full'
-              animationData={LottieFile}
-            />
+            <motion.div
+              className='relative h-80 w-80'
+              initial={{ rotate: 0 }}
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 30, ease: 'linear' }}
+            >
+              <Image
+                className='object-cover'
+                src='/common/globe.png'
+                alt='globe'
+                fill={true}
+              />
+            </motion.div>
           </motion.div>
         </div>
       )}
