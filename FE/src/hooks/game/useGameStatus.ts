@@ -73,7 +73,7 @@ const reducer = (state: State, action: Action): State => {
   }
 };
 
-const useGameStatus = (roomId: string) => {
+export const useGameStatus = (roomId: string) => {
   const { participantList } = useParticipantListStore();
   const { socket } = useSocketStore();
   const router = useRouter();
@@ -391,5 +391,3 @@ const useGameStatus = (roomId: string) => {
     closeGameResultBoard,
   };
 };
-
-export default useGameStatus;

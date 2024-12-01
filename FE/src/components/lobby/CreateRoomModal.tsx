@@ -7,7 +7,7 @@ import { RoomCreateFormSchema } from '@/libs/zod/roomCreateFormSchema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSocketStore } from '@/stores/socketStore';
 import { useRouter } from 'next/navigation';
-import { useScrollLock } from '@/hooks/useScrollLock';
+import { useScrollLock } from '@/hooks/utils/useScrollLock';
 import { useParticipantListStore } from '@/stores/participantListStore';
 import { useAuthStore } from '@/stores/authStore';
 

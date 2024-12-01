@@ -87,7 +87,7 @@ describe('OpenVidu Test', () => {
 });
 */
 
-import { useOpenVidu } from '@/hooks/useOpenVidu';
+import { useOpenVidu } from '@/hooks/game/useOpenVidu';
 import { renderHook } from '@testing-library/react';
 
 describe('OpenVidu Test', () => {

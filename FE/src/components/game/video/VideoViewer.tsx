@@ -2,7 +2,7 @@
 
 import { useSidebarStore } from '@/stores/sidebarStore';
 import VideoItem from './VideoItem';
-import { useDragScroll } from '@/hooks/useDragScroll';
+import { useDragScroll } from '@/hooks/utils/useDragScroll';
 import { GamePublisher } from '@/types/gamePublisher';
 import { GameSubscriber } from '@/types/gameSubscriber';
 import { Situation } from '@/constants/situation';

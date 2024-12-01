@@ -5,7 +5,7 @@ import CloseIcon from '../icons/CloseIcon';
 import { AnimatePresence, motion } from 'framer-motion';
 import { IoHome } from 'react-icons/io5';
 import { MdGroups, MdLogin, MdLogout, MdSettings } from 'react-icons/md';
-import { useSignout } from '@/hooks/useSignout';
+import { useSignout } from '@/hooks/common/useSignout';
 import { useState } from 'react';
 import NicknameModal from './NicknameModal';
 import { useAuthStore } from '@/stores/authStore';

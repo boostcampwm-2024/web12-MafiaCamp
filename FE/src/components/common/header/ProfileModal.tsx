@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { MdLogout, MdSettings } from 'react-icons/md';
 import NicknameModal from './NicknameModal';
-import { useModalBackHandler } from '@/hooks/useModalBackHandler';
+import { useModalBackHandler } from '@/hooks/utils/useModalBackHandler';
 
 interface ProfileModalProps {
   closeModal: () => void;

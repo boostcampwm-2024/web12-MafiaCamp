@@ -6,7 +6,7 @@ import ChattingList from './chatting/ChattingList';
 import { ToastContainer } from 'react-toastify';
 import VideoViewer from './video/VideoViewer';
 import GameResultBoard from './GameResultBoard';
-import useGameStatus from '@/hooks/useGameStatus';
+import { useGameStatus } from '@/hooks/game/useGameStatus';
 
 interface GameViewerProps {
   roomId: string;

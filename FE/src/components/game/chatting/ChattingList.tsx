@@ -5,7 +5,7 @@ import ChattingItem from './ChattingItem';
 import CloseIcon from '@/components/common/icons/CloseIcon';
 import UsersIcon from '@/components/common/icons/UsersIcon';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useChatting } from '@/hooks/useChatting';
+import { useChatting } from '@/hooks/game/useChatting';
 
 interface ChattingListProps {
   roomId: string;

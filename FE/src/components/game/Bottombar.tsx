@@ -7,7 +7,7 @@ import VideoCameraIcon from '@/components/common/icons/VideoCameraIcon';
 import VideoCameraSlashIcon from '@/components/common/icons/VideoCameraSlashIcon';
 import { GameStatus } from '@/constants/gameStatus';
 import { SITUATION, Situation } from '@/constants/situation';
-import { useDragScroll } from '@/hooks/useDragScroll';
+import { useDragScroll } from '@/hooks/utils/useDragScroll';
 import { useSidebarStore } from '@/stores/sidebarStore';
 import { useSocketStore } from '@/stores/socketStore';
 import { GamePublisher } from '@/types/gamePublisher';

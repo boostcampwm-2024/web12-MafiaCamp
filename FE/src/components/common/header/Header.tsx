@@ -9,13 +9,13 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { MdOutlineMenu } from 'react-icons/md';
 import HeaderSidebar from './HeaderSidebar';
-import { useSignout } from '@/hooks/useSignout';
+import { useSignout } from '@/hooks/common/useSignout';
 import ProfileModal from './ProfileModal';
 import { useAuthStore } from '@/stores/authStore';
 import { FaChevronDown } from 'react-icons/fa';
 import { io } from 'socket.io-client';
 import { useSocketStore } from '@/stores/socketStore';
-import { useConnectedUserList } from '@/hooks/useConnectedUserList';
+import { useConnectedUserList } from '@/hooks/common/useConnectedUserList';
 
 const Header = () => {
   const { userId, nickname, initializeAuthState, setAuthState } =

@@ -9,7 +9,7 @@ import { NicknameChangeFormSchema } from '@/libs/zod/nicknameChangeFormSchema';
 import { useAuthStore } from '@/stores/authStore';
 import { toast, ToastContainer } from 'react-toastify';
 import { TOAST_OPTION } from '@/constants/toastOption';
-import { useScrollLock } from '@/hooks/useScrollLock';
+import { useScrollLock } from '@/hooks/utils/useScrollLock';
 
 interface NicknameModalProps {
   closeModal: () => void;
