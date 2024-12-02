@@ -188,7 +188,7 @@ export class UserService
       token: accessToken,
       response: new RegisterUserResponse(
         userEntity.nickname,
-        userEntity.userId,
+        +userEntity.userId,
       ),
     };
   }
