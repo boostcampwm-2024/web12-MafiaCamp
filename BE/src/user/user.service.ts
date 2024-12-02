@@ -36,6 +36,7 @@ import { ConnectedUserService } from '../online-state/connected-user.service';
 import { DuplicateLoginUserException } from '../common/error/duplicate.login-user.exception';
 import { LogoutUsecase } from './usecase/logout.usecase';
 import { LogoutRequest } from './dto/logout.request';
+import { EventGateway } from '../event/event.gateway';
 
 @Injectable()
 export class UserService
@@ -60,6 +61,7 @@ export class UserService
     private readonly tokenVerifyUsecase: TokenVerifyUsecase,
     private readonly configService: ConfigService,
     private readonly eventManager: EventManager,
+    private readonly eventGateway: EventGateway,
     @Inject(CONNECTED_USER_USECASE)
     private readonly connectedUserService: ConnectedUserService,
   ) {}
@@ -145,13 +147,24 @@ export class UserService
     const userEntity = await this.userRepository.findByNickname(
       updateNicknameRequest.nickname,
     );
+
     if (userEntity) {
       throw new DuplicateNicknameException();
     }
-    this.loginBox.set(+updateNicknameRequest.userId, updateNicknameRequest.nickname);
+
+    this.loginBox.set(
+      +updateNicknameRequest.userId,
+      updateNicknameRequest.nickname,
+    );
+
     await this.userRepository.updateNickname(
       updateNicknameRequest.nickname,
       updateNicknameRequest.userId,
+    );
+
+    this.eventGateway.updateNickName(
+      updateNicknameRequest.userId,
+      updateNicknameRequest.nickname,
     );
 
     await this.connectedUserService.enter({

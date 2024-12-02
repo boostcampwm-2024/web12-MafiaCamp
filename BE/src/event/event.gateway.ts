@@ -40,6 +40,7 @@ import {
 } from 'src/user/usecase/find.user-info.usecase';
 import { LOGOUT_USECASE, LogoutUsecase } from '../user/usecase/logout.usecase';
 import { LogoutRequest } from '../user/dto/logout.request';
+import { NotFoundUserException } from '../common/error/not.found.user.exception';
 
 @UseFilters(WebsocketExceptionFilter)
 @UseInterceptors(WebsocketLoggerInterceptor)
@@ -195,9 +196,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('get-participants')
-  getParticipants(
-    @MessageBody('roomId') roomId: string,
-  ) {
+  getParticipants(@MessageBody('roomId') roomId: string) {
     const participants = this.gameRoomService.getParticipants(roomId);
     return {
       event: 'participants',
@@ -285,6 +284,16 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
       selectMafiaTargetRequest.from,
       selectMafiaTargetRequest.target,
     );
+  }
+
+  updateNickName(userId: number, updateNickName: string) {
+    for (const [, eventClient] of this.connectedClients) {
+      if (eventClient.userId === userId) {
+        eventClient.nickname = updateNickName;
+        return;
+      }
+    }
+    throw new NotFoundUserException();
   }
 
   private publishRoomDataChangedEvent() {

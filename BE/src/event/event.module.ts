@@ -23,6 +23,6 @@ import { UserModule } from 'src/user/user.module';
       useClass: WebsocketExceptionFilter,
     },
   ],
-  exports: [EventManager],
+  exports: [EventManager, EventGateway],
 })
 export class EventModule {}
