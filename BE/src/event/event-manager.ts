@@ -21,7 +21,7 @@ export class EventManager {
     if (!subscribers[eventName]) {
       return;
     }
-    subscribers[eventName].forEach((handler) => handler(e));
+    subscribers[eventName].forEach((subscriber) => subscriber(e));
   }
 
   subscribe(eventName: string, handler: Subscriber): Subscription {
@@ -29,11 +29,13 @@ export class EventManager {
     if (!subscribers[eventName]) {
       subscribers[eventName] = [];
     }
-    const index = subscribers[eventName].push(handler) - 1;
+    subscribers[eventName].push(handler);
 
     return {
       unsubscribe() {
-        subscribers[eventName].splice(index, 1);
+        subscribers[eventName] = subscribers[eventName].filter(
+          (subscriber) => subscriber !== handler,
+        );
       },
     };
   }
