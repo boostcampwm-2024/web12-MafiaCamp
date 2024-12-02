@@ -2,7 +2,7 @@
 
 import { useSidebarStore } from '@/stores/sidebarStore';
 import VideoItem from './VideoItem';
-import { useDragScroll } from '@/hooks/useDragScroll';
+import { useDragScroll } from '@/hooks/utils/useDragScroll';
 import { GamePublisher } from '@/types/gamePublisher';
 import { GameSubscriber } from '@/types/gameSubscriber';
 import { Situation } from '@/constants/situation';
@@ -75,15 +75,15 @@ const VideoViewer = ({
         gamePublisher={gamePublisher}
         situation={situation}
       />
-      <InvalidityButton
-        roomId={roomId}
-        gameStatus={gameStatus}
-        gamePublisher={gamePublisher}
-        situation={situation}
-        target={target}
-        invalidityCount={invalidityCount}
-        setTarget={setTarget}
-      />
+      {gameStatus === 'RUNNING' && situation === 'VOTE' && (
+        <InvalidityButton
+          roomId={roomId}
+          gamePublisher={gamePublisher}
+          target={target}
+          invalidityCount={invalidityCount}
+          setTarget={setTarget}
+        />
+      )}
       <div
         className={[
           `${totalSurvivors <= 2 ? 'grid-rows-1' : 'grid-rows-2'}`,

@@ -1,3 +1,5 @@
+'use client';
+
 import { useAuthStore } from '@/stores/authStore';
 import { useSocketStore } from '@/stores/socketStore';
 import { useRouter } from 'next/navigation';
@@ -25,6 +27,7 @@ export const useSignout = () => {
     initializeAuthState();
     initializeSocketState();
     router.replace('/');
+    router.refresh();
   };
 
   return { handleSignout };

@@ -34,12 +34,14 @@ const Footer = () => {
             <a
               className='flex h-10 w-10 items-center justify-center rounded-full bg-white hover:scale-105'
               href='https://broken-bubble-48c.notion.site/web12-MafiaCamp-db7e416f79ce4e3e9a7d6c0f60a87c3f'
+              aria-label='A link to notion page'
             >
               <RiNotionFill className='text-slate-900' size='1.75rem' />
             </a>
             <a
               className='flex h-10 w-10 items-center justify-center rounded-full bg-white hover:scale-105'
               href='https://github.com/boostcampwm-2024/web12-MafiaCamp'
+              aria-label='A link to gitHub repository'
             >
               <FaGithub className='text-slate-900' size='1.5rem' />
             </a>

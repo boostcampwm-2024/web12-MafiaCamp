@@ -1,3 +1,5 @@
+'use client';
+
 import { useConnectedUserListStore } from '@/stores/connectedUserListStore';
 import { useSocketStore } from '@/stores/socketStore';
 import { useEffect } from 'react';

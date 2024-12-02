@@ -1,3 +1,5 @@
+'use client';
+
 import { GameStatus } from '@/constants/gameStatus';
 import { TOAST_OPTION } from '@/constants/toastOption';
 import { useAuthStore } from '@/stores/authStore';
