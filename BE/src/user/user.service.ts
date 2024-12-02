@@ -182,7 +182,7 @@ export class UserService
     }
     this.loginBox.set(+userEntity.userId, userEntity.nickname);
     const accessToken = this.tokenProvideUsecase.provide({
-      userId: userEntity.userId,
+      userId: +userEntity.userId,
     });
     return {
       token: accessToken,
