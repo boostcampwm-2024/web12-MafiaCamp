@@ -176,7 +176,8 @@ export const useGameStatus = (roomId: string) => {
           break;
         case 'VOTE':
           if (state.situation === 'DISCUSSION') {
-            notifyInfo(SITUATION_MESSAGE.PRIMARY_VOTE);
+            notifyInfo(SITUATION_MESSAGE.PRIMARY_VOTE_FIRST_MESSAGE);
+            notifyInfo(SITUATION_MESSAGE.PRIMARY_VOTE_SECOND_MESSAGE);
           } else if (state.situation === 'ARGUMENT') {
             notifyInfo(SITUATION_MESSAGE.FINAL_VOTE);
           }

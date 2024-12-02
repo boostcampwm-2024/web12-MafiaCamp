@@ -34,7 +34,7 @@ export const useChattingList = (isMafia: boolean) => {
     return () => {
       socket?.off('chat');
       socket?.off('chat-mafia');
-      initializeSidebarState();
+      initializeSidebarState(); // TODO
     };
   }, [chatList, initializeSidebarState, isMafia, socket]);
 
