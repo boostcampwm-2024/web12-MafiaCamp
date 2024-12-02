@@ -22,12 +22,11 @@ export class EventClientManager {
     for (const [, eventClient] of this.connectedClients) {
       if (eventClient.userId === userId) {
         eventClient.nickname = updateNickName;
-        eventClient.nickname;
         this.eventManager.publish(Event.USER_DATA_CHANGED, {
           event: 'upsert-online-user',
           data: {
             userId: String(userId),
-            nickname: updateNickName,
+            nickname: eventClient.nickname,
             isInLobby: true,
           },
         });
