@@ -3,6 +3,7 @@
 import { TOAST_OPTION } from '@/constants/toastOption';
 import { NicknameChangeFormSchema } from '@/libs/zod/nicknameChangeFormSchema';
 import { useAuthStore } from '@/stores/authStore';
+import { useSocketStore } from '@/stores/socketStore';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FormEvent, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -10,6 +11,7 @@ import { toast } from 'react-toastify';
 
 export const useNicknameManager = (closeModal: () => void) => {
   const { userId, nickname, setAuthState } = useAuthStore();
+  const { socket, initializeSocketState } = useSocketStore();
   const [loading, setLoading] = useState(false);
   const methods = useForm<{ newNickname: string }>({
     resolver: zodResolver(NicknameChangeFormSchema),
@@ -52,6 +54,8 @@ export const useNicknameManager = (closeModal: () => void) => {
 
     localStorage.setItem(userId, methods.getValues('newNickname'));
     setAuthState({ nickname: methods.getValues('newNickname') });
+    socket?.disconnect();
+    initializeSocketState();
     closeModal();
   };
 
