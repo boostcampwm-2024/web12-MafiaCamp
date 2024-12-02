@@ -40,6 +40,7 @@ import {
 } from 'src/user/usecase/find.user-info.usecase';
 import { LOGOUT_USECASE, LogoutUsecase } from '../user/usecase/logout.usecase';
 import { LogoutRequest } from '../user/dto/logout.request';
+import { EventClientManager } from './event-client-manager';
 
 @UseFilters(WebsocketExceptionFilter)
 @UseInterceptors(WebsocketLoggerInterceptor)
@@ -52,10 +53,10 @@ import { LogoutRequest } from '../user/dto/logout.request';
 })
 export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private logger = new Logger(EventGateway.name);
-  private connectedClients: Map<Socket, EventClient> = new Map();
 
   constructor(
     private readonly eventManager: EventManager,
+    private readonly eventClientManager: EventClientManager,
     private readonly gameRoomService: GameRoomService,
     @Inject(START_GAME_USECASE)
     private readonly startGameUsecase: StartGameUsecase,
@@ -98,7 +99,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     client.subscribe(Event.ROOM_DATA_CHANGED);
     client.subscribe(Event.USER_DATA_CHANGED);
-    this.connectedClients.set(socket, client);
+    this.eventClientManager.addClient(socket, client);
     this.publishRoomDataChangedEvent();
   }
 
@@ -115,7 +116,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   async handleDisconnect(socket: Socket) {
     this.logger.log(`[${socket.id}] Client disconnected`);
-    const client = this.connectedClients.get(socket);
+    const client = this.eventClientManager.getClientBySocket(socket);
     if (!client) {
       return;
     }
@@ -123,7 +124,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.unsubscribeAll();
     await this.connectUserUseCase.leave(String(client.userId));
     this.publishOnlineUserExitEvent(String(client.userId));
-    this.connectedClients.delete(socket);
+    this.eventClientManager.removeClient(socket);
   }
 
   @SubscribeMessage('room-list')
@@ -139,7 +140,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() createRoomRequest: CreateRoomRequest,
     @ConnectedSocket() socket: Socket,
   ) {
-    const client = this.connectedClients.get(socket);
+    const client = this.eventClientManager.getClientBySocket(socket);
     const roomId = this.gameRoomService.createRoom(client, createRoomRequest);
     this.publishRoomDataChangedEvent();
 
@@ -157,7 +158,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody('roomId') roomId: string,
     @ConnectedSocket() socket: Socket,
   ) {
-    const client = this.connectedClients.get(socket);
+    const client = this.eventClientManager.getClientBySocket(socket);
     this.gameRoomService.enterRoom(client, roomId);
 
     await this.connectUserUseCase.enterRoom({
@@ -178,7 +179,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody('roomId') roomId: string,
     @ConnectedSocket() socket: Socket,
   ) {
-    const client = this.connectedClients.get(socket);
+    const client = this.eventClientManager.getClientBySocket(socket);
     this.gameRoomService.leaveRoom(client.nickname, roomId);
 
     await this.connectUserUseCase.leaveRoom({
@@ -195,9 +196,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('get-participants')
-  getParticipants(
-    @MessageBody('roomId') roomId: string,
-  ) {
+  getParticipants(@MessageBody('roomId') roomId: string) {
     const participants = this.gameRoomService.getParticipants(roomId);
     return {
       event: 'participants',
@@ -212,7 +211,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     const { roomId, message } = data;
     const room = this.gameRoomService.findRoomById(roomId);
-    const client = this.connectedClients.get(socket);
+    const client = this.eventClientManager.getClientBySocket(socket);
 
     room.sendAll('chat', {
       from: client.nickname,
@@ -228,7 +227,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     const { roomId, message } = data;
     const room = this.gameRoomService.findRoomById(roomId);
-    const client = this.connectedClients.get(socket);
+    const client = this.eventClientManager.getClientBySocket(socket);
 
     room.sendMafia('chat-mafia', {
       from: client.nickname,

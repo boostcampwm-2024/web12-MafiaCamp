@@ -29,13 +29,12 @@ import {
   TokenVerifyUsecase,
 } from '../auth/usecase/token.verify.usecase';
 import { NotFoundUserException } from '../common/error/not.found.user.exception';
-import { EventManager } from '../event/event-manager';
 import { CONNECTED_USER_USECASE } from '../online-state/connected-user.usecase';
-import { Event } from '../event/event.const';
 import { ConnectedUserService } from '../online-state/connected-user.service';
 import { DuplicateLoginUserException } from '../common/error/duplicate.login-user.exception';
 import { LogoutUsecase } from './usecase/logout.usecase';
 import { LogoutRequest } from './dto/logout.request';
+import { EventClientManager } from '../event/event-client-manager';
 
 @Injectable()
 export class UserService
@@ -59,7 +58,7 @@ export class UserService
     @Inject(TOKEN_VERIFY_USECASE)
     private readonly tokenVerifyUsecase: TokenVerifyUsecase,
     private readonly configService: ConfigService,
-    private readonly eventManager: EventManager,
+    private readonly eventClientManager: EventClientManager,
     @Inject(CONNECTED_USER_USECASE)
     private readonly connectedUserService: ConnectedUserService,
   ) {}
@@ -145,27 +144,29 @@ export class UserService
     const userEntity = await this.userRepository.findByNickname(
       updateNicknameRequest.nickname,
     );
+
     if (userEntity) {
       throw new DuplicateNicknameException();
     }
-    this.loginBox.set(+updateNicknameRequest.userId, updateNicknameRequest.nickname);
+
+    this.loginBox.set(
+      +updateNicknameRequest.userId,
+      updateNicknameRequest.nickname,
+    );
+
     await this.userRepository.updateNickname(
       updateNicknameRequest.nickname,
       updateNicknameRequest.userId,
     );
 
+    this.eventClientManager.updateNickName(
+      updateNicknameRequest.userId,
+      updateNicknameRequest.nickname,
+    );
+
     await this.connectedUserService.enter({
       userId: String(updateNicknameRequest.userId),
       nickname: updateNicknameRequest.nickname,
-    });
-
-    this.eventManager.publish(Event.USER_DATA_CHANGED, {
-      event: 'upsert-online-user',
-      data: {
-        userId: String(updateNicknameRequest.userId),
-        nickname: updateNicknameRequest.nickname,
-        isInLobby: true,
-      },
     });
   }
 
