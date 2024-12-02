@@ -1,104 +1,28 @@
 'use client';
 
-import LottieFile from '@/../public/lottie/global.json';
-import Lottie from 'lottie-react';
 import * as motion from 'framer-motion/client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { MdOutlineMenu } from 'react-icons/md';
 import HeaderSidebar from './HeaderSidebar';
-import { useSignout } from '@/hooks/useSignout';
 import ProfileModal from './ProfileModal';
-import { useAuthStore } from '@/stores/authStore';
 import { FaChevronDown } from 'react-icons/fa';
-import { io } from 'socket.io-client';
-import { useSocketStore } from '@/stores/socketStore';
-import { useConnectedUserList } from '@/hooks/useConnectedUserList';
+import { useAutoSignin } from '@/hooks/common/useAutoSignin';
+import { useHeaderController } from '@/hooks/common/useHeaderController';
 
 const Header = () => {
-  const { userId, nickname, initializeAuthState, setAuthState } =
-    useAuthStore();
-  const { socket, setSocketState } = useSocketStore();
-  const { handleSignout } = useSignout();
-  const [scrolled, setScrolled] = useState(false);
-  const [headerSidebarVisible, setHeaderSidebarVisible] = useState(false);
-  const [profileModalVisible, setProfileModalVisible] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const { nickname, loading } = useAutoSignin();
+  const {
+    scrolled,
+    headerSidebarVisible,
+    profileModalVisible,
+    openHeaderSidebar,
+    closeHeaderSidebar,
+    openProfileModal,
+    closeProfileModal,
+  } = useHeaderController();
   const pathname = usePathname();
-  const router = useRouter();
-
-  const handleScroll = () => {
-    if (window.scrollY >= 300) {
-      setScrolled(true);
-    } else {
-      setScrolled(false);
-    }
-  };
-
-  useConnectedUserList();
-
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
-
-      const response = await fetch('/api/user/info', {
-        method: 'GET',
-        cache: 'no-store',
-      });
-
-      if (!response.ok) {
-        setLoading(false);
-        initializeAuthState();
-        return;
-      }
-
-      const result: { userId: string; nickname: string | null } =
-        await response.json();
-
-      if (result.nickname === null) {
-        if (localStorage.getItem(result.userId) === null) {
-          // 다른 컴퓨터에서 로그인 시도한 경우 쿠키 삭제
-          await fetch('/api/cookie', { method: 'POST', cache: 'no-store' });
-          router.refresh();
-        } else {
-          // 같은 브라우저의 탭을 연 경우
-          alert('다른 탭에서 같은 계정으로 로그인한 상태입니다.');
-          window.history.back();
-          return;
-        }
-        return;
-      }
-
-      setAuthState({ userId: result.userId, nickname: result.nickname });
-      setLoading(false);
-    })();
-
-    window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, [initializeAuthState, setAuthState]);
-
-  useEffect(() => {
-    if (userId !== '' && !socket) {
-      const newSocket = io(`${process.env.NEXT_PUBLIC_BACKEND_URL}/ws`, {
-        transports: ['websocket', 'polling'], // use WebSocket first, if available
-        withCredentials: true,
-      });
-
-      setSocketState({ socket: newSocket });
-
-      newSocket.on('connect_error', (error) => {
-        console.error(`연결 실패: ${error}`);
-        alert('서버와의 연결에 실패하였습니다. 잠시 후에 다시 시도해 주세요.');
-        newSocket.disconnect();
-        setSocketState({ socket: null });
-        router.replace('/');
-      });
-    }
-  }, [router, setSocketState, socket, userId]);
 
   if (
     pathname.startsWith('/game') ||
@@ -117,7 +41,7 @@ const Header = () => {
     >
       <HeaderSidebar
         visible={headerSidebarVisible}
-        closeHeaderSidebar={() => setHeaderSidebarVisible(false)}
+        closeHeaderSidebar={closeHeaderSidebar}
       />
       <motion.div
         className={[
@@ -167,19 +91,13 @@ const Header = () => {
               ) : (
                 <div
                   className='relative flex items-center gap-1 rounded-xl px-2 py-1 hover:bg-slate-600'
-                  onMouseEnter={() => setProfileModalVisible(true)}
-                  onMouseLeave={() => setProfileModalVisible(false)}
+                  onMouseEnter={openProfileModal}
+                  onMouseLeave={closeProfileModal}
                 >
                   <p className='max-w-44 truncate text-nowrap'>{nickname}</p>
                   <FaChevronDown />
                   {profileModalVisible && (
-                    <ProfileModal
-                      closeModal={() => setProfileModalVisible(false)}
-                      handleSignout={() => {
-                        setProfileModalVisible(false);
-                        handleSignout();
-                      }}
-                    />
+                    <ProfileModal closeModal={closeProfileModal} />
                   )}
                 </div>
               )}
@@ -189,7 +107,7 @@ const Header = () => {
         <MdOutlineMenu
           className='hidden cursor-pointer text-slate-200 hover:text-white max-[768px]:block'
           size='2rem'
-          onClick={() => setHeaderSidebarVisible(true)}
+          onClick={openHeaderSidebar}
         />
       </motion.div>
       {pathname === '/' && !scrolled && (
@@ -203,7 +121,7 @@ const Header = () => {
             >
               <p>누구나 즐길 수 있는</p>
               <p>마피아 게임,</p>
-              <p className='font-sans text-5xl font-bold max-[768px]:text-4xl'>
+              <p className='text-5xl font-bold tracking-wide max-[768px]:text-4xl'>
                 MafiaCamp
               </p>
             </motion.h1>
@@ -219,14 +137,24 @@ const Header = () => {
             </Link>
           </div>
           <motion.div
+            className='flex h-full flex-col justify-end'
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1, duration: 0.5 }}
           >
-            <Lottie
-              className='h-[22.5rem] max-[768px]:h-full'
-              animationData={LottieFile}
-            />
+            <motion.div
+              className='relative h-80 w-80'
+              initial={{ rotate: 0 }}
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 30, ease: 'linear' }}
+            >
+              <Image
+                className='object-cover'
+                src='/common/globe.png'
+                alt='globe'
+                fill={true}
+              />
+            </motion.div>
           </motion.div>
         </div>
       )}

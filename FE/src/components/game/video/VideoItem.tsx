@@ -30,9 +30,9 @@ const VideoItem = ({
   target,
   setTarget,
 }: VideoItemProps) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
   const { nickname } = useAuthStore();
   const { socket } = useSocketStore();
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const handleClick = () => {
     if (!situation || !isPublisherAlive || !gameParticipant.isCandidate) {

@@ -7,7 +7,7 @@ import VideoCameraIcon from '@/components/common/icons/VideoCameraIcon';
 import VideoCameraSlashIcon from '@/components/common/icons/VideoCameraSlashIcon';
 import { GameStatus } from '@/constants/gameStatus';
 import { SITUATION, Situation } from '@/constants/situation';
-import { useDragScroll } from '@/hooks/useDragScroll';
+import { useDragScroll } from '@/hooks/utils/useDragScroll';
 import { useSidebarStore } from '@/stores/sidebarStore';
 import { useSocketStore } from '@/stores/socketStore';
 import { GamePublisher } from '@/types/gamePublisher';
@@ -38,6 +38,7 @@ const Bottombar = ({
 }: BottombarProps) => {
   const { isOpen, openSidebar, closeSidebar } = useSidebarStore();
   const { socket } = useSocketStore();
+  const capacity = useSearchParams().get('capacity');
   const {
     listRef,
     onDragStart,
@@ -47,8 +48,6 @@ const Bottombar = ({
     onTouchMove,
     onTouchEnd,
   } = useDragScroll();
-
-  const capacity = useSearchParams().get('capacity');
 
   return (
     <div

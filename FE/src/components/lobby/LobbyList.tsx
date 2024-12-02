@@ -3,85 +3,12 @@
 import 'react-toastify/dist/ReactToastify.css';
 import LottieFile from '@/../public/lottie/no_data.json';
 import Lottie from 'lottie-react';
-import { useEffect, useState } from 'react';
 import LobbyItem from './LobbyItem';
-import { Room } from '@/types/room';
-import { useSocketStore } from '@/stores/socketStore';
-import { toast, ToastContainer } from 'react-toastify';
-import { TOAST_OPTION } from '@/constants/toastOption';
-import { useRouter } from 'next/navigation';
-import { useParticipantListStore } from '@/stores/participantListStore';
+import { ToastContainer } from 'react-toastify';
+import { useLobbyList } from '@/hooks/lobby/useLobbyList';
 
 const LobbyList = () => {
-  const { setParticipantList } = useParticipantListStore();
-  const { socket } = useSocketStore();
-  const [roomList, setRoomList] = useState<Room[]>([]);
-  const [targetRoom, setTargetRoom] = useState<{
-    roomId: string;
-    title: string;
-    capacity: number;
-  } | null>(null);
-  const router = useRouter();
-
-  const notifyError = (message: string) => {
-    toast.error(message, TOAST_OPTION);
-  };
-
-  const handleQuickStart = async () => {
-    const response = await fetch('/api/rooms/vacant', {
-      method: 'GET',
-      cache: 'no-store',
-    });
-
-    if (!response) {
-      notifyError('오류가 발생하였습니다. 잠시 후에 다시 시도해 주세요.');
-      return;
-    }
-
-    const result: {
-      roomId: string | null;
-      capacity: number | null;
-      title: string | null;
-    } = await response.json();
-
-    if (result.roomId === null) {
-      notifyError('입장할 수 있는 방이 존재하지 않습니다.');
-      return;
-    }
-
-    setTargetRoom({
-      roomId: result.roomId!,
-      title: result.title!,
-      capacity: result.capacity!,
-    });
-    socket?.emit('enter-room', { roomId: result.roomId });
-  };
-
-  useEffect(() => {
-    socket?.on('room-list', (rooms: Room[]) => setRoomList(rooms));
-    socket?.on('error', () => {
-      setTargetRoom(null);
-      notifyError('방 입장에 실패하였습니다.');
-    });
-    socket?.once(
-      'participants',
-      (data: { nickname: string; isOwner: boolean }[]) => {
-        if (targetRoom) {
-          setParticipantList(data);
-          router.push(
-            `/game/${targetRoom.roomId}?roomName=${targetRoom.title}&capacity=${targetRoom.capacity}`,
-          );
-        }
-      },
-    );
-    socket?.emit('room-list');
-
-    return () => {
-      socket?.off('room-list');
-      socket?.off('error');
-      socket?.off('participants');
-    };
-  }, [router, setParticipantList, socket, targetRoom]);
+  const { roomList, handleQuickStart, setTargetRoom } = useLobbyList();
 
   return (
     <div className='flex w-full flex-col gap-8 pb-20 pt-24'>

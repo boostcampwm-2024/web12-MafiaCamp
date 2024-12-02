@@ -4,7 +4,7 @@ import LobbyBanner from './LobbyBanner';
 import LobbyList from './LobbyList';
 import ConnectedUserList from './ConnectedUserList';
 import { useSocketStore } from '@/stores/socketStore';
-import { usePermissionManager } from '@/hooks/usePermissionManager';
+import { usePermissionManager } from '@/hooks/lobby/usePermissionManager';
 
 const LobbyViewer = () => {
   const { socket } = useSocketStore();
