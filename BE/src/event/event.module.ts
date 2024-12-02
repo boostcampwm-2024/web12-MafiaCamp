@@ -7,6 +7,7 @@ import { OnlineStateModule } from '../online-state/online-state.module';
 import { APP_FILTER } from '@nestjs/core';
 import { WebsocketExceptionFilter } from '../common/filter/websocket.exception.filter';
 import { UserModule } from 'src/user/user.module';
+import { EventClientManager } from './event-client-manager';
 
 @Module({
   imports: [
@@ -18,11 +19,12 @@ import { UserModule } from 'src/user/user.module';
   providers: [
     EventGateway,
     EventManager,
+    EventClientManager,
     {
       provide: APP_FILTER,
       useClass: WebsocketExceptionFilter,
     },
   ],
-  exports: [EventManager, EventGateway],
+  exports: [EventManager, EventClientManager],
 })
 export class EventModule {}
