@@ -459,6 +459,7 @@ export const useOpenVidu = (roomId: string) => {
 
     return () => {
       socket?.off('participants');
+      socket?.off('leave-user-nickname');
       socket?.off('video-info');
     };
   }, [nickname, roomId, setSocketState, socket, state.gamePublisher.nickname]);
