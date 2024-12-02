@@ -22,7 +22,7 @@ const LobbyBanner = () => {
         />
       )}
       <div className='absolute left-0 top-0 flex h-[31.25rem] w-full items-center justify-center text-nowrap bg-gradient-to-r from-slate-800/50 to-slate-600 p-6 pt-20 max-[1080px]:h-fit'>
-        <div className='flex w-[67.5rem] flex-row items-center justify-between pt-10 max-[1080px]:flex-col max-[1080px]:gap-4'>
+        <div className='flex w-[67.5rem] flex-row items-center justify-between overflow-hidden pt-10 max-[1080px]:flex-col max-[1080px]:gap-4'>
           <motion.div
             className='flex flex-col items-start gap-8 max-[1080px]:items-center'
             initial={{ y: '0.5rem', opacity: 0 }}
