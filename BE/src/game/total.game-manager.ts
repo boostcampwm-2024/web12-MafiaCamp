@@ -577,9 +577,11 @@ export class TotalGameManager
       for (const [nickname,] of playerInfos) {
         if (nickname === client.nickname) {
           playerInfos.delete(nickname);
-          ballot.delete(nickname);
+          if (ballot) {
+            ballot.delete(nickname);
+            this.ballotBoxs.set(gameRoom.roomId, ballot);
+          }
           this.games.set(gameRoom.roomId, playerInfos);
-          this.ballotBoxs.set(gameRoom.roomId, ballot);
           return true;
         }
       }
