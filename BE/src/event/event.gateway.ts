@@ -199,12 +199,10 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
         this.countdownTimeoutUsecase.countdownStop(new StopCountdownRequest(gameRoom));
         gameContext.terminate();
         await this.mafiaWinState.handle(gameContext);
-        await this.gameContextManager.removeContext(roomId);
       } else if (gameResult === GAME_HISTORY_RESULT.CITIZEN) {
         this.countdownTimeoutUsecase.countdownStop(new StopCountdownRequest(gameRoom));
         gameContext.terminate();
         await this.citizenWinState.handle(gameContext);
-        await this.gameContextManager.removeContext(roomId);
       }
     }
     this.gameRoomService.leaveRoom(client.nickname, roomId);

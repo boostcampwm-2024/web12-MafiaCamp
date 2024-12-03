@@ -34,6 +34,7 @@ export class DoctorState extends GameState {
   }
 
   async handle(context: GameContext, next: TransitionHandler) {
+    if (context.isGameTerminated()) return;
     const cleanups = [];
     const room = context.room;
 
