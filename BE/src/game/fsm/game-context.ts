@@ -3,7 +3,7 @@ import { GameState } from './states/state';
 
 export class GameContext {
   private state: GameState;
-  private isTerminated: boolean = false;
+  private isTerminated = false;
 
   constructor(readonly room: GameRoom) {
   }

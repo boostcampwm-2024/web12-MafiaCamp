@@ -195,13 +195,13 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (await this.detectEarlyQuitUsecase.detect(new DetectEarlyQuitRequest(gameRoom, client))) {
       const gameResult = await this.finishGameUsecase.checkFinishCondition(gameRoom);
       if (gameResult === GAME_HISTORY_RESULT.MAFIA) {
-        gameContext.terminate();
         this.countdownTimeoutUsecase.countdownStop(new StopCountdownRequest(gameRoom));
-        await this.mafiaWinState.handle(new GameContext(gameRoom));
+        gameContext.terminate();
+        await this.mafiaWinState.handle(gameContext);
       } else if (gameResult === GAME_HISTORY_RESULT.CITIZEN) {
-        gameContext.terminate();
         this.countdownTimeoutUsecase.countdownStop(new StopCountdownRequest(gameRoom));
-        await this.citizenWinState.handle(new GameContext(gameRoom));
+        gameContext.terminate();
+        await this.citizenWinState.handle(gameContext);
       }
     }
     this.gameRoomService.leaveRoom(client.nickname, roomId);
