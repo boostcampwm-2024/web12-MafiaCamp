@@ -33,6 +33,7 @@ export class FinalVoteState extends GameState {
   }
 
   async handle(context: GameContext, next: TransitionHandler) {
+    if (context.isGameTerminated()) return;
     const room = context.room;
     await this.voteMafiaUsecase.registerBallotBox(room);
     await this.countdownTimeoutUsecase.countdownStart(

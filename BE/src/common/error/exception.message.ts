@@ -49,4 +49,8 @@ export const EXCEPTION_MESSAGE = {
     '비밀번호가 일치하지 않습니다. 다시 시도해주세요',
   DUPLICATE_LOGIN_USER_EXCEPTION:
     '해당 유저는 로그인된 상태입니다. 로그아웃하고 다시 시도해주세요',
+  NOT_FOUND_DOCTOR_EXCEPTION:
+    '해당 의사를 찾을 수 없습니다. 게임 상태를 다시 확인해주세요.',
+  NOT_FOUND_POLICE_EXCEPTION:
+    '해당 경찰을 찾을 수 없습니다. 게임 상태를 다시 확인해주세요',
 } as const;

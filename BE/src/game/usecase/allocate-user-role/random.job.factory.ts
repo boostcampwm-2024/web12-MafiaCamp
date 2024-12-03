@@ -9,6 +9,9 @@ import { GameClient } from '../../../game-room/entity/game-client.model';
 @Injectable()
 export class RandomJobFactory implements JobFactory {
   /*
+    유저가 3명일 때, 마피아 1, 경찰 0, 의사 0, 시민 2
+    유저가 4명일 때, 마피아 1, 경찰 0, 의사 1, 시민 2
+    유저가 5명일 때, 마피아 1, 경찰 1, 의사 1, 시민 2
     유저가 6명일 때, 마피아 1, 경찰 1, 의사 1, 시민 3
     유저가 7명일 때, 마피아 2, 경찰 1, 의사 1, 시민 3
     유저가 8명일 때, 마피아 2, 경찰 1, 의사 1, 시민 4
@@ -24,6 +27,15 @@ export class RandomJobFactory implements JobFactory {
   ): Map<GameClient, MAFIA_ROLE> {
     let possibleRoles: Array<MAFIA_ROLE>;
     switch (userCount) {
+      case 3:
+        possibleRoles = this.makeRoles(1, 0, 0, 2);
+        break;
+      case 4:
+        possibleRoles = this.makeRoles(1, 0, 1, 2);
+        break;
+      case 5:
+        possibleRoles = this.makeRoles(1, 1, 1, 2);
+        break;
       case 6:
         possibleRoles = this.makeRoles(1, 1, 1, 3);
         break;

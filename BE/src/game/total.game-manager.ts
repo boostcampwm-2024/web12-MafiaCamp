@@ -14,10 +14,7 @@ import { MafiaManager } from './usecase/role-playing/mafia-manager';
 import { NotFoundUserException } from '../common/error/not.found.user.exception';
 import { FinishGameManager } from './usecase/finish-game/finish-game.manager';
 import { GAME_USER_RESULT } from 'src/game-user/entity/game-user.result';
-import {
-  GAME_HISTORY_REPOSITORY,
-  GameHistoryRepository,
-} from './repository/game-history.repository';
+import { GAME_HISTORY_REPOSITORY, GameHistoryRepository } from './repository/game-history.repository';
 import { GameHistoryEntity } from './entity/game-history.entity';
 import { GAME_STATUS } from './entity/game-status';
 import { CanNotSelectUserException } from '../common/error/can-not.select.exception';
@@ -27,6 +24,8 @@ import { KILL_OPTION } from './killOption-status';
 import { NotFoundMafiaSelectLogException } from '../common/error/not.found.mafia.select.log.exception';
 import { KillDecisionManager } from './usecase/role-playing/killDecision-manager';
 import { LockManager } from '../common/utils/lock-manager';
+import { DetectManager } from './usecase/detect-early-quit/detect.manager';
+import { EventClient } from '../event/event-client.model';
 
 interface PlayerInfo {
   role: MAFIA_ROLE;
@@ -40,14 +39,13 @@ interface MafiaSelectLogEntry {
 
 @Injectable()
 export class TotalGameManager
-  implements
-    VoteManager,
+  implements VoteManager,
     PoliceManager,
     MafiaManager,
     DoctorManager,
     KillDecisionManager,
-    FinishGameManager
-{
+    FinishGameManager,
+    DetectManager {
   private readonly lockManager = new LockManager<string>();
   private readonly games = new Map<string, Map<string, PlayerInfo>>();
   private readonly ballotBoxs = new Map<string, Map<string, string[]>>();
@@ -60,7 +58,8 @@ export class TotalGameManager
       GameHistoryEntity,
       number
     >,
-  ) {}
+  ) {
+  }
 
   async register(
     gameRoom: GameRoom,
@@ -493,7 +492,7 @@ export class TotalGameManager
     });
   }
 
-  async checkFinishCondition(gameRoom: GameRoom): Promise<GAME_HISTORY_RESULT> {
+  async checkFinishCondition(gameRoom: GameRoom): Promise<GAME_HISTORY_RESULT | null> {
     return await this.lockManager.withKeyLock(gameRoom.roomId, async () => {
       const gameInfo = this.games.get(gameRoom.roomId);
       if (!gameInfo) {
@@ -569,5 +568,26 @@ export class TotalGameManager
       gameHistoryResult,
       gameStatus,
     }); // 게임 상태 업데이트
+  }
+
+  async detect(gameRoom: GameRoom, client: EventClient): Promise<boolean> {
+    return await this.lockManager.withKeyLock(gameRoom.roomId, async () => {
+      const playerInfos = this.games.get(gameRoom.roomId);
+      if (playerInfos) {
+        const ballot = this.ballotBoxs.get(gameRoom.roomId);
+        for (const [nickname,] of playerInfos) {
+          if (nickname === client.nickname) {
+            playerInfos.delete(nickname);
+            if (ballot) {
+              ballot.delete(nickname);
+              this.ballotBoxs.set(gameRoom.roomId, ballot);
+            }
+            this.games.set(gameRoom.roomId, playerInfos);
+            return true;
+          }
+        }
+      }
+      return false;
+    });
   }
 }

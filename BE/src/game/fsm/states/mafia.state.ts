@@ -11,6 +11,7 @@ import {
   MAFIA_MANAGER,
   MafiaManager,
 } from '../../usecase/role-playing/mafia-manager';
+import { GameContextManager } from '../game-context.manager';
 
 @Injectable()
 export class MafiaState extends GameState {
@@ -26,6 +27,7 @@ export class MafiaState extends GameState {
   }
 
   async handle(context: GameContext, next: TransitionHandler) {
+    if (context.isGameTerminated()) return;
     const room = context.room;
     await this.mafiaManager.initMafia(room);
     await this.countdownTimeoutUsecase.countdownStart(

@@ -16,6 +16,7 @@ import { StopCountdownRequest } from 'src/game/dto/stop.countdown.request';
 import { DOCTOR_CURE_USECASE, DoctorCureUsecase } from 'src/game/usecase/role-playing/doctor.cure.usecase';
 import { SelectDoctorTargetRequest } from 'src/game/dto/select.doctor.target.request';
 import { MAFIA_ROLE } from 'src/game/mafia-role';
+import { NotFoundDoctorException } from '../../../common/error/not.found.doctor.exception';
 
 @Injectable()
 export class DoctorState extends GameState {
@@ -33,6 +34,7 @@ export class DoctorState extends GameState {
   }
 
   async handle(context: GameContext, next: TransitionHandler) {
+    if (context.isGameTerminated()) return;
     const cleanups = [];
     const room = context.room;
 
@@ -69,7 +71,11 @@ export class DoctorState extends GameState {
       cleanups.push(() => {
         doctor.removeListener('select-doctor-target', listener);
       });
-      doctor.once('select-doctor-target', listener);
+      try {
+        doctor.once('select-doctor-target', listener);
+      } catch (e){
+        throw new NotFoundDoctorException();
+      }
     });
   }
 
