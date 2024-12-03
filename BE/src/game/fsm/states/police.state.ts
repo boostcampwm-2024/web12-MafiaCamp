@@ -59,7 +59,7 @@ export class PoliceState extends GameState {
 
     await Promise.race([this.timeout(room, cleanups), this.investigate(room, cleanups)]);
     this.cleanup(cleanups);
-    done();
+    await done();
   }
 
   private async timeout(room: GameRoom, cleanups) {

@@ -41,6 +41,9 @@ import { DOCTOR_MANAGER } from './usecase/role-playing/doctor-manager';
 import { DOCTOR_CURE_USECASE } from './usecase/role-playing/doctor.cure.usecase';
 import { DoctorCureService } from './usecase/role-playing/doctor.cure.service';
 import { KILL_DECISION_MANAGER } from './usecase/role-playing/killDecision-manager';
+import { DETECT_MANAGER } from './usecase/detect-early-quit/detect.manager';
+import { DETECT_EARLY_QUIT_USECASE } from './usecase/detect-early-quit/detect.early.quit.usecase';
+import { DetectEarlyQuitService } from './usecase/detect-early-quit/detect.early.quit.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([GameHistoryEntity]), VideoServerModule],
@@ -64,6 +67,10 @@ import { KILL_DECISION_MANAGER } from './usecase/role-playing/killDecision-manag
     {
       provide: COUNTDOWN_TIMEOUT_USECASE,
       useClass: CountdownTimeoutService,
+    },
+    {
+      provide: DETECT_EARLY_QUIT_USECASE,
+      useClass: DetectEarlyQuitService,
     },
     TotalGameManager,
     {
@@ -114,6 +121,10 @@ import { KILL_DECISION_MANAGER } from './usecase/role-playing/killDecision-manag
       provide: KILL_DECISION_MANAGER,
       useExisting: TotalGameManager,
     },
+    {
+      provide: DETECT_MANAGER,
+      useExisting: TotalGameManager,
+    },
     ArgumentState,
     DiscussionState,
     DoctorState,
@@ -133,6 +144,8 @@ import { KILL_DECISION_MANAGER } from './usecase/role-playing/killDecision-manag
     POLICE_INVESTIGATE_USECASE,
     MAFIA_KILL_USECASE,
     DOCTOR_CURE_USECASE,
+    DETECT_EARLY_QUIT_USECASE,
   ],
 })
-export class GameModule {}
+export class GameModule {
+}
