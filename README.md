@@ -95,7 +95,7 @@
 
 ### 온라인 상태 표시
 
-![유저상태](https://github.com/user-attachments/assets/2bddcb64-4210-4753-a7ff-4ab5abb21621)
+![온라인 상태 유저](https://github.com/user-attachments/assets/b2ba1e92-85f6-45f4-8de8-e636a428942e)
 
 - 사용자들은 실시간으로 현재 온라인 상태인 유저의 수와 명단을 확인할 수 있습니다.
 - 현재 게임에 참여중인 사용자와 그렇지 않은 사용자를 구분해 표시합니다.
