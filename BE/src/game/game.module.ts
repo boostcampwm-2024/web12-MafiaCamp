@@ -145,6 +145,9 @@ import { DetectEarlyQuitService } from './usecase/detect-early-quit/detect.early
     MAFIA_KILL_USECASE,
     DOCTOR_CURE_USECASE,
     DETECT_EARLY_QUIT_USECASE,
+    FINISH_GAME_USECASE,
+    MafiaWinState,
+    CitizenWinState
   ],
 })
 export class GameModule {

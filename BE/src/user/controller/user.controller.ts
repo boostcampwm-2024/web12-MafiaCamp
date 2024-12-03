@@ -34,7 +34,7 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   @Get('user/info')
   async getInfo(@Req() request: Request) {
-    const [_, token] = request.headers?.authorization.split(' ');
+    const [, token] = request.headers?.authorization.split(' ');
     return await this.findUserInfoUsecase.findHttp(token);
   }
 }

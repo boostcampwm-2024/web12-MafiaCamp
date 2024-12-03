@@ -31,6 +31,16 @@ import {
   DetectEarlyQuitUsecase,
 } from '../game/usecase/detect-early-quit/detect.early.quit.usecase';
 import { DetectEarlyQuitRequest } from '../game/dto/detect.early.quit.request';
+import { FINISH_GAME_USECASE, FinishGameUsecase } from '../game/usecase/finish-game/finish-game.usecase';
+import { GAME_HISTORY_RESULT } from '../game/entity/game-history.result';
+import {
+  COUNTDOWN_TIMEOUT_USECASE,
+  CountdownTimeoutUsecase,
+} from '../game/usecase/countdown/countdown.timeout.usecase';
+import { MafiaWinState } from '../game/fsm/states/mafia-win.state';
+import { CitizenWinState } from '../game/fsm/states/citizen-win.state';
+import { StopCountdownRequest } from '../game/dto/stop.countdown.request';
+import { GameContext } from '../game/fsm/game-context';
 
 @UseFilters(WebsocketExceptionFilter)
 @UseInterceptors(WebsocketLoggerInterceptor)
@@ -62,6 +72,12 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly logoutUsecase: LogoutUsecase,
     @Inject(DETECT_EARLY_QUIT_USECASE)
     private readonly detectEarlyQuitUsecase: DetectEarlyQuitUsecase,
+    @Inject(FINISH_GAME_USECASE)
+    private readonly finishGameUsecase: FinishGameUsecase,
+    @Inject(COUNTDOWN_TIMEOUT_USECASE)
+    private readonly countdownTimeoutUsecase: CountdownTimeoutUsecase,
+    private readonly mafiaWinState: MafiaWinState,
+    private readonly citizenWinState: CitizenWinState,
   ) {
   }
 
@@ -175,7 +191,14 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const client = this.eventClientManager.getClientBySocket(socket);
     const gameRoom = this.gameRoomService.findRoomById(roomId);
     if (await this.detectEarlyQuitUsecase.detect(new DetectEarlyQuitRequest(gameRoom, client))) {
-
+      const gameResult = await this.finishGameUsecase.checkFinishCondition(gameRoom);
+      if (gameResult === GAME_HISTORY_RESULT.MAFIA) {
+        this.countdownTimeoutUsecase.countdownStop(new StopCountdownRequest(gameRoom));
+        await this.mafiaWinState.handle(new GameContext(gameRoom));
+      } else if (gameResult === GAME_HISTORY_RESULT.CITIZEN) {
+        this.countdownTimeoutUsecase.countdownStop(new StopCountdownRequest(gameRoom));
+        await this.citizenWinState.handle(new GameContext(gameRoom));
+      }
     }
     this.gameRoomService.leaveRoom(client.nickname, roomId);
 

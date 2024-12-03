@@ -11,7 +11,7 @@ export class DetectEarlyQuitService implements DetectEarlyQuitUsecase {
   }
 
   async detect(detectEarlyQuitRequest: DetectEarlyQuitRequest): Promise<boolean> {
-    await this.detectManager.detect(detectEarlyQuitRequest.gameRoom, detectEarlyQuitRequest.eventClient);
+    return await this.detectManager.detect(detectEarlyQuitRequest.gameRoom, detectEarlyQuitRequest.eventClient);
   }
 
 }
