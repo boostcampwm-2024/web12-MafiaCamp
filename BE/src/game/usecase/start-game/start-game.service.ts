@@ -9,7 +9,7 @@ import { GameContextManager } from '../../fsm/game-context.manager';
 export class StartGameService implements StartGameUsecase {
   constructor(
     private readonly setUpState: SetUpState,
-    private readonly gameContextManager:GameContextManager
+    private readonly gameContextManager: GameContextManager,
   ) {
   }
 

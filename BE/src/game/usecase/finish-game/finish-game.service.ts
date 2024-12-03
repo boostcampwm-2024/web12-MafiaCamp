@@ -16,7 +16,7 @@ export class FinishGameService implements FinishGameUsecase {
     await this.gameManager.finishGame(gameRoom);
   }
 
-  async checkFinishCondition(gameRoom: GameRoom): Promise<GAME_HISTORY_RESULT> {
+  async checkFinishCondition(gameRoom: GameRoom): Promise<GAME_HISTORY_RESULT | null> {
     return await this.gameManager.checkFinishCondition(gameRoom);
   }
 }

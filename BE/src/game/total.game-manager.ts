@@ -492,7 +492,7 @@ export class TotalGameManager
     });
   }
 
-  async checkFinishCondition(gameRoom: GameRoom): Promise<GAME_HISTORY_RESULT> {
+  async checkFinishCondition(gameRoom: GameRoom): Promise<GAME_HISTORY_RESULT | null> {
     return await this.lockManager.withKeyLock(gameRoom.roomId, async () => {
       const gameInfo = this.games.get(gameRoom.roomId);
       if (!gameInfo) {

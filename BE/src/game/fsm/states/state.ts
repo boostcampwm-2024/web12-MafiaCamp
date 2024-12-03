@@ -20,6 +20,4 @@ export abstract class GameState {
     };
     await this.handle(context, next);
   }
-
-
 }
