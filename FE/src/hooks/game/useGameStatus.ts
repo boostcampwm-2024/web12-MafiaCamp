@@ -9,6 +9,7 @@ import { Reducer, useEffect, useReducer } from 'react';
 import { toast } from 'react-toastify';
 import { TOAST_OPTION } from '@/constants/toastOption';
 import { useRouter } from 'next/navigation';
+import { useTickingTimerAudio } from './useTickingTimerAudio';
 
 type State = {
   situation: Situation | null;
@@ -94,6 +95,8 @@ export const useGameStatus = (roomId: string) => {
     finishGame,
   } = useOpenVidu(roomId);
 
+  const { playSound, stopSound } = useTickingTimerAudio();
+
   const [state, dispatch] = useReducer<Reducer<State, Action>>(reducer, {
     situation: null,
     timeLeft: 0,
@@ -159,11 +162,38 @@ export const useGameStatus = (roomId: string) => {
       'countdown',
       (data: { situation: Situation; timeLeft: number }) => {
         dispatch({ type: 'SET_TIME', payload: { ...data } });
+
+        if (data.timeLeft === 5 && gamePublisher.isAlive) {
+          switch (data.situation) {
+            case 'VOTE':
+              playSound();
+              break;
+            case 'MAFIA':
+              if (gamePublisher.role === 'MAFIA') {
+                playSound();
+              }
+              break;
+            case 'DOCTOR':
+              if (gamePublisher.role === 'DOCTOR') {
+                playSound();
+              }
+              break;
+            case 'POLICE':
+              if (gamePublisher.role === 'POLICE') {
+                playSound();
+              }
+              break;
+            default:
+              break;
+          }
+        }
       },
     );
 
     // 각 단계 시작
     socket?.on('countdown-start', (newSituation: Situation) => {
+      stopSound();
+
       switch (newSituation) {
         case 'INTERMISSION':
           notifyInfo(SITUATION_MESSAGE.INTERMISSION);
@@ -363,15 +393,18 @@ export const useGameStatus = (roomId: string) => {
     changeSubscriberStatus,
     eliminatePublisher,
     finishGame,
+    gamePublisher.isAlive,
     gamePublisher.nickname,
     gamePublisher.role,
     initializeCandidates,
     initializeVotes,
+    playSound,
     setAllParticipantsAsCandidates,
     setTargetsOfMafia,
     setTargetsOfPolice,
     socket,
     state.situation,
+    stopSound,
   ]);
 
   return {
