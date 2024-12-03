@@ -573,16 +573,18 @@ export class TotalGameManager
   async detect(gameRoom: GameRoom, client: EventClient): Promise<boolean> {
     return await this.lockManager.withKeyLock(gameRoom.roomId, async () => {
       const playerInfos = this.games.get(gameRoom.roomId);
-      const ballot = this.ballotBoxs.get(gameRoom.roomId);
-      for (const [nickname,] of playerInfos) {
-        if (nickname === client.nickname) {
-          playerInfos.delete(nickname);
-          if (ballot) {
-            ballot.delete(nickname);
-            this.ballotBoxs.set(gameRoom.roomId, ballot);
+      if (playerInfos) {
+        const ballot = this.ballotBoxs.get(gameRoom.roomId);
+        for (const [nickname,] of playerInfos) {
+          if (nickname === client.nickname) {
+            playerInfos.delete(nickname);
+            if (ballot) {
+              ballot.delete(nickname);
+              this.ballotBoxs.set(gameRoom.roomId, ballot);
+            }
+            this.games.set(gameRoom.roomId, playerInfos);
+            return true;
           }
-          this.games.set(gameRoom.roomId, playerInfos);
-          return true;
         }
       }
       return false;
