@@ -40,7 +40,6 @@ import {
 import { MafiaWinState } from '../game/fsm/states/mafia-win.state';
 import { CitizenWinState } from '../game/fsm/states/citizen-win.state';
 import { StopCountdownRequest } from '../game/dto/stop.countdown.request';
-import { GameContext } from '../game/fsm/game-context';
 import { GameContextManager } from '../game/fsm/game-context.manager';
 
 @UseFilters(WebsocketExceptionFilter)
@@ -79,7 +78,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly countdownTimeoutUsecase: CountdownTimeoutUsecase,
     private readonly mafiaWinState: MafiaWinState,
     private readonly citizenWinState: CitizenWinState,
-    private readonly gameContextManager:GameContextManager
+    private readonly gameContextManager: GameContextManager,
   ) {
   }
 
