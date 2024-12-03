@@ -70,6 +70,9 @@ const CreateRoomModal = ({ closeModal }: CreateRoomModalProps) => {
               <option value='' disabled={true}>
                 인원 수를 선택해 주세요.
               </option>
+              <option value='3'>3명</option>
+              <option value='4'>4명</option>
+              <option value='5'>5명</option>
               <option value='6'>6명</option>
               <option value='7'>7명</option>
               <option value='8'>8명</option>
