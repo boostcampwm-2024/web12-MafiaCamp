@@ -19,6 +19,7 @@ import {
 import { FINISH_GAME_USECASE, FinishGameUsecase } from 'src/game/usecase/finish-game/finish-game.usecase';
 import { GAME_HISTORY_RESULT } from 'src/game/entity/game-history.result';
 import { MafiaWinState } from './mafia-win.state';
+import { NotFoundPoliceException } from '../../../common/error/not.found.police.exception';
 
 @Injectable()
 export class PoliceState extends GameState {
@@ -84,7 +85,11 @@ export class PoliceState extends GameState {
       cleanups.push(() => {
         police.removeListener('police-investigate', listener);
       });
-      police.once('police-investigate', listener);
+      try {
+        police.once('police-investigate', listener);
+      } catch (e){
+        throw new NotFoundPoliceException();
+      }
     });
   }
 
