@@ -44,6 +44,7 @@ import { KILL_DECISION_MANAGER } from './usecase/role-playing/killDecision-manag
 import { DETECT_MANAGER } from './usecase/detect-early-quit/detect.manager';
 import { DETECT_EARLY_QUIT_USECASE } from './usecase/detect-early-quit/detect.early.quit.usecase';
 import { DetectEarlyQuitService } from './usecase/detect-early-quit/detect.early.quit.service';
+import { GameContextManager } from './fsm/game-context.manager';
 
 @Module({
   imports: [TypeOrmModule.forFeature([GameHistoryEntity]), VideoServerModule],
@@ -135,6 +136,7 @@ import { DetectEarlyQuitService } from './usecase/detect-early-quit/detect.early
     FinalVoteState,
     CitizenWinState,
     MafiaWinState,
+    GameContextManager
   ],
   exports: [
     START_GAME_USECASE,
@@ -147,7 +149,8 @@ import { DetectEarlyQuitService } from './usecase/detect-early-quit/detect.early
     DETECT_EARLY_QUIT_USECASE,
     FINISH_GAME_USECASE,
     MafiaWinState,
-    CitizenWinState
+    CitizenWinState,
+    GameContextManager
   ],
 })
 export class GameModule {

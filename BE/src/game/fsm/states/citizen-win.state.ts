@@ -20,6 +20,6 @@ export class CitizenWinState extends GameState {
     const room = context.room;
     room.result = GAME_HISTORY_RESULT.CITIZEN;
     await this.videoServerUseCase.closeSession(room.roomId);
-    this.finishGameUsecase.finishGame(room);
+    await this.finishGameUsecase.finishGame(room);
   }
 }

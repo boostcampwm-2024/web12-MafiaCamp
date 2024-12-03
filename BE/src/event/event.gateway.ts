@@ -41,6 +41,7 @@ import { MafiaWinState } from '../game/fsm/states/mafia-win.state';
 import { CitizenWinState } from '../game/fsm/states/citizen-win.state';
 import { StopCountdownRequest } from '../game/dto/stop.countdown.request';
 import { GameContext } from '../game/fsm/game-context';
+import { GameContextManager } from '../game/fsm/game-context.manager';
 
 @UseFilters(WebsocketExceptionFilter)
 @UseInterceptors(WebsocketLoggerInterceptor)
@@ -78,6 +79,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly countdownTimeoutUsecase: CountdownTimeoutUsecase,
     private readonly mafiaWinState: MafiaWinState,
     private readonly citizenWinState: CitizenWinState,
+    private readonly gameContextManager:GameContextManager
   ) {
   }
 
@@ -190,7 +192,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     const client = this.eventClientManager.getClientBySocket(socket);
     const gameRoom = this.gameRoomService.findRoomById(roomId);
-    const gameContext = new GameContext(gameRoom);
+    const gameContext = await this.gameContextManager.getContext(roomId);
 
     if (await this.detectEarlyQuitUsecase.detect(new DetectEarlyQuitRequest(gameRoom, client))) {
       const gameResult = await this.finishGameUsecase.checkFinishCondition(gameRoom);
@@ -198,10 +200,12 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
         this.countdownTimeoutUsecase.countdownStop(new StopCountdownRequest(gameRoom));
         gameContext.terminate();
         await this.mafiaWinState.handle(gameContext);
+        await this.gameContextManager.removeContext(roomId);
       } else if (gameResult === GAME_HISTORY_RESULT.CITIZEN) {
         this.countdownTimeoutUsecase.countdownStop(new StopCountdownRequest(gameRoom));
         gameContext.terminate();
         await this.citizenWinState.handle(gameContext);
+        await this.gameContextManager.removeContext(roomId);
       }
     }
     this.gameRoomService.leaveRoom(client.nickname, roomId);
