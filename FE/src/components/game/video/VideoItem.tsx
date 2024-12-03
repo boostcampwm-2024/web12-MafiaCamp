@@ -4,7 +4,7 @@ import VideoCameraIcon from '@/components/common/icons/VideoCameraIcon';
 import VideoCameraSlashIcon from '@/components/common/icons/VideoCameraSlashIcon';
 import { ROLE, Role } from '@/constants/role';
 import { Situation } from '@/constants/situation';
-import { useVideoItem } from '@/hooks/game/chatting/useVideoItem';
+import { useVideoItem } from '@/hooks/game/video/useVideoItem';
 import { GamePublisher } from '@/types/gamePublisher';
 import { GameSubscriber } from '@/types/gameSubscriber';
 import { FaMicrophone, FaMicrophoneSlash } from 'react-icons/fa';
