@@ -88,7 +88,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const token = this.parseToken(headers);
     if (!token) {
       this.logger.log(`[${socket.id}] Unauthorized client`);
-      // todo: socket 연결 강제로 끊기
+      socket.disconnect(true);
       return;
     }
     const { nickname, userId } = await this.findUserInfoUsecase.findWs(token);
