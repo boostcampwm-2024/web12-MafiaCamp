@@ -6,6 +6,7 @@ export const useTickingTimerAudio = () => {
   const audioRef = useRef<HTMLAudioElement>(new Audio('/ticking_timer.mp3'));
 
   const playSound = () => {
+    audioRef.current.volume = 0.5;
     audioRef.current.play();
   };
 

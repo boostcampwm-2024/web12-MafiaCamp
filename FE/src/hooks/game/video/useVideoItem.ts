@@ -1,6 +1,6 @@
 'use client';
 
-import { Situation } from '@/constants/situation';
+import { GameSituation } from '@/constants/situation';
 import { useAuthStore } from '@/stores/authStore';
 import { useSocketStore } from '@/stores/socketStore';
 import { GamePublisher } from '@/types/gamePublisher';
@@ -11,7 +11,7 @@ export const useVideoItem = (
   roomId: string,
   isPublisherAlive: boolean,
   gameParticipant: GamePublisher | GameSubscriber,
-  situation: Situation | null,
+  situation: GameSituation | null,
   target: string | null,
   setTarget: (nickname: string | null) => void,
 ) => {
@@ -25,7 +25,8 @@ export const useVideoItem = (
     }
 
     switch (situation) {
-      case 'VOTE':
+      case 'PRIMARY_VOTE':
+      case 'FINAL_VOTE':
         if (target !== null) {
           socket?.emit('cancel-vote-candidate', {
             roomId,

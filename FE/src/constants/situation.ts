@@ -7,11 +7,22 @@ export type Situation =
   | 'DOCTOR'
   | 'POLICE';
 
+export type GameSituation =
+  | 'INTERMISSION'
+  | 'DISCUSSION'
+  | 'PRIMARY_VOTE'
+  | 'ARGUMENT'
+  | 'FINAL_VOTE'
+  | 'MAFIA'
+  | 'DOCTOR'
+  | 'POLICE';
+
 export const SITUATION = {
   INTERMISSION: '게임 준비',
   DISCUSSION: '토론',
   ARGUMENT: '최종 변론',
-  VOTE: '투표',
+  PRIMARY_VOTE: '1차 투표',
+  FINAL_VOTE: '최종 투표',
   MAFIA: '마피아',
   DOCTOR: '의사',
   POLICE: '경찰',

@@ -1,11 +1,11 @@
 import { GameStatus } from '@/constants/gameStatus';
-import { Situation } from '@/constants/situation';
+import { GameSituation } from '@/constants/situation';
 import { GamePublisher } from '@/types/gamePublisher';
 
 interface VideoFilterProps {
   gameStatus: GameStatus;
   gamePublisher: GamePublisher;
-  situation: Situation | null;
+  situation: GameSituation | null;
 }
 
 const VideoFilter = ({
@@ -16,7 +16,8 @@ const VideoFilter = ({
   if (
     gameStatus === 'RUNNING' &&
     gamePublisher.isAlive &&
-    (situation === 'VOTE' ||
+    (situation === 'PRIMARY_VOTE' ||
+      situation === 'FINAL_VOTE' ||
       situation === 'ARGUMENT' ||
       (situation === 'MAFIA' && gamePublisher.role === 'MAFIA') ||
       (situation === 'DOCTOR' && gamePublisher.role === 'DOCTOR') ||
