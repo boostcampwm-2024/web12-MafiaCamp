@@ -41,6 +41,7 @@ import { MafiaWinState } from '../game/fsm/states/mafia-win.state';
 import { CitizenWinState } from '../game/fsm/states/citizen-win.state';
 import { StopCountdownRequest } from '../game/dto/stop.countdown.request';
 import { GameContextManager } from '../game/fsm/game-context.manager';
+import { MAFIA_ROLE } from 'src/game/mafia-role';
 
 @UseFilters(WebsocketExceptionFilter)
 @UseInterceptors(WebsocketLoggerInterceptor)
@@ -88,7 +89,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const token = this.parseToken(headers);
     if (!token) {
       this.logger.log(`[${socket.id}] Unauthorized client`);
-      // todo: socket 연결 강제로 끊기
+      socket.disconnect(true);
       return;
     }
     const { nickname, userId } = await this.findUserInfoUsecase.findWs(token);
@@ -254,7 +255,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const room = this.gameRoomService.findRoomById(roomId);
     const client = this.eventClientManager.getClientBySocket(socket);
 
-    room.sendMafia('chat-mafia', {
+    room.sendToRole(MAFIA_ROLE.MAFIA, 'chat-mafia', {
       from: client.nickname,
       to: 'mafia',
       message,

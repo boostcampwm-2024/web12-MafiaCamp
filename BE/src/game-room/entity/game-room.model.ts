@@ -16,7 +16,6 @@ export class GameRoom {
   private _createdAt: number = Date.now();
   private _result: GAME_HISTORY_RESULT = null;
   private _clients: GameClient[] = [];
-  private readonly _mafias: GameClient[] = [];
 
   constructor(
     private owner: string,
@@ -111,14 +110,6 @@ export class GameRoom {
 
   sendAll(event: string, ...args) {
     this._clients.forEach((c) => c.send(event, ...args));
-  }
-
-  addMafia(mafia: GameClient) {
-    this._mafias.push(mafia);
-  }
-
-  sendMafia(event: string, ...args) {
-    this._mafias.forEach((m) => m.send(event, ...args));
   }
 
   sendToRole(role: MAFIA_ROLE, event: string, ...args) {
