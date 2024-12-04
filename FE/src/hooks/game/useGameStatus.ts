@@ -183,21 +183,21 @@ export const useGameStatus = (roomId: string) => {
         case 'INTERMISSION':
           dispatch({
             type: 'SET_STATE',
-            payload: { situation: 'INTERMISSION' },
+            payload: { situation: 'INTERMISSION', timeLeft: 0 },
           });
           notifyInfo(SITUATION_MESSAGE.INTERMISSION);
           break;
         case 'DISCUSSION':
           dispatch({
             type: 'SET_STATE',
-            payload: { situation: 'DISCUSSION' },
+            payload: { situation: 'DISCUSSION', timeLeft: 0 },
           });
           notifyInfo(SITUATION_MESSAGE.DISCUSSION);
           break;
         case 'ARGUMENT':
           dispatch({
             type: 'SET_STATE',
-            payload: { situation: 'ARGUMENT' },
+            payload: { situation: 'ARGUMENT', timeLeft: 0 },
           });
           notifyInfo(SITUATION_MESSAGE.ARGUMENT);
           break;
@@ -205,14 +205,14 @@ export const useGameStatus = (roomId: string) => {
           if (state.situation === 'DISCUSSION') {
             dispatch({
               type: 'SET_STATE',
-              payload: { situation: 'PRIMARY_VOTE' },
+              payload: { situation: 'PRIMARY_VOTE', timeLeft: 0 },
             });
             notifyInfo(SITUATION_MESSAGE.PRIMARY_VOTE_FIRST_MESSAGE);
             notifyInfo(SITUATION_MESSAGE.PRIMARY_VOTE_SECOND_MESSAGE);
           } else if (state.situation === 'ARGUMENT') {
             dispatch({
               type: 'SET_STATE',
-              payload: { situation: 'FINAL_VOTE' },
+              payload: { situation: 'FINAL_VOTE', timeLeft: 0 },
             });
             notifyInfo(SITUATION_MESSAGE.FINAL_VOTE);
           }
@@ -226,7 +226,7 @@ export const useGameStatus = (roomId: string) => {
 
           dispatch({
             type: 'SET_STATE',
-            payload: { situation: 'MAFIA', target: null },
+            payload: { situation: 'MAFIA', timeLeft: 0, target: null },
           });
           notifyInfo(SITUATION_MESSAGE.MAFIA);
           break;
@@ -238,7 +238,7 @@ export const useGameStatus = (roomId: string) => {
           }
           dispatch({
             type: 'SET_STATE',
-            payload: { situation: 'DOCTOR', target: null },
+            payload: { situation: 'DOCTOR', timeLeft: 0, target: null },
           });
           notifyInfo(SITUATION_MESSAGE.DOCTOR);
           break;
@@ -250,7 +250,7 @@ export const useGameStatus = (roomId: string) => {
           }
           dispatch({
             type: 'SET_STATE',
-            payload: { situation: 'POLICE', target: null },
+            payload: { situation: 'POLICE', timeLeft: 0, target: null },
           });
           notifyInfo(SITUATION_MESSAGE.POLICE);
           break;
