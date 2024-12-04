@@ -74,9 +74,6 @@ export class TotalGameManager
       players.forEach((role, client) => {
         gameInfo.set(client.nickname, { role, status: USER_STATUS.ALIVE });
         client.job = role;
-        if (role === MAFIA_ROLE.MAFIA) {
-          gameRoom.addMafia(client);
-        }
       });
       this.games.set(gameRoom.roomId, gameInfo);
     });
