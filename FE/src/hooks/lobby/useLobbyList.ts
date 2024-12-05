@@ -7,6 +7,7 @@ import { Room } from '@/types/room';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
+import { useThrottle } from '../utils/useThrottle';
 
 export const useLobbyList = () => {
   const { setParticipantList } = useParticipantListStore();
@@ -23,7 +24,7 @@ export const useLobbyList = () => {
     toast.error(message, TOAST_OPTION);
   };
 
-  const handleQuickStart = async () => {
+  const handleQuickStart = useThrottle(async () => {
     const response = await fetch('/api/rooms/vacant', {
       method: 'GET',
       cache: 'no-store',
@@ -51,7 +52,7 @@ export const useLobbyList = () => {
       capacity: result.capacity!,
     });
     socket?.emit('enter-room', { roomId: result.roomId });
-  };
+  }, 2000);
 
   useEffect(() => {
     socket?.on('room-list', (rooms: Room[]) => setRoomList(rooms));
