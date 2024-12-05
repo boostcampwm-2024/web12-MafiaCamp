@@ -1,8 +1,5 @@
 import { ConfigService } from '@nestjs/config';
 import * as winston from 'winston';
-import * as DailyRotateFile from 'winston-daily-rotate-file';
-import * as path from 'path';
-import * as process from 'process';
 import { NcloudLogTransport } from '../object/ncloud.log.transport';
 
 const createLokiFormat = (configService: ConfigService) => {

@@ -14,32 +14,34 @@ import { Inject, Logger, UseFilters, UseInterceptors } from '@nestjs/common';
 import { EventClient } from './event-client.model';
 import { EventManager } from './event-manager';
 import { Event } from './event.const';
-import {
-  START_GAME_USECASE,
-  StartGameUsecase,
-} from 'src/game/usecase/start-game/start-game.usecase';
-import {
-  VOTE_MAFIA_USECASE,
-  VoteMafiaUsecase,
-} from '../game/usecase/vote-manager/vote.mafia.usecase';
+import { START_GAME_USECASE, StartGameUsecase } from 'src/game/usecase/start-game/start-game.usecase';
+import { VOTE_MAFIA_USECASE, VoteMafiaUsecase } from '../game/usecase/vote-manager/vote.mafia.usecase';
 import { VoteCandidateRequest } from '../game/dto/vote.candidate.request';
 import { SelectMafiaTargetRequest } from '../game/dto/select.mafia.target.request';
-import {
-  CONNECTED_USER_USECASE,
-  ConnectedUserUsecase,
-} from '../online-state/connected-user.usecase';
-import {
-  MAFIA_KILL_USECASE,
-  MafiaKillUsecase,
-} from '../game/usecase/role-playing/mafia.kill.usecase';
+import { CONNECTED_USER_USECASE, ConnectedUserUsecase } from '../online-state/connected-user.usecase';
+import { MAFIA_KILL_USECASE, MafiaKillUsecase } from '../game/usecase/role-playing/mafia.kill.usecase';
 import { WebsocketLoggerInterceptor } from '../common/logger/websocket.logger.interceptor';
 import { WebsocketExceptionFilter } from '../common/filter/websocket.exception.filter';
-import {
-  FIND_USERINFO_USECASE,
-  FindUserInfoUsecase,
-} from 'src/user/usecase/find.user-info.usecase';
+import { FIND_USERINFO_USECASE, FindUserInfoUsecase } from 'src/user/usecase/find.user-info.usecase';
 import { LOGOUT_USECASE, LogoutUsecase } from '../user/usecase/logout.usecase';
 import { LogoutRequest } from '../user/dto/logout.request';
+import { EventClientManager } from './event-client-manager';
+import {
+  DETECT_EARLY_QUIT_USECASE,
+  DetectEarlyQuitUsecase,
+} from '../game/usecase/detect-early-quit/detect.early.quit.usecase';
+import { DetectEarlyQuitRequest } from '../game/dto/detect.early.quit.request';
+import { FINISH_GAME_USECASE, FinishGameUsecase } from '../game/usecase/finish-game/finish-game.usecase';
+import { GAME_HISTORY_RESULT } from '../game/entity/game-history.result';
+import {
+  COUNTDOWN_TIMEOUT_USECASE,
+  CountdownTimeoutUsecase,
+} from '../game/usecase/countdown/countdown.timeout.usecase';
+import { MafiaWinState } from '../game/fsm/states/mafia-win.state';
+import { CitizenWinState } from '../game/fsm/states/citizen-win.state';
+import { StopCountdownRequest } from '../game/dto/stop.countdown.request';
+import { GameContextManager } from '../game/fsm/game-context.manager';
+import { MAFIA_ROLE } from 'src/game/mafia-role';
 
 @UseFilters(WebsocketExceptionFilter)
 @UseInterceptors(WebsocketLoggerInterceptor)
@@ -52,10 +54,10 @@ import { LogoutRequest } from '../user/dto/logout.request';
 })
 export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private logger = new Logger(EventGateway.name);
-  private connectedClients: Map<Socket, EventClient> = new Map();
 
   constructor(
     private readonly eventManager: EventManager,
+    private readonly eventClientManager: EventClientManager,
     private readonly gameRoomService: GameRoomService,
     @Inject(START_GAME_USECASE)
     private readonly startGameUsecase: StartGameUsecase,
@@ -69,7 +71,17 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly connectUserUseCase: ConnectedUserUsecase,
     @Inject(LOGOUT_USECASE)
     private readonly logoutUsecase: LogoutUsecase,
-  ) {}
+    @Inject(DETECT_EARLY_QUIT_USECASE)
+    private readonly detectEarlyQuitUsecase: DetectEarlyQuitUsecase,
+    @Inject(FINISH_GAME_USECASE)
+    private readonly finishGameUsecase: FinishGameUsecase,
+    @Inject(COUNTDOWN_TIMEOUT_USECASE)
+    private readonly countdownTimeoutUsecase: CountdownTimeoutUsecase,
+    private readonly mafiaWinState: MafiaWinState,
+    private readonly citizenWinState: CitizenWinState,
+    private readonly gameContextManager: GameContextManager,
+  ) {
+  }
 
   async handleConnection(socket: Socket) {
     this.logger.log(`[${socket.id}] Client connected`);
@@ -77,7 +89,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const token = this.parseToken(headers);
     if (!token) {
       this.logger.log(`[${socket.id}] Unauthorized client`);
-      // todo: socket 연결 강제로 끊기
+      socket.disconnect(true);
       return;
     }
     const { nickname, userId } = await this.findUserInfoUsecase.findWs(token);
@@ -98,7 +110,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     client.subscribe(Event.ROOM_DATA_CHANGED);
     client.subscribe(Event.USER_DATA_CHANGED);
-    this.connectedClients.set(socket, client);
+    this.eventClientManager.addClient(socket, client);
     this.publishRoomDataChangedEvent();
   }
 
@@ -115,7 +127,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   async handleDisconnect(socket: Socket) {
     this.logger.log(`[${socket.id}] Client disconnected`);
-    const client = this.connectedClients.get(socket);
+    const client = this.eventClientManager.getClientBySocket(socket);
     if (!client) {
       return;
     }
@@ -123,7 +135,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.unsubscribeAll();
     await this.connectUserUseCase.leave(String(client.userId));
     this.publishOnlineUserExitEvent(String(client.userId));
-    this.connectedClients.delete(socket);
+    this.eventClientManager.removeClient(socket);
   }
 
   @SubscribeMessage('room-list')
@@ -139,7 +151,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() createRoomRequest: CreateRoomRequest,
     @ConnectedSocket() socket: Socket,
   ) {
-    const client = this.connectedClients.get(socket);
+    const client = this.eventClientManager.getClientBySocket(socket);
     const roomId = this.gameRoomService.createRoom(client, createRoomRequest);
     this.publishRoomDataChangedEvent();
 
@@ -157,7 +169,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody('roomId') roomId: string,
     @ConnectedSocket() socket: Socket,
   ) {
-    const client = this.connectedClients.get(socket);
+    const client = this.eventClientManager.getClientBySocket(socket);
     this.gameRoomService.enterRoom(client, roomId);
 
     await this.connectUserUseCase.enterRoom({
@@ -178,7 +190,22 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody('roomId') roomId: string,
     @ConnectedSocket() socket: Socket,
   ) {
-    const client = this.connectedClients.get(socket);
+    const client = this.eventClientManager.getClientBySocket(socket);
+    const gameRoom = this.gameRoomService.findRoomById(roomId);
+    const gameContext = await this.gameContextManager.getContext(roomId);
+
+    if (await this.detectEarlyQuitUsecase.detect(new DetectEarlyQuitRequest(gameRoom, client))) {
+      const gameResult = await this.finishGameUsecase.checkFinishCondition(gameRoom);
+      if (gameResult === GAME_HISTORY_RESULT.MAFIA) {
+        this.countdownTimeoutUsecase.countdownStop(new StopCountdownRequest(gameRoom));
+        gameContext.terminate();
+        await this.mafiaWinState.handle(gameContext);
+      } else if (gameResult === GAME_HISTORY_RESULT.CITIZEN) {
+        this.countdownTimeoutUsecase.countdownStop(new StopCountdownRequest(gameRoom));
+        gameContext.terminate();
+        await this.citizenWinState.handle(gameContext);
+      }
+    }
     this.gameRoomService.leaveRoom(client.nickname, roomId);
 
     await this.connectUserUseCase.leaveRoom({
@@ -195,9 +222,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('get-participants')
-  getParticipants(
-    @MessageBody('roomId') roomId: string,
-  ) {
+  getParticipants(@MessageBody('roomId') roomId: string) {
     const participants = this.gameRoomService.getParticipants(roomId);
     return {
       event: 'participants',
@@ -212,7 +237,7 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     const { roomId, message } = data;
     const room = this.gameRoomService.findRoomById(roomId);
-    const client = this.connectedClients.get(socket);
+    const client = this.eventClientManager.getClientBySocket(socket);
 
     room.sendAll('chat', {
       from: client.nickname,
@@ -228,11 +253,11 @@ export class EventGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     const { roomId, message } = data;
     const room = this.gameRoomService.findRoomById(roomId);
-    const client = this.connectedClients.get(socket);
+    const client = this.eventClientManager.getClientBySocket(socket);
 
-    room.sendMafia('chat-mafia', {
+    room.sendToRole(MAFIA_ROLE.MAFIA, 'chat-mafia', {
       from: client.nickname,
-      to: 'maifa',
+      to: 'mafia',
       message,
     });
   }
