@@ -35,7 +35,7 @@
 - [🤩 MafiaCamp로 해결하자!](#-MafiaCamp로-해결하자)
 - [💾 주요 기능](#-주요-기능)
 - [🏆 문제 해결 경험 및 기술적 도전](#-문제-해결-경험-및-기술적-도전)
-- [🏛️️ 아키텍처](https://github.com/boostcampwm-2024/web12-MafiaCamp/blob/docs/%23289/README.md#%EF%B8%8F%EF%B8%8F-%EC%95%84%ED%82%A4%ED%85%8D%EC%B2%98)
+- [🏛️️ 아키텍처](#%EF%B8%8F%EF%B8%8F-%EC%95%84%ED%82%A4%ED%85%8D%EC%B2%98)
 - [📚 기술스택](#-기술스택)
 - [🌱 MafiaCamper 소개](#-mafiacamper-소개)
 
