@@ -1,7 +1,11 @@
 'use client';
 
 import { ROLE, Role } from '@/constants/role';
-import { Situation, SITUATION_MESSAGE } from '@/constants/situation';
+import {
+  GameSituation,
+  Situation,
+  SITUATION_MESSAGE,
+} from '@/constants/situation';
 import { useParticipantListStore } from '@/stores/participantListStore';
 import { useSocketStore } from '@/stores/socketStore';
 import { useOpenVidu } from './useOpenVidu';
@@ -9,9 +13,10 @@ import { Reducer, useEffect, useReducer } from 'react';
 import { toast } from 'react-toastify';
 import { TOAST_OPTION } from '@/constants/toastOption';
 import { useRouter } from 'next/navigation';
+import { useTickingTimerAudio } from './useTickingTimerAudio';
 
 type State = {
-  situation: Situation | null;
+  situation: GameSituation | null;
   timeLeft: number;
   target: string | null;
   invalidityCount: number;
@@ -26,10 +31,6 @@ type State = {
 
 type Action =
   | {
-      type: 'SET_GAME_RESULT_VISIBLE';
-      payload: { visible: boolean };
-    }
-  | {
       type: 'FINISH_GAME';
       payload: {
         gameResult: 'WIN' | 'LOSE';
@@ -40,17 +41,10 @@ type Action =
         }[];
       };
     }
-  | {
-      type: 'SET_TIME';
-      payload: { situation: Situation | null; timeLeft: number };
-    }
-  | { type: 'SET_TARGET'; payload: { target: string | null } }
-  | { type: 'SET_INVALIDITY_COUNT'; payload: { invalidityCount: number } };
+  | { type: 'SET_STATE'; payload: Partial<State> };
 
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
-    case 'SET_GAME_RESULT_VISIBLE':
-      return { ...state, gameResultVisible: action.payload.visible };
     case 'FINISH_GAME':
       return {
         ...state,
@@ -58,16 +52,8 @@ const reducer = (state: State, action: Action): State => {
         gameResult: action.payload.gameResult,
         playerInfoList: action.payload.playerInfoList,
       };
-    case 'SET_TIME':
-      return {
-        ...state,
-        situation: action.payload.situation,
-        timeLeft: action.payload.timeLeft,
-      };
-    case 'SET_TARGET':
-      return { ...state, target: action.payload.target };
-    case 'SET_INVALIDITY_COUNT':
-      return { ...state, invalidityCount: action.payload.invalidityCount };
+    case 'SET_STATE':
+      return { ...state, ...action.payload };
     default:
       throw new Error('Unknown action type');
   }
@@ -94,6 +80,8 @@ export const useGameStatus = (roomId: string) => {
     finishGame,
   } = useOpenVidu(roomId);
 
+  const { playSound, stopSound } = useTickingTimerAudio();
+
   const [state, dispatch] = useReducer<Reducer<State, Action>>(reducer, {
     situation: null,
     timeLeft: 0,
@@ -112,11 +100,11 @@ export const useGameStatus = (roomId: string) => {
     });
 
   const setTarget = (nickname: string | null) => {
-    dispatch({ type: 'SET_TARGET', payload: { target: nickname } });
+    dispatch({ type: 'SET_STATE', payload: { target: nickname } });
   };
 
   const closeGameResultBoard = () => {
-    dispatch({ type: 'SET_GAME_RESULT_VISIBLE', payload: { visible: false } });
+    dispatch({ type: 'SET_STATE', payload: { gameResultVisible: false } });
   };
 
   useEffect(() => {
@@ -144,8 +132,8 @@ export const useGameStatus = (roomId: string) => {
       'player-role',
       (data: { role: Role; another: [string, Role][] | null }) => {
         dispatch({
-          type: 'SET_GAME_RESULT_VISIBLE',
-          payload: { visible: false },
+          type: 'SET_STATE',
+          payload: { gameResultVisible: false },
         });
         changePublisherStatus({ role: data.role });
         data.another?.forEach((value) => {
@@ -158,26 +146,74 @@ export const useGameStatus = (roomId: string) => {
     socket?.on(
       'countdown',
       (data: { situation: Situation; timeLeft: number }) => {
-        dispatch({ type: 'SET_TIME', payload: { ...data } });
+        dispatch({ type: 'SET_STATE', payload: { timeLeft: data.timeLeft } });
+
+        if (data.timeLeft === 5 && gamePublisher.isAlive) {
+          switch (data.situation) {
+            case 'VOTE':
+              playSound();
+              break;
+            case 'MAFIA':
+              if (gamePublisher.role === 'MAFIA') {
+                playSound();
+              }
+              break;
+            case 'DOCTOR':
+              if (gamePublisher.role === 'DOCTOR') {
+                playSound();
+              }
+              break;
+            case 'POLICE':
+              if (gamePublisher.role === 'POLICE') {
+                playSound();
+              }
+              break;
+            default:
+              break;
+          }
+        }
       },
     );
 
     // 각 단계 시작
     socket?.on('countdown-start', (newSituation: Situation) => {
+      stopSound();
+
       switch (newSituation) {
         case 'INTERMISSION':
+          dispatch({
+            type: 'SET_STATE',
+            payload: { situation: 'INTERMISSION', timeLeft: 0 },
+          });
           notifyInfo(SITUATION_MESSAGE.INTERMISSION);
           break;
         case 'DISCUSSION':
+          dispatch({
+            type: 'SET_STATE',
+            payload: { situation: 'DISCUSSION', timeLeft: 0 },
+          });
           notifyInfo(SITUATION_MESSAGE.DISCUSSION);
           break;
         case 'ARGUMENT':
+          dispatch({
+            type: 'SET_STATE',
+            payload: { situation: 'ARGUMENT', timeLeft: 0 },
+          });
           notifyInfo(SITUATION_MESSAGE.ARGUMENT);
           break;
         case 'VOTE':
           if (state.situation === 'DISCUSSION') {
-            notifyInfo(SITUATION_MESSAGE.PRIMARY_VOTE);
+            dispatch({
+              type: 'SET_STATE',
+              payload: { situation: 'PRIMARY_VOTE', timeLeft: 0 },
+            });
+            notifyInfo(SITUATION_MESSAGE.PRIMARY_VOTE_FIRST_MESSAGE);
+            notifyInfo(SITUATION_MESSAGE.PRIMARY_VOTE_SECOND_MESSAGE);
           } else if (state.situation === 'ARGUMENT') {
+            dispatch({
+              type: 'SET_STATE',
+              payload: { situation: 'FINAL_VOTE', timeLeft: 0 },
+            });
             notifyInfo(SITUATION_MESSAGE.FINAL_VOTE);
           }
           break;
@@ -187,7 +223,11 @@ export const useGameStatus = (roomId: string) => {
           } else {
             initializeCandidates();
           }
-          dispatch({ type: 'SET_TARGET', payload: { target: null } });
+
+          dispatch({
+            type: 'SET_STATE',
+            payload: { situation: 'MAFIA', timeLeft: 0, target: null },
+          });
           notifyInfo(SITUATION_MESSAGE.MAFIA);
           break;
         case 'DOCTOR':
@@ -196,7 +236,10 @@ export const useGameStatus = (roomId: string) => {
           } else {
             initializeCandidates();
           }
-          dispatch({ type: 'SET_TARGET', payload: { target: null } });
+          dispatch({
+            type: 'SET_STATE',
+            payload: { situation: 'DOCTOR', timeLeft: 0, target: null },
+          });
           notifyInfo(SITUATION_MESSAGE.DOCTOR);
           break;
         case 'POLICE':
@@ -205,7 +248,10 @@ export const useGameStatus = (roomId: string) => {
           } else {
             initializeCandidates();
           }
-          dispatch({ type: 'SET_TARGET', payload: { target: null } });
+          dispatch({
+            type: 'SET_STATE',
+            payload: { situation: 'POLICE', timeLeft: 0, target: null },
+          });
           notifyInfo(SITUATION_MESSAGE.POLICE);
           break;
         default:
@@ -216,10 +262,9 @@ export const useGameStatus = (roomId: string) => {
     // 투표 시작 시 투표 대상 후보자 설정
     socket?.on('send-vote-candidates', (candidates: string[]) => {
       initializeVotes();
-      dispatch({ type: 'SET_TARGET', payload: { target: null } });
       dispatch({
-        type: 'SET_INVALIDITY_COUNT',
-        payload: { invalidityCount: 0 },
+        type: 'SET_STATE',
+        payload: { target: null, invalidityCount: 0 },
       });
 
       for (const nickname of candidates) {
@@ -236,7 +281,7 @@ export const useGameStatus = (roomId: string) => {
       for (const [nickname, votes] of Object.entries(data)) {
         if (nickname === 'INVALIDITY') {
           dispatch({
-            type: 'SET_INVALIDITY_COUNT',
+            type: 'SET_STATE',
             payload: { invalidityCount: votes },
           });
         } else if (nickname === gamePublisher.nickname) {
@@ -250,10 +295,9 @@ export const useGameStatus = (roomId: string) => {
     // 1차 투표 결과 확인
     socket?.on('primary-vote-result', (candidates: string[]) => {
       initializeCandidates();
-      dispatch({ type: 'SET_TARGET', payload: { target: null } });
       dispatch({
-        type: 'SET_INVALIDITY_COUNT',
-        payload: { invalidityCount: 0 },
+        type: 'SET_STATE',
+        payload: { target: null, invalidityCount: 0 },
       });
 
       for (const nickname of candidates) {
@@ -287,7 +331,7 @@ export const useGameStatus = (roomId: string) => {
     // 실시간 마피아 타겟 확인
     if (gamePublisher.role === 'MAFIA') {
       socket?.on('mafia-current-target', (target: string) => {
-        dispatch({ type: 'SET_TARGET', payload: { target } });
+        dispatch({ type: 'SET_STATE', payload: { target } });
       });
     }
 
@@ -334,7 +378,7 @@ export const useGameStatus = (roomId: string) => {
       }) => {
         notifyInfo('게임이 종료되었습니다.');
         dispatch({
-          type: 'SET_TIME',
+          type: 'SET_STATE',
           payload: { situation: null, timeLeft: 0 },
         });
         finishGame();
@@ -362,15 +406,18 @@ export const useGameStatus = (roomId: string) => {
     changeSubscriberStatus,
     eliminatePublisher,
     finishGame,
+    gamePublisher.isAlive,
     gamePublisher.nickname,
     gamePublisher.role,
     initializeCandidates,
     initializeVotes,
+    playSound,
     setAllParticipantsAsCandidates,
     setTargetsOfMafia,
     setTargetsOfPolice,
     socket,
     state.situation,
+    stopSound,
   ]);
 
   return {

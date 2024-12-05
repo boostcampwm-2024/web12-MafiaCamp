@@ -3,12 +3,10 @@
 import VideoCameraIcon from '@/components/common/icons/VideoCameraIcon';
 import VideoCameraSlashIcon from '@/components/common/icons/VideoCameraSlashIcon';
 import { ROLE, Role } from '@/constants/role';
-import { Situation } from '@/constants/situation';
-import { useAuthStore } from '@/stores/authStore';
-import { useSocketStore } from '@/stores/socketStore';
+import { GameSituation } from '@/constants/situation';
+import { useVideoItem } from '@/hooks/game/video/useVideoItem';
 import { GamePublisher } from '@/types/gamePublisher';
 import { GameSubscriber } from '@/types/gameSubscriber';
-import { useEffect, useRef } from 'react';
 import { FaMicrophone, FaMicrophoneSlash } from 'react-icons/fa';
 
 interface VideoItemProps {
@@ -16,7 +14,7 @@ interface VideoItemProps {
   isPublisherAlive: boolean;
   gamePublisherRole: Role | null;
   gameParticipant: GamePublisher | GameSubscriber;
-  situation: Situation | null;
+  situation: GameSituation | null;
   target: string | null;
   setTarget: (nickname: string | null) => void;
 }
@@ -30,74 +28,19 @@ const VideoItem = ({
   target,
   setTarget,
 }: VideoItemProps) => {
-  const { nickname } = useAuthStore();
-  const { socket } = useSocketStore();
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  const handleClick = () => {
-    if (!situation || !isPublisherAlive || !gameParticipant.isCandidate) {
-      return;
-    }
-
-    switch (situation) {
-      case 'VOTE':
-        if (target !== null) {
-          socket?.emit('cancel-vote-candidate', {
-            roomId,
-            from: nickname,
-            to: target,
-          });
-        }
-
-        if (target === gameParticipant.nickname) {
-          setTarget(null);
-          return;
-        }
-
-        setTarget(gameParticipant.nickname);
-        socket?.emit('vote-candidate', {
-          roomId,
-          from: nickname,
-          to: gameParticipant.nickname,
-        });
-        break;
-      case 'MAFIA':
-        socket?.emit('select-mafia-target', {
-          roomId,
-          from: nickname,
-          target: gameParticipant.nickname,
-        });
-        break;
-      case 'DOCTOR':
-        setTarget(gameParticipant.nickname);
-        socket?.emit('select-doctor-target', {
-          roomId,
-          from: nickname,
-          target: gameParticipant.nickname,
-        });
-        break;
-      case 'POLICE':
-        socket?.emit('police-investigate', {
-          roomId,
-          police: nickname,
-          criminal: gameParticipant.nickname,
-        });
-        break;
-      default:
-        break;
-    }
-  };
-
-  useEffect(() => {
-    if (videoRef.current && gameParticipant.participant) {
-      gameParticipant.participant.addVideoElement(videoRef.current);
-    }
-  }, [gameParticipant.participant]);
+  const { videoRef, handleClick } = useVideoItem(
+    roomId,
+    isPublisherAlive,
+    gameParticipant,
+    situation,
+    target,
+    setTarget,
+  );
 
   return (
     <div
       className={[
-        `${isPublisherAlive && (situation === 'VOTE' || (situation === 'MAFIA' && gamePublisherRole === 'MAFIA') || (situation === 'DOCTOR' && gamePublisherRole === 'DOCTOR') || (situation === 'POLICE' && gamePublisherRole === 'POLICE')) && gameParticipant.isCandidate && 'cursor-pointer hover:z-10'}`,
+        `${isPublisherAlive && (situation === 'PRIMARY_VOTE' || situation === 'FINAL_VOTE' || (situation === 'MAFIA' && gamePublisherRole === 'MAFIA') || (situation === 'DOCTOR' && gamePublisherRole === 'DOCTOR') || (situation === 'POLICE' && gamePublisherRole === 'POLICE')) && gameParticipant.isCandidate && 'cursor-pointer hover:z-10'}`,
         `${(target === gameParticipant.nickname || situation === 'ARGUMENT') && gameParticipant.isCandidate && 'z-10 border-2'}`,
         'relative flex h-full w-full flex-col items-center rounded-3xl border border-slate-200 bg-black',
       ].join(' ')}
@@ -113,11 +56,16 @@ const VideoItem = ({
           방장
         </div>
       )}
-      {situation === 'VOTE' && gameParticipant.isCandidate && (
-        <p className='absolute top-0 z-10 flex h-full w-full items-center justify-center text-5xl text-white'>
-          {gameParticipant.votes}
-        </p>
-      )}
+      {
+        /* eslint-disable indent */
+        (situation === 'PRIMARY_VOTE' || situation === 'FINAL_VOTE') &&
+          gameParticipant.isCandidate && (
+            <p className='absolute top-0 z-10 flex h-full w-full items-center justify-center text-5xl text-white'>
+              {gameParticipant.votes}
+            </p>
+          )
+        /* eslint-enable indent */
+      }
       <video
         className='h-full w-full overflow-y-hidden rounded-t-3xl object-cover'
         ref={videoRef}

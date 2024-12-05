@@ -6,8 +6,9 @@ import PlayIcon from '@/components/common/icons/PlayIcon';
 import VideoCameraIcon from '@/components/common/icons/VideoCameraIcon';
 import VideoCameraSlashIcon from '@/components/common/icons/VideoCameraSlashIcon';
 import { GameStatus } from '@/constants/gameStatus';
-import { SITUATION, Situation } from '@/constants/situation';
+import { GameSituation, SITUATION } from '@/constants/situation';
 import { useDragScroll } from '@/hooks/utils/useDragScroll';
+import { useThrottle } from '@/hooks/utils/useThrottle';
 import { useSidebarStore } from '@/stores/sidebarStore';
 import { useSocketStore } from '@/stores/socketStore';
 import { GamePublisher } from '@/types/gamePublisher';
@@ -20,7 +21,7 @@ interface BottombarProps {
   gameStatus: GameStatus;
   gamePublisher: GamePublisher;
   totalParticipants: number;
-  situation: Situation | null;
+  situation: GameSituation | null;
   timeLeft: number;
   toggleAudio: () => void;
   toggleVideo: () => void;
@@ -48,6 +49,11 @@ const Bottombar = ({
     onTouchMove,
     onTouchEnd,
   } = useDragScroll();
+
+  const startGame = useThrottle(
+    () => socket?.emit('start-game', { roomId }),
+    3000,
+  );
 
   return (
     <div
@@ -83,7 +89,7 @@ const Bottombar = ({
                 `${totalParticipants !== Number(capacity) ? 'cursor-not-allowed opacity-50' : 'hover:scale-105'}`,
                 'flex h-10 items-center justify-center gap-2 rounded-3xl border border-slate-400 bg-slate-600 px-4',
               ].join(' ')}
-              onClick={() => socket?.emit('start-game', { roomId })}
+              onClick={() => startGame()}
               disabled={totalParticipants !== Number(capacity)}
             >
               <PlayIcon className='fill-slate-200' />

@@ -143,16 +143,16 @@ const Header = () => {
             transition={{ delay: 1, duration: 0.5 }}
           >
             <motion.div
-              className='relative h-80 w-80'
               initial={{ rotate: 0 }}
               animate={{ rotate: 360 }}
               transition={{ repeat: Infinity, duration: 30, ease: 'linear' }}
             >
               <Image
-                className='object-cover'
                 src='/common/globe.png'
                 alt='globe'
-                fill={true}
+                width={320}
+                height={320}
+                quality={100}
               />
             </motion.div>
           </motion.div>

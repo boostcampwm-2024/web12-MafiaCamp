@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useThrottle } from '../utils/useThrottle';
 
 export const useRoomManager = () => {
   const { nickname } = useAuthStore();
@@ -21,7 +22,7 @@ export const useRoomManager = () => {
     mode: 'onChange',
   });
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = useThrottle(async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     await methods.trigger();
@@ -31,7 +32,7 @@ export const useRoomManager = () => {
 
     const { title, capacity } = methods.getValues();
     socket?.emit('create-room', { title, capacity: Number(capacity) });
-  };
+  }, 2000);
 
   useEffect(() => {
     socket?.on('create-room', (data: { success: boolean; roomId: string }) => {

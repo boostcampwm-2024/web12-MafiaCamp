@@ -5,7 +5,7 @@ import VideoItem from './VideoItem';
 import { useDragScroll } from '@/hooks/utils/useDragScroll';
 import { GamePublisher } from '@/types/gamePublisher';
 import { GameSubscriber } from '@/types/gameSubscriber';
-import { Situation } from '@/constants/situation';
+import { GameSituation } from '@/constants/situation';
 import { useMemo } from 'react';
 import VideoFilter from './VideoFilter';
 import { GameStatus } from '@/constants/gameStatus';
@@ -16,7 +16,7 @@ interface VideoViewerProps {
   gameStatus: GameStatus;
   gamePublisher: GamePublisher;
   gameSubscribers: GameSubscriber[];
-  situation: Situation | null;
+  situation: GameSituation | null;
   target: string | null;
   invalidityCount: number;
   setTarget: (nickname: string | null) => void;
@@ -75,15 +75,20 @@ const VideoViewer = ({
         gamePublisher={gamePublisher}
         situation={situation}
       />
-      {gameStatus === 'RUNNING' && situation === 'VOTE' && (
-        <InvalidityButton
-          roomId={roomId}
-          gamePublisher={gamePublisher}
-          target={target}
-          invalidityCount={invalidityCount}
-          setTarget={setTarget}
-        />
-      )}
+      {
+        /* eslint-disable indent */
+        gameStatus === 'RUNNING' &&
+          (situation === 'PRIMARY_VOTE' || situation === 'FINAL_VOTE') && (
+            <InvalidityButton
+              roomId={roomId}
+              gamePublisher={gamePublisher}
+              target={target}
+              invalidityCount={invalidityCount}
+              setTarget={setTarget}
+            />
+          )
+        /* eslint-enable indent */
+      }
       <div
         className={[
           `${totalSurvivors <= 2 ? 'grid-rows-1' : 'grid-rows-2'}`,
