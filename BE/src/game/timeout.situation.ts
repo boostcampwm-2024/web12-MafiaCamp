@@ -1,0 +1,11 @@
+export const TIMEOUT_SITUATION = {
+  DISCUSSION: 150,
+  ARGUMENT: 90,
+  VOTE: 15,
+  MAFIA: 30,
+  DOCTOR: 20,
+  POLICE: 20,
+  INTERMISSION: 10,
+} as const;
+
+export type TIMEOUT_SITUATION = typeof TIMEOUT_SITUATION[keyof typeof TIMEOUT_SITUATION];

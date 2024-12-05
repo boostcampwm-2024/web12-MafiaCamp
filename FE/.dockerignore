@@ -1,0 +1,19 @@
+# Node.js 환경
+node_modules
+
+# Git 관련 파일
+.git
+.gitignore
+
+# env 파일
+.env
+
+# 빌드 결과물
+.next
+
+# 테스트 관련 파일
+__tests__
+.swc
+playwright-report
+test_results
+tests
