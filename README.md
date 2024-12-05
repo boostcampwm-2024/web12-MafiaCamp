@@ -35,8 +35,8 @@
 - [🤩 MafiaCamp로 해결하자!](#-MafiaCamp로-해결하자)
 - [💾 주요 기능](#-주요-기능)
 - [🏆 문제 해결 경험 및 기술적 도전](#-문제-해결-경험-및-기술적-도전)
+- [🏛️️ 아키텍처](#-아키텍처)
 - [📚 기술스택](#-기술스택)
-- [🏗️ 아키텍처](#-아키텍처)
 - [🌱 MafiaCamper 소개](#-mafiacamper-소개)
 
 <br/>
@@ -148,6 +148,15 @@
 <br/>
 <br/>
 
+## 🏛️️ 아키텍처
+
+![아키텍처](https://github.com/user-attachments/assets/1a81bc52-5a7c-4e79-addb-98e154d412aa)
+
+
+<br/>
+<br/>
+
+
 ## 📚 기술스택
 
 | 분류                 | 기술 스택                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
@@ -158,15 +167,6 @@
 | Database            | ![](https://img.shields.io/badge/MySQL-4479A1?logo=mysql&logoColor=white) ![](https://img.shields.io/badge/Redis-%23DD0031.svg?logo=redis&logoColor=white)                                                                                                                                                                                                                                                                                                                                                                                              |
 | Infrastructure      | ![](https://img.shields.io/badge/Nginx-009639?logo=Nginx&logoColor=white) ![](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white) ![](https://img.shields.io/badge/Github%20Actions-%232671E5.svg?logo=githubactions&logoColor=white) ![](https://img.shields.io/badge/Naver%20Cloud%20Platform-03C75A?logo=naver&logoColor=ffffff)                                                                                                                                                                                                 |
 | Collaboration Tools | ![](https://img.shields.io/badge/Figma-%23F24E1E.svg?logo=figma&logoColor=white) ![](https://img.shields.io/badge/-Notion-000000?logo=notion&logoColor=white) ![](https://img.shields.io/badge/-GitHub-181717?logo=github&logoColor=white) ![](https://img.shields.io/badge/-Slack-4A154B?logo=slack&logoColor=white)                                                                                                                                                                                                                                   |
-
-<br/>
-<br/>
-
-
-## 🏗️ 아키텍처
-
-![아키텍처](https://github.com/user-attachments/assets/1a81bc52-5a7c-4e79-addb-98e154d412aa)
-
 
 <br/>
 <br/>
